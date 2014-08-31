@@ -12,6 +12,7 @@ namespace KerbalKonstructs
 
 		private float x = 0; 
 		private float y = 0;
+		private float zoom = 10;
 
 		public void enable(GameObject targ)
 		{
@@ -21,8 +22,6 @@ namespace KerbalKonstructs
 				cam.DeactivateUpdate();
 				oldTarget = cam.transform.parent;
 				cam.transform.parent = targ.transform;
-				x = targ.transform.eulerAngles.x;
-				y = targ.transform.eulerAngles.y;
 				active = true;
 			}
 			else
@@ -43,13 +42,17 @@ namespace KerbalKonstructs
 		{
 			if (Input.GetMouseButton(1))
 			{
-				x += Input.GetAxis("Mouse X") * cam.orbitSensitivity * 10.0f;
-				y -= Input.GetAxis("Mouse Y") * cam.orbitSensitivity * 10.0f;
+				x += Input.GetAxis("Mouse X") * cam.orbitSensitivity * 50.0f;
+				y -= Input.GetAxis("Mouse Y") * cam.orbitSensitivity * 50.0f;
+			}
+
+			if (Input.GetAxis("Mouse ScrollWheel") != 0)
+			{
+				zoom = Mathf.Clamp(zoom - Input.GetAxis("Mouse ScrollWheel") * 20.0f, cam.minDistance, cam.maxDistance);
 			}
 
 			cam.transform.localRotation = Quaternion.Euler(y, x, 0);
-			//TODO: Don't hardcode zoom
-			cam.transform.localPosition = (Quaternion.Euler(y, x, 0)) * new Vector3(0.0f, 0.0f, -10);
+			cam.transform.localPosition = Vector3.Lerp(cam.transform.localPosition, Quaternion.Euler(y, x, 0) * new Vector3(0.0f, 0.0f, -zoom), Time.deltaTime * cam.sharpness);
 		}
 	}
 }
