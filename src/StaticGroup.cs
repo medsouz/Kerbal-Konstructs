@@ -25,5 +25,27 @@ namespace KerbalKonstructs
 			childObjects.Add(obj);
 			//TODO: recalculate center point and visibility range
 		}
+
+		public void cacheAll()
+		{
+			foreach (StaticObject obj in childObjects)
+			{
+				obj.gameObject.SetActive(false);
+			}
+		}
+
+		public void updateCache(Vector3 playerPos)
+		{
+			foreach (StaticObject obj in childObjects)
+			{
+				float dist = Vector3.Distance(obj.gameObject.transform.position, playerPos);
+				bool visible = (dist < obj.visibleRange);
+				if (visible != obj.gameObject.activeSelf)
+				{
+					//Debug.Log("Setting " + obj.gameObject.name + " to visible=" + visible);
+					obj.gameObject.SetActive(visible);
+				}
+			}
+		}
 	}
 }

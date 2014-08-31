@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace KerbalKonstructs
 {
@@ -29,6 +30,40 @@ namespace KerbalKonstructs
 			groupList[obj.parentBody.bodyName][obj.groupName].addStatic(obj);
 
 			return activeGroups.Contains(groupList[obj.parentBody.bodyName][obj.groupName]);
+		}
+
+		public void cacheAll()
+		{
+			foreach (StaticGroup group in activeGroups)
+			{
+				group.cacheAll();
+				activeGroups.Remove(group);
+			}
+		}
+
+		public void loadObjectsForBody(String bodyName)
+		{
+			foreach (KeyValuePair<String, StaticGroup> bodyGroups in groupList[bodyName])
+			{
+				activeGroups.Add(bodyGroups.Value);
+			}
+		}
+
+		public void onBodyChanged(CelestialBody from, CelestialBody to)
+		{
+			if (from.bodyName != to.bodyName)
+			{
+				cacheAll();
+				loadObjectsForBody(to.bodyName);
+			}
+		}
+
+		public void updateCache(Vector3 playerPos)
+		{
+			foreach (StaticGroup group in activeGroups)
+			{
+				group.updateCache(playerPos);
+			}
 		}
 	}
 }

@@ -21,11 +21,34 @@ namespace KerbalKonstructs
 			GameEvents.onDominantBodyChange.Add(onDominantBodyChange);
 			DontDestroyOnLoad(this);
 			loadObjects();
+			staticDB.loadObjectsForBody(currentBody.bodyName);
+			InvokeRepeating("updateCache", 0, 1);
 		}
 
 		void onDominantBodyChange(GameEvents.FromToAction<CelestialBody, CelestialBody> data)
 		{
 			currentBody = data.to;
+			staticDB.onBodyChanged(data.from, data.to);
+		}
+
+		public void updateCache()
+		{
+			Vector3 playerPos;
+			if (selectedObject != null)
+			{
+				playerPos = selectedObject.gameObject.transform.position;
+			}
+			else if (FlightGlobals.ActiveVessel != null)
+			{
+				playerPos = FlightGlobals.ActiveVessel.transform.position;
+			}
+			else
+			{
+				//HACKY: if there is no vessel use the camera, this could cause some issues
+				playerPos = Camera.main.transform.position;
+			}
+
+			staticDB.updateCache(playerPos);
 		}
 
 		public void loadObjects()
@@ -62,7 +85,7 @@ namespace KerbalKonstructs
 
 		public void spawnObject(StaticObject obj, Boolean editing)
 		{
-			obj.gameObject.SetActive(true);
+			obj.gameObject.SetActive(false);
 			Transform[] gameObjectList = obj.gameObject.GetComponentsInChildren<Transform>();
 			List<GameObject> rendererList = (from t in gameObjectList where t.gameObject.renderer != null select t.gameObject).ToList();
 			List<GameObject> colliderList = (from t in gameObjectList where t.gameObject.collider != null select t.gameObject).ToList();
@@ -108,6 +131,16 @@ namespace KerbalKonstructs
 
 		void OnGUI()
 		{
+			//Debug buttons
+			if (GUI.Button(new Rect(270, 250, 150, 20), "Cache All"))
+			{
+				staticDB.cacheAll();
+			}
+			if (GUI.Button(new Rect(270, 280, 150, 20), "Load all for "+currentBody.bodyName))
+			{
+				staticDB.loadObjectsForBody(currentBody.bodyName);
+			}
+
 			if (HighLogic.LoadedScene == GameScenes.FLIGHT)
 			{
 				if (GUI.Button(new Rect(270, 350, 150, 20), "Place Object"))
