@@ -13,6 +13,7 @@ namespace KerbalKonstructs
 		private Vector3 centerPoint = Vector3.zero;
 		private float visiblityRange = 0;
 		public Boolean alwaysActive = false;
+		public Boolean active = false;
 
 		public StaticGroup(String name, String body)
 		{
@@ -23,7 +24,32 @@ namespace KerbalKonstructs
 		public void addStatic(StaticObject obj)
 		{
 			childObjects.Add(obj);
-			//TODO: recalculate center point and visibility range
+			updateCacheSettings();
+		}
+
+		public void updateCacheSettings()
+		{
+			float highestVisibility = 0;
+			float furthestDist = 0;
+			Vector3 center = Vector3.zero;
+			foreach (StaticObject obj in childObjects)
+			{
+				if (obj.visibleRange > highestVisibility)
+					highestVisibility = obj.visibleRange;
+
+				center += obj.gameObject.transform.position;
+			}
+			center /= childObjects.Count;
+
+			foreach (StaticObject obj in childObjects)
+			{
+				float dist = Vector3.Distance(center, obj.gameObject.transform.position);
+				if (dist > furthestDist)
+					furthestDist = dist;
+			}
+
+			visiblityRange = highestVisibility + furthestDist;
+			centerPoint = center;
 		}
 
 		public void cacheAll()
@@ -46,6 +72,21 @@ namespace KerbalKonstructs
 					obj.gameObject.SetActive(visible);
 				}
 			}
+		}
+
+		public Vector3 getCenter()
+		{
+			return centerPoint;
+		}
+
+		public float getVisibilityRange()
+		{
+			return visiblityRange;
+		}
+
+		public String getGroupName()
+		{
+			return groupName;
 		}
 	}
 }

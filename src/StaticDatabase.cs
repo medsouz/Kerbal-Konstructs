@@ -23,7 +23,10 @@ namespace KerbalKonstructs
 				StaticGroup group = new StaticGroup(bodyName, groupName);
 				//Ungrouped objects get individually cached. New acts the same as Ungrouped but stores unsaved statics instead.
 				if (obj.groupName == "Ungrouped" || obj.groupName == "New")
+				{
 					group.alwaysActive = true;
+					group.active = true;
+				}
 				groupList[bodyName].Add(groupName, group);
 			}
 
@@ -66,7 +69,20 @@ namespace KerbalKonstructs
 		{
 			foreach (StaticGroup group in activeGroups)
 			{
-				group.updateCache(playerPos);
+				if(!group.alwaysActive){
+					float dist = Vector3.Distance(group.getCenter(), playerPos);
+					Boolean active = dist < group.getVisibilityRange();
+					if (active != group.active && active == false)
+					{
+						Debug.Log("Caching group " + group.getGroupName());
+						group.cacheAll();
+					}
+					group.active = active;
+				}
+				if (group.active)
+				{
+					group.updateCache(playerPos);
+				}
 			}
 		}
 	}
