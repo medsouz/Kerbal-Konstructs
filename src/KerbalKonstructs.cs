@@ -14,6 +14,8 @@ namespace KerbalKonstructs
 
 		private StaticDatabase staticDB = new StaticDatabase();
 
+		private CameraController camControl = new CameraController();
+
 		void Awake()
 		{
 			//Assume that the Space Center is on Kerbin
@@ -100,7 +102,7 @@ namespace KerbalKonstructs
 
 		public void spawnObject(StaticObject obj, Boolean editing)
 		{
-			obj.gameObject.SetActive(false);
+			obj.gameObject.SetActive(editing);//Objects spawned at runtime should be active
 			Transform[] gameObjectList = obj.gameObject.GetComponentsInChildren<Transform>();
 			List<GameObject> rendererList = (from t in gameObjectList where t.gameObject.renderer != null select t.gameObject).ToList();
 			List<GameObject> colliderList = (from t in gameObjectList where t.gameObject.collider != null select t.gameObject).ToList();
@@ -113,6 +115,8 @@ namespace KerbalKonstructs
 					collider.collider.enabled = false;
 				}
 				selectedObject = obj;
+				InputLockManager.SetControlLock(ControlTypes.ALL_SHIP_CONTROLS, "KKShipLock");
+				camControl.enable(selectedObject.gameObject);
 			}
 
 			PQSCity.LODRange range = new PQSCity.LODRange
@@ -144,6 +148,22 @@ namespace KerbalKonstructs
 			}
 		}
 
+		public void deselectObject()
+		{
+			selectedObject.editing = false;
+			selectedObject = null;
+			InputLockManager.RemoveControlLock("KKShipLock");
+			camControl.disable();
+		}
+
+		void LateUpdate()
+		{
+			if (camControl.active)
+			{
+				camControl.updateCamera();
+			}
+		}
+
 		void OnGUI()
 		{
 			//Debug buttons
@@ -171,6 +191,14 @@ namespace KerbalKonstructs
 					obj.visibleRange = 25000;
 
 					spawnObject(obj, true);
+				}
+
+				if (selectedObject != null)
+				{
+					if (GUI.Button(new Rect(270, 380, 150, 20), "Deselect Object"))
+					{
+						deselectObject();
+					}
 				}
 			}
 		}

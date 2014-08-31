@@ -45,6 +45,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CameraController.cs" />
     <Compile Include="KerbalKonstructs.cs" />
     <Compile Include="StaticObject.cs" />
     <Compile Include="KSPAddonFixed.cs" />
