@@ -117,6 +117,9 @@ namespace KerbalKonstructs
 				}
 				selectedObject = obj;
 				InputLockManager.SetControlLock(ControlTypes.ALL_SHIP_CONTROLS, "KKShipLock");
+				InputLockManager.SetControlLock(ControlTypes.EVA_INPUT, "KKEVALock");
+				InputLockManager.SetControlLock(ControlTypes.CAMERACONTROLS, "KKCamControls");
+				InputLockManager.SetControlLock(ControlTypes.CAMERAMODES, "KKCamModes");
 				camControl.enable(selectedObject.gameObject);
 			}
 
@@ -154,6 +157,9 @@ namespace KerbalKonstructs
 			selectedObject.editing = false;
 			selectedObject = null;
 			InputLockManager.RemoveControlLock("KKShipLock");
+			InputLockManager.RemoveControlLock("KKEVALock");
+			InputLockManager.RemoveControlLock("KKCamControls");
+			InputLockManager.RemoveControlLock("KKCamModes");
 			camControl.disable();
 		}
 
@@ -162,6 +168,49 @@ namespace KerbalKonstructs
 			if (camControl.active)
 			{
 				camControl.updateCamera();
+			}
+			if (selectedObject != null)
+			{
+				if (Input.GetKey(KeyCode.W))
+				{
+					selectedObject.position.y++;
+					editor.updateSelection(selectedObject);
+				}
+				if (Input.GetKey(KeyCode.S))
+				{
+					selectedObject.position.y--;
+					editor.updateSelection(selectedObject);
+				}
+				if (Input.GetKey(KeyCode.D))
+				{
+					selectedObject.position.x++;
+					editor.updateSelection(selectedObject);
+				}
+				if (Input.GetKey(KeyCode.A))
+				{
+					selectedObject.position.x--;
+					editor.updateSelection(selectedObject);
+				}
+				if (Input.GetKey(KeyCode.X))
+				{
+					selectedObject.position.z++;
+					editor.updateSelection(selectedObject);
+				}
+				if (Input.GetKey(KeyCode.Z))
+				{
+					selectedObject.position.z--;
+					editor.updateSelection(selectedObject);
+				}
+				if (Input.GetKey(KeyCode.LeftShift))
+				{
+					selectedObject.altitude++;
+					editor.updateSelection(selectedObject);
+				}
+				if (Input.GetKey(KeyCode.LeftControl))
+				{
+					selectedObject.altitude--;
+					editor.updateSelection(selectedObject);
+				}
 			}
 		}
 

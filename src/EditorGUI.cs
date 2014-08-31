@@ -25,20 +25,38 @@ namespace KerbalKonstructs
 		{
 			GUI.Label(new Rect(6, 30, 203, 25), "Position");
 			xPos = GUI.TextField(new Rect(70, 50, 80, 25), xPos, 25);
-			GUI.Button(new Rect(6, 50, 30, 25), "-5");
-			GUI.Button(new Rect(38, 50, 30, 25), "-1");
-			GUI.Button(new Rect(152, 50, 30, 25), "+1");
-			GUI.Button(new Rect(184, 50, 30, 25), "+5");
+			if (GUI.Button(new Rect(38, 50, 30, 25), "<") || GUI.RepeatButton(new Rect(6, 50, 30, 25), "<<"))
+			{
+				selectedObject.position.x--;
+				updateSelection(selectedObject);
+			}
+			if(GUI.Button(new Rect(152, 50, 30, 25), ">") || GUI.RepeatButton(new Rect(184, 50, 30, 25), ">>"))
+			{
+				selectedObject.position.x++;
+				updateSelection(selectedObject);
+			}
 			yPos = GUI.TextField(new Rect(70, 80, 80, 25), yPos, 25);
-			GUI.Button(new Rect(6, 80, 30, 25), "-5");
-			GUI.Button(new Rect(38, 80, 30, 25), "-1");
-			GUI.Button(new Rect(152, 80, 30, 25), "+1");
-			GUI.Button(new Rect(184, 80, 30, 25), "+5");
+			if (GUI.Button(new Rect(38, 80, 30, 25), "<") || GUI.RepeatButton(new Rect(6, 80, 30, 25), "<<"))
+			{
+				selectedObject.position.y--;
+				updateSelection(selectedObject);
+			}
+			if (GUI.Button(new Rect(152, 80, 30, 25), ">") || GUI.RepeatButton(new Rect(184, 80, 30, 25), ">>"))
+			{
+				selectedObject.position.y++;
+				updateSelection(selectedObject);
+			}
 			zPos = GUI.TextField(new Rect(70, 110, 80, 25), zPos, 25);
-			GUI.Button(new Rect(6, 110, 30, 25), "-5");
-			GUI.Button(new Rect(38, 110, 30, 25), "-1");
-			GUI.Button(new Rect(152, 110, 30, 25), "+1");
-			GUI.Button(new Rect(184, 110, 30, 25), "+5");
+			if (GUI.Button(new Rect(38, 110, 30, 25), "<") || GUI.RepeatButton(new Rect(6, 110, 30, 25), "<<"))
+			{
+				selectedObject.position.z--;
+				updateSelection(selectedObject);
+			}
+			if (GUI.Button(new Rect(152, 110, 30, 25), ">") || GUI.RepeatButton(new Rect(184, 110, 30, 25), ">>"))
+			{
+				selectedObject.position.z++;
+				updateSelection(selectedObject);
+			}
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
 
@@ -49,6 +67,7 @@ namespace KerbalKonstructs
 			yPos = obj.position.y.ToString();
 			zPos = obj.position.z.ToString();
 			altitude = obj.altitude.ToString();
+			selectedObject.update();
 		}
 	}
 }

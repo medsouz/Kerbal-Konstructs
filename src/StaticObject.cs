@@ -18,5 +18,17 @@ namespace KerbalKonstructs
 		public float rotation;
 
 		public Boolean editing;
+
+		public void update()
+		{
+			if (pqsCity != null)
+			{
+				pqsCity.repositionRadial = position;
+				pqsCity.repositionRadiusOffset = altitude;
+				pqsCity.reorientInitialUp = orientation;
+				pqsCity.reorientFinalAngle = rotation;
+				pqsCity.Orientate();
+			}
+		}
 	}
 }
