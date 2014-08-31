@@ -19,10 +19,25 @@ namespace KerbalKonstructs
 			//Assume that the Space Center is on Kerbin
 			currentBody = Util.getCelestialBody("Kerbin");
 			GameEvents.onDominantBodyChange.Add(onDominantBodyChange);
+			GameEvents.onLevelWasLoaded.Add(onLevelWasLoaded);
 			DontDestroyOnLoad(this);
 			loadObjects();
 			staticDB.loadObjectsForBody(currentBody.bodyName);
 			InvokeRepeating("updateCache", 0, 1);
+		}
+
+		void onLevelWasLoaded(GameScenes data)
+		{
+			if (data.Equals(GameScenes.SPACECENTER))
+			{
+				//Assume that the Space Center is on Kerbin
+				currentBody = Util.getCelestialBody("Kerbin");
+				staticDB.loadObjectsForBody(currentBody.bodyName);
+			}
+			else if (data.Equals(GameScenes.EDITOR))
+			{
+				staticDB.cacheAll();
+			}
 		}
 
 		void onDominantBodyChange(GameEvents.FromToAction<CelestialBody, CelestialBody> data)

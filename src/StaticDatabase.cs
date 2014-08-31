@@ -37,25 +37,29 @@ namespace KerbalKonstructs
 			foreach (StaticGroup group in activeGroups)
 			{
 				group.cacheAll();
-				activeGroups.Remove(group);
 			}
+			activeGroups.Clear();
 		}
 
 		public void loadObjectsForBody(String bodyName)
 		{
-			foreach (KeyValuePair<String, StaticGroup> bodyGroups in groupList[bodyName])
+			if (groupList.ContainsKey(bodyName))
 			{
-				activeGroups.Add(bodyGroups.Value);
+				foreach (KeyValuePair<String, StaticGroup> bodyGroups in groupList[bodyName])
+				{
+					activeGroups.Add(bodyGroups.Value);
+				}
+			}
+			else
+			{
+				Debug.Log("No statics exist for " + bodyName);
 			}
 		}
 
 		public void onBodyChanged(CelestialBody from, CelestialBody to)
 		{
-			if (from.bodyName != to.bodyName)
-			{
-				cacheAll();
-				loadObjectsForBody(to.bodyName);
-			}
+			cacheAll();
+			loadObjectsForBody(to.bodyName);
 		}
 
 		public void updateCache(Vector3 playerPos)
