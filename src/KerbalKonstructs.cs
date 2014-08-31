@@ -15,6 +15,7 @@ namespace KerbalKonstructs
 		private StaticDatabase staticDB = new StaticDatabase();
 
 		private CameraController camControl = new CameraController();
+		private EditorGUI editor = new EditorGUI();
 
 		void Awake()
 		{
@@ -166,6 +167,9 @@ namespace KerbalKonstructs
 
 		void OnGUI()
 		{
+			//Use KSP's GUI skin
+			GUI.skin = HighLogic.Skin;
+
 			//Debug buttons
 			if (GUI.Button(new Rect(270, 250, 150, 20), "Cache All"))
 			{
@@ -198,9 +202,15 @@ namespace KerbalKonstructs
 					if (GUI.Button(new Rect(270, 380, 150, 20), "Deselect Object"))
 					{
 						deselectObject();
+						return;
 					}
+
+					//Editor Window
+					editor.drawEditor(selectedObject);
 				}
 			}
 		}
+
+
 	}
 }
