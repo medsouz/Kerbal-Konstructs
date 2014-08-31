@@ -32,7 +32,7 @@ namespace KerbalKonstructs
 			{
 				//Assume that the Space Center is on Kerbin
 				currentBody = Util.getCelestialBody("Kerbin");
-				staticDB.loadObjectsForBody(currentBody.bodyName);
+				staticDB.onBodyChanged(currentBody);
 			}
 			else if (data.Equals(GameScenes.EDITOR))
 			{
@@ -43,7 +43,7 @@ namespace KerbalKonstructs
 		void onDominantBodyChange(GameEvents.FromToAction<CelestialBody, CelestialBody> data)
 		{
 			currentBody = data.to;
-			staticDB.onBodyChanged(data.from, data.to);
+			staticDB.onBodyChanged(data.to);
 		}
 
 		public void updateCache()

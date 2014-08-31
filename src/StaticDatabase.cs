@@ -56,10 +56,10 @@ namespace KerbalKonstructs
 			}
 		}
 
-		public void onBodyChanged(CelestialBody from, CelestialBody to)
+		public void onBodyChanged(CelestialBody body)
 		{
 			cacheAll();
-			loadObjectsForBody(to.bodyName);
+			loadObjectsForBody(body.bodyName);
 		}
 
 		public void updateCache(Vector3 playerPos)
