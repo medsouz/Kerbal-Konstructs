@@ -33,7 +33,7 @@ namespace KerbalKonstructs
 			editorRect = GUI.Window(0xB00B1E5, editorRect, drawEditorWindow, "Kerbal Konstructs Editor");
 		}
 
-		Rect editorRect = new Rect(70, 100, 306, 250);
+		Rect editorRect = new Rect(70, 100, 306 + 30, 250);
 
 		private GUIStyle listStyle = new GUIStyle();
 		private GUIContent[] comboBoxList = {
@@ -47,64 +47,73 @@ namespace KerbalKonstructs
 		ComboBox orientationMenu;
 		void drawEditorWindow(int windowID)
 		{
-			GUI.Label(new Rect(6, 30, 203, 25), "Position");
-			xPos = GUI.TextField(new Rect(70, 50, 80, 25), xPos, 25);
-			if (GUI.Button(new Rect(38, 50, 30, 25), "<") || GUI.RepeatButton(new Rect(6, 50, 30, 25), "<<"))
+			GUI.Label(new Rect(21, 30, 203, 25), "Position");
+			GUI.Label(new Rect(6, 50, 25, 15), "X:");
+			xPos = GUI.TextField(new Rect(85, 50, 80, 25), xPos, 25);
+			if (GUI.Button(new Rect(53, 50, 30, 25), "<") || GUI.RepeatButton(new Rect(21, 50, 30, 25), "<<"))
 			{
 				selectedObject.position.x -= float.Parse(increment);
 				updateSelection(selectedObject);
 			}
-			if(GUI.Button(new Rect(152, 50, 30, 25), ">") || GUI.RepeatButton(new Rect(184, 50, 30, 25), ">>"))
+			if (GUI.Button(new Rect(167, 50, 30, 25), ">") || GUI.RepeatButton(new Rect(199, 50, 30, 25), ">>"))
 			{
 				selectedObject.position.x += float.Parse(increment);
 				updateSelection(selectedObject);
 			}
-			yPos = GUI.TextField(new Rect(70, 80, 80, 25), yPos, 25);
-			if (GUI.Button(new Rect(38, 80, 30, 25), "<") || GUI.RepeatButton(new Rect(6, 80, 30, 25), "<<"))
+			GUI.Label(new Rect(6, 80, 25, 15), "Y:");
+			yPos = GUI.TextField(new Rect(85, 80, 80, 25), yPos, 25);
+			if (GUI.Button(new Rect(53, 80, 30, 25), "<") || GUI.RepeatButton(new Rect(21, 80, 30, 25), "<<"))
 			{
 				selectedObject.position.y -= float.Parse(increment);
 				updateSelection(selectedObject);
 			}
-			if (GUI.Button(new Rect(152, 80, 30, 25), ">") || GUI.RepeatButton(new Rect(184, 80, 30, 25), ">>"))
+			if (GUI.Button(new Rect(167, 80, 30, 25), ">") || GUI.RepeatButton(new Rect(199, 80, 30, 25), ">>"))
 			{
 				selectedObject.position.y += float.Parse(increment);
 				updateSelection(selectedObject);
 			}
-			zPos = GUI.TextField(new Rect(70, 110, 80, 25), zPos, 25);
-			if (GUI.Button(new Rect(38, 110, 30, 25), "<") || GUI.RepeatButton(new Rect(6, 110, 30, 25), "<<"))
+			GUI.Label(new Rect(6, 110, 25, 15), "Z:");
+			zPos = GUI.TextField(new Rect(85, 110, 80, 25), zPos, 25);
+			if (GUI.Button(new Rect(53, 110, 30, 25), "<") || GUI.RepeatButton(new Rect(21, 110, 30, 25), "<<"))
 			{
 				selectedObject.position.z -= float.Parse(increment);
 				updateSelection(selectedObject);
 			}
-			if (GUI.Button(new Rect(152, 110, 30, 25), ">") || GUI.RepeatButton(new Rect(184, 110, 30, 25), ">>"))
+			if (GUI.Button(new Rect(167, 110, 30, 25), ">") || GUI.RepeatButton(new Rect(199, 110, 30, 25), ">>"))
 			{
 				selectedObject.position.z += float.Parse(increment);
 				updateSelection(selectedObject);
 			}
-			GUI.Label(new Rect(6, 140, 203, 25), "Altitude");
+			GUI.Label(new Rect(21, 140, 203, 25), "Altitude");
 
-			altitude = GUI.TextField(new Rect(70, 160, 80, 25), altitude, 25);
-			if (GUI.Button(new Rect(38, 160, 30, 25), "<") || GUI.RepeatButton(new Rect(6, 160, 30, 25), "<<"))
+			altitude = GUI.TextField(new Rect(85, 160, 80, 25), altitude, 25);
+			if (GUI.Button(new Rect(53, 160, 30, 25), "<") || GUI.RepeatButton(new Rect(21, 160, 30, 25), "<<"))
 			{
 				selectedObject.altitude -= float.Parse(increment);
 				updateSelection(selectedObject);
 			}
-			if (GUI.Button(new Rect(152, 160, 30, 25), ">") || GUI.RepeatButton(new Rect(184, 160, 30, 25), ">>"))
+			if (GUI.Button(new Rect(167, 160, 30, 25), ">") || GUI.RepeatButton(new Rect(199, 160, 30, 25), ">>"))
 			{
 				selectedObject.altitude += float.Parse(increment);
 				updateSelection(selectedObject);
 			}
-			GUI.Label(new Rect(220, 30, 80, 25), "Orientation");
+			GUI.Label(new Rect(235, 30, 80, 25), "Orientation");
 			//disable anything beneath the dropdown to prevent clicking through
 			GUI.enabled = !orientationMenu.isClickedComboButton;
-			GUI.Label(new Rect(220, 80, 80, 25), "Increment");
-			increment = GUI.TextField(new Rect(220, 100, 80, 25), increment, 25);
-			GUI.Label(new Rect(220, 130, 80, 25), "Rotation");
-			rotation = GUI.TextField(new Rect(220, 150, 80, 25), rotation, 25);
+			GUI.Label(new Rect(235, 80, 80, 25), "Increment");
+			increment = GUI.TextField(new Rect(235, 100, 80, 25), increment, 25);
+			GUI.Label(new Rect(235, 130, 80, 25), "Rotation");
+			rotation = GUI.TextField(new Rect(235, 150, 80, 25), rotation, 25);
 			GUI.enabled = true;
 
-			GUI.Button(new Rect(6, 190, 80, 25), "Deselect");
-			GUI.Button(new Rect(6, 220, 80, 25), "Delete");
+			GUI.Button(new Rect(21, 190, 80, 25), "Deselect");
+			GUI.Button(new Rect(21, 220, 80, 25), "Delete");
+			GUI.Button(new Rect(106, 190, 90, 25), "Save Local");
+			GUI.Button(new Rect(106, 220, 90, 25), "Save Global");
+			GUI.Button(new Rect(201, 190, 115, 25), "Create Launch Site");
+			//I had to fill in that open space with something...
+			//As soon as I find a button to put here this will go away
+			GUI.Label(new Rect(201, 220, 115, 25), "By medsouz");
 
 			if (Event.current.keyCode == KeyCode.Return)
 			{
@@ -130,7 +139,7 @@ namespace KerbalKonstructs
 			}
 
 			//Draw last so it properly overlaps
-			orientationMenu.Show(new Rect(220, 50, 80, 25));
+			orientationMenu.Show(new Rect(235, 50, 80, 25));
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
 
