@@ -33,7 +33,7 @@ namespace KerbalKonstructs
 			editorRect = GUI.Window(0xB00B1E5, editorRect, drawEditorWindow, "Kerbal Konstructs Editor");
 		}
 
-		Rect editorRect = new Rect(70, 100, 306 + 30, 250);
+		Rect editorRect = new Rect(70, 100, 336, 250);
 
 		private GUIStyle listStyle = new GUIStyle();
 		private GUIContent[] comboBoxList = {
@@ -106,8 +106,14 @@ namespace KerbalKonstructs
 			rotation = GUI.TextField(new Rect(235, 150, 80, 25), rotation, 25);
 			GUI.enabled = true;
 
-			GUI.Button(new Rect(21, 190, 80, 25), "Deselect");
-			GUI.Button(new Rect(21, 220, 80, 25), "Delete");
+			if (GUI.Button(new Rect(21, 190, 80, 25), "Deselect"))
+			{
+				KerbalKonstructs.instance.deselectObject();
+			}
+			if (GUI.Button(new Rect(21, 220, 80, 25), "Delete"))
+			{
+				KerbalKonstructs.instance.deleteObject(selectedObject);
+			}
 			GUI.Button(new Rect(106, 190, 90, 25), "Save Local");
 			GUI.Button(new Rect(106, 220, 90, 25), "Save Global");
 			GUI.Button(new Rect(201, 190, 115, 25), "Create Launch Site");
@@ -212,6 +218,11 @@ namespace KerbalKonstructs
 			}
 			//If the static has a custom orientation then just display "up", I will add support for custom orientations in the future
 			return 0;
+		}
+
+		public float getIncrement()
+		{
+			return float.Parse(increment);
 		}
 	}
 }

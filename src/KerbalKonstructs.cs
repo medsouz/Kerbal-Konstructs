@@ -9,6 +9,8 @@ namespace KerbalKonstructs
 	[KSPAddonFixed(KSPAddon.Startup.SpaceCentre, true, typeof(KerbalKonstructs))]
 	public class KerbalKonstructs : MonoBehaviour
 	{
+		public static KerbalKonstructs instance;
+
 		private CelestialBody currentBody;
 		private StaticObject selectedObject;
 
@@ -19,6 +21,7 @@ namespace KerbalKonstructs
 
 		void Awake()
 		{
+			instance = this;
 			//Assume that the Space Center is on Kerbin
 			currentBody = Util.getCelestialBody("Kerbin");
 			GameEvents.onDominantBodyChange.Add(onDominantBodyChange);
@@ -115,6 +118,8 @@ namespace KerbalKonstructs
 				{
 					collider.collider.enabled = false;
 				}
+				if(selectedObject != null)
+					deselectObject();
 				selectedObject = obj;
 				InputLockManager.SetControlLock(ControlTypes.ALL_SHIP_CONTROLS, "KKShipLock");
 				InputLockManager.SetControlLock(ControlTypes.EVA_INPUT, "KKEVALock");
@@ -155,6 +160,12 @@ namespace KerbalKonstructs
 		public void deselectObject()
 		{
 			selectedObject.editing = false;
+			Transform[] gameObjectList = selectedObject.gameObject.GetComponentsInChildren<Transform>();
+			List<GameObject> colliderList = (from t in gameObjectList where t.gameObject.collider != null select t.gameObject).ToList();
+			foreach (GameObject collider in colliderList)
+			{
+				collider.collider.enabled = true;
+			}
 			selectedObject = null;
 			InputLockManager.RemoveControlLock("KKShipLock");
 			InputLockManager.RemoveControlLock("KKEVALock");
@@ -173,42 +184,42 @@ namespace KerbalKonstructs
 			{
 				if (Input.GetKey(KeyCode.W))
 				{
-					selectedObject.position.y++;
+					selectedObject.position.y += editor.getIncrement();
 					editor.updateSelection(selectedObject);
 				}
 				if (Input.GetKey(KeyCode.S))
 				{
-					selectedObject.position.y--;
+					selectedObject.position.y -= editor.getIncrement();
 					editor.updateSelection(selectedObject);
 				}
 				if (Input.GetKey(KeyCode.D))
 				{
-					selectedObject.position.x++;
+					selectedObject.position.x += editor.getIncrement();
 					editor.updateSelection(selectedObject);
 				}
 				if (Input.GetKey(KeyCode.A))
 				{
-					selectedObject.position.x--;
+					selectedObject.position.x -= editor.getIncrement();
 					editor.updateSelection(selectedObject);
 				}
 				if (Input.GetKey(KeyCode.X))
 				{
-					selectedObject.position.z++;
+					selectedObject.position.z += editor.getIncrement();
 					editor.updateSelection(selectedObject);
 				}
 				if (Input.GetKey(KeyCode.Z))
 				{
-					selectedObject.position.z--;
+					selectedObject.position.z -= editor.getIncrement();
 					editor.updateSelection(selectedObject);
 				}
 				if (Input.GetKey(KeyCode.LeftShift))
 				{
-					selectedObject.altitude++;
+					selectedObject.altitude += editor.getIncrement();
 					editor.updateSelection(selectedObject);
 				}
 				if (Input.GetKey(KeyCode.LeftControl))
 				{
-					selectedObject.altitude--;
+					selectedObject.altitude -= editor.getIncrement();
 					editor.updateSelection(selectedObject);
 				}
 			}
@@ -243,23 +254,25 @@ namespace KerbalKonstructs
 					obj.orientation = Vector3.up;
 					obj.visibleRange = 25000;
 
+					staticDB.addStatic(obj);
 					spawnObject(obj, true);
 				}
 
 				if (selectedObject != null)
 				{
-					if (GUI.Button(new Rect(270, 380, 150, 20), "Deselect Object"))
-					{
-						deselectObject();
-						return;
-					}
-
 					//Editor Window
 					editor.drawEditor(selectedObject);
 				}
 			}
 		}
 
-
+		public void deleteObject(StaticObject obj)
+		{
+			if (selectedObject == obj)
+			{
+				deselectObject();
+			}
+			staticDB.deleteObject(obj);
+		}
 	}
 }

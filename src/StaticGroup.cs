@@ -88,5 +88,18 @@ namespace KerbalKonstructs
 		{
 			return groupName;
 		}
+
+		internal void deleteObject(StaticObject obj)
+		{
+			if (childObjects.Contains(obj))
+			{
+				childObjects.Remove(obj);
+				MonoBehaviour.Destroy(obj.gameObject);
+			}
+			else
+			{
+				Debug.Log("Tried to delete an object that doesn't exist in this group!");
+			}
+		}
 	}
 }

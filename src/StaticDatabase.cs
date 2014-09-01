@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace KerbalKonstructs
 {
-	class StaticDatabase
+	public class StaticDatabase
 	{
 		//Groups are stored by name within the body name
 		private Dictionary<string, Dictionary<string, StaticGroup>> groupList = new Dictionary<string,Dictionary<string,StaticGroup>>();
@@ -14,6 +14,8 @@ namespace KerbalKonstructs
 		{
 			String bodyName = obj.parentBody.bodyName;
 			String groupName = obj.groupName;
+
+			Debug.Log("Creating object in group " + obj.groupName);
 
 			if (!groupList.ContainsKey(bodyName))
 				groupList.Add(bodyName, new Dictionary<string, StaticGroup>());
@@ -83,6 +85,25 @@ namespace KerbalKonstructs
 				{
 					group.updateCache(playerPos);
 				}
+			}
+		}
+
+		public void deleteObject(StaticObject obj)
+		{
+			if (groupList.ContainsKey(obj.parentBody.bodyName))
+			{
+				if (groupList[obj.parentBody.bodyName].ContainsKey(obj.groupName))
+				{
+					groupList[obj.parentBody.bodyName][obj.groupName].deleteObject(obj);
+				}
+				else
+				{
+					Debug.Log("Group not found! " + obj.groupName);
+				}
+			}
+			else
+			{
+				Debug.Log("Body not found! " + obj.parentBody.bodyName);
 			}
 		}
 	}
