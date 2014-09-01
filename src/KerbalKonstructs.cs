@@ -40,7 +40,7 @@ namespace KerbalKonstructs
 				currentBody = Util.getCelestialBody("Kerbin");
 				staticDB.onBodyChanged(currentBody);
 			}
-			else if (data.Equals(GameScenes.EDITOR))
+			else if (!data.Equals(GameScenes.FLIGHT))//Cache everywhere except the space center or during flight
 			{
 				staticDB.cacheAll();
 			}
