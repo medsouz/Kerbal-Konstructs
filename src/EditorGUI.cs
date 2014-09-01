@@ -116,10 +116,12 @@ namespace KerbalKonstructs
 			}
 			GUI.Button(new Rect(106, 190, 90, 25), "Save Local");
 			GUI.Button(new Rect(106, 220, 90, 25), "Save Global");
-			GUI.Button(new Rect(201, 190, 115, 25), "Create Launch Site");
-			//I had to fill in that open space with something...
-			//As soon as I find a button to put here this will go away
-			GUI.Label(new Rect(201, 220, 115, 25), "By medsouz");
+			if (GUI.Button(new Rect(201, 190, 115, 25), "Snap to Surface"))
+			{
+				selectedObject.altitude = (float)(selectedObject.parentBody.pqsController.GetSurfaceHeight(selectedObject.position) - selectedObject.parentBody.pqsController.radius);
+				updateSelection(selectedObject);
+			}
+			GUI.Button(new Rect(201, 220, 115, 25), "Create Launch Site");
 
 			if (Event.current.keyCode == KeyCode.Return)
 			{
