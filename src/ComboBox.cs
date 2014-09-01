@@ -51,6 +51,7 @@ public class ComboBoxTest : MonoBehaviour
 */
 
 
+using System;
 using UnityEngine;
 
 namespace KerbalKonstructs
@@ -69,7 +70,9 @@ namespace KerbalKonstructs
 		private string boxStyle;
 		private GUIStyle listStyle;
 
-		public ComboBox(GUIContent buttonContent, GUIContent[] listContent, GUIStyle listStyle)
+		private Action<int> selectionCallback;
+
+		public ComboBox(GUIContent buttonContent, GUIContent[] listContent, Action<int> callback, GUIStyle listStyle)
 		{
 			//this.rect = rect;
 			this.buttonContent = buttonContent;
@@ -77,9 +80,10 @@ namespace KerbalKonstructs
 			this.buttonStyle = "button";
 			this.boxStyle = "box";
 			this.listStyle = listStyle;
+			this.selectionCallback = callback;
 		}
 
-		public ComboBox(GUIContent buttonContent, GUIContent[] listContent, string buttonStyle, string boxStyle, GUIStyle listStyle)
+		public ComboBox(GUIContent buttonContent, GUIContent[] listContent, string buttonStyle, string boxStyle, Action<int> callback, GUIStyle listStyle)
 		{
 			//this.rect = rect;
 			this.buttonContent = buttonContent;
@@ -87,6 +91,7 @@ namespace KerbalKonstructs
 			this.buttonStyle = buttonStyle;
 			this.boxStyle = boxStyle;
 			this.listStyle = listStyle;
+			this.selectionCallback = callback;
 		}
 
 		public int Show(Rect rect)
@@ -139,6 +144,7 @@ namespace KerbalKonstructs
 				{
 					selectedItemIndex = newSelectedItemIndex;
 					buttonContent = listContent[selectedItemIndex];
+					selectionCallback(selectedItemIndex);
 				}
 			}
 

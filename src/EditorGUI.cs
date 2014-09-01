@@ -18,6 +18,8 @@ namespace KerbalKonstructs
 			listStyle.padding.right =
 			listStyle.padding.top =
 			listStyle.padding.bottom = 4;
+
+			orientationMenu = new ComboBox(comboBoxList[0], comboBoxList, "button", "box", setOrientation, listStyle);
 		}
 
 		public void drawEditor(StaticObject obj)
@@ -33,8 +35,8 @@ namespace KerbalKonstructs
 
 		Rect editorRect = new Rect(70, 100, 306, 250);
 
-		private static GUIStyle listStyle = new GUIStyle();
-		private static GUIContent[] comboBoxList = {
+		private GUIStyle listStyle = new GUIStyle();
+		private GUIContent[] comboBoxList = {
 										new GUIContent("Up"),
 										new GUIContent("Down"),
 										new GUIContent("Left"),
@@ -42,7 +44,7 @@ namespace KerbalKonstructs
 										new GUIContent("Forward"),
 										new GUIContent("Back")
 									};
-		ComboBox orientationMenu = new ComboBox(comboBoxList[0], comboBoxList, "button", "box", listStyle);
+		ComboBox orientationMenu;
 		void drawEditorWindow(int windowID)
 		{
 			GUI.Label(new Rect(6, 30, 203, 25), "Position");
@@ -92,9 +94,9 @@ namespace KerbalKonstructs
 				selectedObject.altitude += float.Parse(increment);
 				updateSelection(selectedObject);
 			}
+			GUI.Label(new Rect(220, 30, 80, 25), "Orientation");
 			//disable anything beneath the dropdown to prevent clicking through
 			GUI.enabled = !orientationMenu.isClickedComboButton;
-			GUI.Label(new Rect(220, 30, 80, 25), "Orientation");
 			GUI.Label(new Rect(220, 80, 80, 25), "Increment");
 			increment = GUI.TextField(new Rect(220, 100, 80, 25), increment, 25);
 			GUI.Label(new Rect(220, 130, 80, 25), "Rotation");
@@ -103,6 +105,29 @@ namespace KerbalKonstructs
 
 			GUI.Button(new Rect(6, 190, 80, 25), "Deselect");
 			GUI.Button(new Rect(6, 220, 80, 25), "Delete");
+
+			if (Event.current.keyCode == KeyCode.Return)
+			{
+				selectedObject.position.x = float.Parse(xPos);
+				selectedObject.position.y = float.Parse(yPos);
+				selectedObject.position.z = float.Parse(zPos);
+				selectedObject.altitude = float.Parse(altitude);
+				float rot = float.Parse(rotation);
+				while (rot > 360 || rot < 0)
+				{
+					if (rot > 360)
+					{
+						rot -= 360;
+					}
+					else if (rot < 0)
+					{
+						rot += 360;
+					}
+				}
+				selectedObject.rotation = rot;
+				rotation = rot.ToString();
+				updateSelection(selectedObject);
+			}
 
 			//Draw last so it properly overlaps
 			orientationMenu.Show(new Rect(220, 50, 80, 25));
@@ -117,7 +142,67 @@ namespace KerbalKonstructs
 			zPos = obj.position.z.ToString();
 			altitude = obj.altitude.ToString();
 			rotation = obj.rotation.ToString();
+			orientationMenu.SelectedItemIndex = getOrientation(obj.orientation);
 			selectedObject.update();
+		}
+
+		public void setOrientation(int selection)
+		{
+			if (selectedObject != null)
+			{
+				switch (selection)
+				{
+					case 0:
+						selectedObject.orientation = Vector3.up;
+						break;
+					case 1:
+						selectedObject.orientation = Vector3.down;
+						break;
+					case 2:
+						selectedObject.orientation = Vector3.left;
+						break;
+					case 3:
+						selectedObject.orientation = Vector3.right;
+						break;
+					case 4:
+						selectedObject.orientation = Vector3.forward;
+						break;
+					case 5:
+						selectedObject.orientation = Vector3.back;
+						break;
+				}
+				selectedObject.update();
+			}
+		}
+
+		public int getOrientation(Vector3 rot)
+		{
+			if(rot.Equals(Vector3.up))
+			{
+				return 0;
+			}
+			else if (rot.Equals(Vector3.down))
+			{
+				return 1;
+			}
+			else if (rot.Equals(Vector3.left))
+			{
+				return 2;
+			}
+			else if (rot.Equals(Vector3.right))
+			{
+				return 3;
+			}
+			else if (rot.Equals(Vector3.forward))
+			{
+				return 4;
+			}
+			else if (rot.Equals(Vector3.back))
+			{
+				return 5;
+			}
+			//If the static has a custom orientation then just display "up", I will add support for custom orientations in the future
+			return 0;
 		}
 	}
 }
