@@ -1,7 +1,8 @@
-﻿using System;
+﻿using KerbalKonstructs.StaticObjects;
+using System;
 using UnityEngine;
 
-namespace KerbalKonstructs
+namespace KerbalKonstructs.UI
 {
 	class EditorGUI
 	{

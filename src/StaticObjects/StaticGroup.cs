@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace KerbalKonstructs
+namespace KerbalKonstructs.StaticObjects
 {
 	class StaticGroup
 	{

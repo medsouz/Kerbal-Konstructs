@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using UnityEngine;
+using KerbalKonstructs.StaticObjects;
+using KerbalKonstructs.LaunchSites;
+using KerbalKonstructs.UI;
 
 namespace KerbalKonstructs
 {
@@ -104,7 +107,7 @@ namespace KerbalKonstructs
 					spawnObject(obj, false);
 					if (obj.siteName != "")
 					{
-						staticDB.createLaunchSite(obj);
+						LaunchSiteManager.createLaunchSite(obj);
 					}
 				}
 			}

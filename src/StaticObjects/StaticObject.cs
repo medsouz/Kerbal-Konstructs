@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace KerbalKonstructs
+namespace KerbalKonstructs.StaticObjects
 {
 	public class StaticObject
 	{
