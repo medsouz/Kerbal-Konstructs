@@ -93,6 +93,8 @@ namespace KerbalKonstructs
 					obj.orientation = ConfigNode.ParseVector3(ins.GetValue("Orientation"));
 					obj.rotation = float.Parse(ins.GetValue("RotationAngle"));
 					obj.visibleRange = float.Parse(ins.GetValue("VisibilityRange"));
+					obj.siteName = ins.GetValue("LaunchSiteName") ?? "";
+					obj.siteTransform = ins.GetValue("LaunchPadTransform") ?? "";
 
 					//NEW VARIABLES 
 					//KerbTown does not support group caching, for compatibility we will put these into "Ungrouped" group to be cached individually
@@ -100,6 +102,10 @@ namespace KerbalKonstructs
 
 					staticDB.addStatic(obj);
 					spawnObject(obj, false);
+					if (obj.siteName != "")
+					{
+						staticDB.createLaunchSite(obj);
+					}
 				}
 			}
 		}
@@ -144,7 +150,7 @@ namespace KerbalKonstructs
 			obj.pqsCity.reorientInitialUp = obj.orientation; //orientation
 			obj.pqsCity.reorientFinalAngle = obj.rotation; //rotation x axis
 			obj.pqsCity.reorientToSphere = true; //adjust rotations to match the direction of gravity
-			obj.gameObject.transform.parent = obj.parentBody.transform;
+			obj.gameObject.transform.parent = obj.parentBody.pqsController.transform;
 			obj.pqsCity.sphere = obj.parentBody.pqsController;
 			obj.pqsCity.order = 100;
 			obj.pqsCity.modEnabled = true;

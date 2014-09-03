@@ -16,6 +16,8 @@ namespace KerbalKonstructs
 		public float visibleRange;
 		public Vector3 orientation;
 		public float rotation;
+		public string siteName;
+		public string siteTransform;
 
 		public Boolean editing;
 
