@@ -54,7 +54,7 @@ public class ComboBoxTest : MonoBehaviour
 using System;
 using UnityEngine;
 
-namespace KerbalKonstructs
+namespace KerbalKonstructs.UI
 {
 	public class ComboBox
 	{
