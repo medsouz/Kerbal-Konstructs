@@ -9,14 +9,13 @@ namespace KerbalKonstructs.StaticObjects
 	{
 		//Groups are stored by name within the body name
 		private Dictionary<string, Dictionary<string, StaticGroup>> groupList = new Dictionary<string,Dictionary<string,StaticGroup>>();
-		private List<StaticGroup> activeGroups = new List<StaticGroup>();
 
-		public Boolean addStatic(StaticObject obj)
+		public void addStatic(StaticObject obj)
 		{
 			String bodyName = obj.parentBody.bodyName;
 			String groupName = obj.groupName;
 
-			Debug.Log("Creating object in group " + obj.groupName);
+			//Debug.Log("Creating object in group " + obj.groupName);
 
 			if (!groupList.ContainsKey(bodyName))
 				groupList.Add(bodyName, new Dictionary<string, StaticGroup>());
@@ -34,17 +33,19 @@ namespace KerbalKonstructs.StaticObjects
 			}
 
 			groupList[obj.parentBody.bodyName][obj.groupName].addStatic(obj);
-
-			return activeGroups.Contains(groupList[obj.parentBody.bodyName][obj.groupName]);
 		}
 
 		public void cacheAll()
 		{
-			foreach (StaticGroup group in activeGroups)
+			if (groupList.ContainsKey(KerbalKonstructs.instance.getCurrentBody().bodyName))
 			{
-				group.cacheAll();
+				foreach (StaticGroup group in groupList[KerbalKonstructs.instance.getCurrentBody().bodyName].Values)
+				{
+					group.cacheAll();
+					if (!group.alwaysActive)
+						group.active = false;
+				}
 			}
-			activeGroups.Clear();
 		}
 
 		public void loadObjectsForBody(String bodyName)
@@ -53,7 +54,7 @@ namespace KerbalKonstructs.StaticObjects
 			{
 				foreach (KeyValuePair<String, StaticGroup> bodyGroups in groupList[bodyName])
 				{
-					activeGroups.Add(bodyGroups.Value);
+					bodyGroups.Value.active = true;
 				}
 			}
 			else
@@ -70,7 +71,7 @@ namespace KerbalKonstructs.StaticObjects
 
 		public void updateCache(Vector3 playerPos)
 		{
-			foreach (StaticGroup group in activeGroups)
+			foreach (StaticGroup group in groupList[KerbalKonstructs.instance.getCurrentBody().bodyName].Values)
 			{
 				if(!group.alwaysActive){
 					float dist = Vector3.Distance(group.getCenter(), playerPos);
