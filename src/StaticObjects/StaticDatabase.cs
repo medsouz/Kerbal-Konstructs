@@ -9,6 +9,7 @@ namespace KerbalKonstructs.StaticObjects
 	{
 		//Groups are stored by name within the body name
 		private Dictionary<string, Dictionary<string, StaticGroup>> groupList = new Dictionary<string,Dictionary<string,StaticGroup>>();
+		private string activeBodyName = "";
 
 		public void addStatic(StaticObject obj)
 		{
@@ -37,7 +38,7 @@ namespace KerbalKonstructs.StaticObjects
 
 		public void cacheAll()
 		{
-			if (groupList.ContainsKey(KerbalKonstructs.instance.getCurrentBody().bodyName))
+			if (groupList.ContainsKey(activeBodyName))
 			{
 				foreach (StaticGroup group in groupList[KerbalKonstructs.instance.getCurrentBody().bodyName].Values)
 				{
@@ -50,6 +51,7 @@ namespace KerbalKonstructs.StaticObjects
 
 		public void loadObjectsForBody(String bodyName)
 		{
+			activeBodyName = bodyName;
 			if (groupList.ContainsKey(bodyName))
 			{
 				foreach (KeyValuePair<String, StaticGroup> bodyGroups in groupList[bodyName])
@@ -65,13 +67,16 @@ namespace KerbalKonstructs.StaticObjects
 
 		public void onBodyChanged(CelestialBody body)
 		{
-			cacheAll();
-			loadObjectsForBody(body.bodyName);
+			if (body.bodyName != activeBodyName)
+			{
+				cacheAll();
+				loadObjectsForBody(body.bodyName);
+			}
 		}
 
 		public void updateCache(Vector3 playerPos)
 		{
-			foreach (StaticGroup group in groupList[KerbalKonstructs.instance.getCurrentBody().bodyName].Values)
+			foreach (StaticGroup group in groupList[activeBodyName].Values)
 			{
 				if(!group.alwaysActive){
 					float dist = Vector3.Distance(group.getCenter(), playerPos);
