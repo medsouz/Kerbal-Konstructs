@@ -21,6 +21,7 @@ namespace KerbalKonstructs
 
 		private CameraController camControl = new CameraController();
 		private EditorGUI editor = new EditorGUI();
+		private LaunchSiteSelectorGUI selector = new LaunchSiteSelectorGUI();
 
 		void Awake()
 		{
@@ -45,7 +46,7 @@ namespace KerbalKonstructs
 			}
 			else if (!data.Equals(GameScenes.FLIGHT))//Cache everywhere except the space center or during flight
 			{
-				staticDB.cacheAll();
+				staticDB.onBodyChanged(null);
 			}
 		}
 
@@ -71,7 +72,6 @@ namespace KerbalKonstructs
 				//HACKY: if there is no vessel use the camera, this could cause some issues
 				playerPos = Camera.main.transform.position;
 			}
-
 			staticDB.updateCache(playerPos);
 		}
 
@@ -81,6 +81,7 @@ namespace KerbalKonstructs
 			foreach(UrlDir.UrlConfig conf in configs)
 			{
 				string model = conf.config.GetValue("mesh");
+				string author = conf.config.GetValue("author");
 				model = model.Substring(0, model.LastIndexOf('.'));
 				string modelUrl = Path.GetDirectoryName(Path.GetDirectoryName(conf.url)) + "/" + model;
 				//Debug.Log("Loading " + modelUrl);
@@ -102,6 +103,8 @@ namespace KerbalKonstructs
 					//NEW VARIABLES 
 					//KerbTown does not support group caching, for compatibility we will put these into "Ungrouped" group to be cached individually
 					obj.groupName = ins.GetValue("Group") ?? "Ungrouped";
+					//Give credit yo
+					obj.author = author;
 
 					staticDB.addStatic(obj);
 					spawnObject(obj, false);
@@ -119,6 +122,8 @@ namespace KerbalKonstructs
 			Transform[] gameObjectList = obj.gameObject.GetComponentsInChildren<Transform>();
 			List<GameObject> rendererList = (from t in gameObjectList where t.gameObject.renderer != null select t.gameObject).ToList();
 			List<GameObject> colliderList = (from t in gameObjectList where t.gameObject.collider != null select t.gameObject).ToList();
+
+			setLayerRecursively(obj.gameObject, 15);
 
 			if (editing)
 			{
@@ -239,6 +244,8 @@ namespace KerbalKonstructs
 			//Use KSP's GUI skin
 			GUI.skin = HighLogic.Skin;
 
+			//selector.drawSelector();
+
 			//Debug buttons
 			if (GUI.Button(new Rect(270, 250, 150, 20), "Cache All"))
 			{
@@ -282,6 +289,24 @@ namespace KerbalKonstructs
 				deselectObject();
 			}
 			staticDB.deleteObject(obj);
+		}
+
+		private static void setLayerRecursively(GameObject sGameObject, int newLayerNumber)
+		{
+			if ((sGameObject.collider != null && sGameObject.collider.enabled && !sGameObject.collider.isTrigger) || sGameObject.collider == null)
+			{
+				sGameObject.layer = newLayerNumber;
+			}
+
+			foreach (Transform child in sGameObject.transform)
+			{
+				setLayerRecursively(child.gameObject, newLayerNumber);
+			}
+		}
+
+		public CelestialBody getCurrentBody()
+		{
+			return currentBody;
 		}
 	}
 }

@@ -8,8 +8,18 @@ namespace KerbalKonstructs.LaunchSites
 {
 	public class LaunchSiteManager
 	{
+		private static List<LaunchSite> launchSites = new List<LaunchSite>();
+		public static Texture defaultLaunchSiteLogo = GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/DefaultSiteLogo", false);
+
+		static LaunchSiteManager()
+		{
+			//Accepting contributions to change my horrible descriptions
+			launchSites.Add(new LaunchSite("KSC Runway", "Squad", SiteType.SPH, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCRunway", false), "The KSC runway is a concrete runway measuring about 2.5km long and 70m wide, on a magnetic heading of 90/270. It is not uncommon to see burning chunks of metal sliding across the surface."));
+			launchSites.Add(new LaunchSite("KSC Launchpad", "Squad", SiteType.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCLaunchpad", false), "The KSC launchpad is a platform used to fire screaming Kerbals into the kosmos. There was a tower here at one point but for some reason nobody seems to know where it went..."));
+		}
+
 		//This is pretty much ripped from KerbTown, sorry
-		static public void createLaunchSite(StaticObject obj)
+		public static void createLaunchSite(StaticObject obj)
 		{
 			if (obj.siteTransform != "")
 			{
@@ -25,7 +35,7 @@ namespace KerbalKonstructs.LaunchSites
 						if (PSystemSetup.Instance.GetLaunchSite(obj.siteName) == null)
 						{
 							PSystemSetup.LaunchSite newSite = new PSystemSetup.LaunchSite();
-							newSite.launchPadName = obj.siteName;//obj.siteName + "/" + obj.siteTransform;
+							newSite.launchPadName = obj.siteName + "/" + obj.siteTransform;
 							newSite.name = obj.siteName;
 							newSite.pqsName = obj.parentBody.bodyName;
 
@@ -37,6 +47,7 @@ namespace KerbalKonstructs.LaunchSites
 							newSites[newSites.Length - 1] = newSite;
 							fi.SetValue(PSystemSetup.Instance, newSites);
 							sites = newSites;
+							launchSites.Add(new LaunchSite(obj.siteName, obj.author, SiteType.Any, defaultLaunchSiteLogo, ""));
 							Debug.Log("Created launch site \"" + newSite.name + "\" with transform " + newSite.launchPadName);
 						}
 						else
@@ -58,6 +69,27 @@ namespace KerbalKonstructs.LaunchSites
 			}
 		}
 
-		
+		public static List<LaunchSite> getLaunchSites()
+		{
+			return launchSites;
+		}
+
+		public static List<LaunchSite> getLaunchSites(SiteType type, Boolean allowAny = true)
+		{
+			List<LaunchSite> sites = new List<LaunchSite>();
+			foreach (LaunchSite site in launchSites)
+			{
+				if(site.type.Equals(type) || (site.type.Equals(SiteType.Any) && allowAny))
+				{
+					sites.Add(site);
+				}
+			}
+			return sites;
+		}
+
+		public static void setLaunchSite(LaunchSite site)
+		{
+			EditorLogic.fetch.launchSiteName = site.name;
+		}
 	}
 }

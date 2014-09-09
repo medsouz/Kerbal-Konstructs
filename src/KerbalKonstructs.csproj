@@ -45,6 +45,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LaunchSites\LaunchSite.cs" />
     <Compile Include="UI\CameraController.cs" />
     <Compile Include="UI\ComboBox.cs" />
     <Compile Include="UI\EditorGUI.cs" />
@@ -55,6 +56,7 @@
     <Compile Include="StaticObjects\StaticDatabase.cs" />
     <Compile Include="StaticObjects\StaticGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\LaunchSiteSelectorGUI.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup />

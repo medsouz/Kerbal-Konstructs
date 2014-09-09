@@ -67,30 +67,42 @@ namespace KerbalKonstructs.StaticObjects
 
 		public void onBodyChanged(CelestialBody body)
 		{
-			if (body.bodyName != activeBodyName)
+			if (body != null)
+			{
+				if (body.bodyName != activeBodyName)
+				{
+					cacheAll();
+					loadObjectsForBody(body.bodyName);
+				}
+			}
+			else
 			{
 				cacheAll();
-				loadObjectsForBody(body.bodyName);
+				activeBodyName = "";
 			}
 		}
 
 		public void updateCache(Vector3 playerPos)
 		{
-			foreach (StaticGroup group in groupList[activeBodyName].Values)
+			if (groupList.ContainsKey(activeBodyName))
 			{
-				if(!group.alwaysActive){
-					float dist = Vector3.Distance(group.getCenter(), playerPos);
-					Boolean active = dist < group.getVisibilityRange();
-					if (active != group.active && active == false)
-					{
-						Debug.Log("Caching group " + group.getGroupName());
-						group.cacheAll();
-					}
-					group.active = active;
-				}
-				if (group.active)
+				foreach (StaticGroup group in groupList[activeBodyName].Values)
 				{
-					group.updateCache(playerPos);
+					if (!group.alwaysActive)
+					{
+						float dist = Vector3.Distance(group.getCenter(), playerPos);
+						Boolean active = dist < group.getVisibilityRange();
+						if (active != group.active && active == false)
+						{
+							Debug.Log("Caching group " + group.getGroupName());
+							group.cacheAll();
+						}
+						group.active = active;
+					}
+					if (group.active)
+					{
+						group.updateCache(playerPos);
+					}
 				}
 			}
 		}
