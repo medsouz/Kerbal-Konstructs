@@ -246,16 +246,6 @@ namespace KerbalKonstructs
 
 			//selector.drawSelector();
 
-			//Debug buttons
-			if (GUI.Button(new Rect(270, 250, 150, 20), "Cache All"))
-			{
-				staticDB.cacheAll();
-			}
-			if (GUI.Button(new Rect(270, 280, 150, 20), "Load all for "+currentBody.bodyName))
-			{
-				staticDB.loadObjectsForBody(currentBody.bodyName);
-			}
-
 			if (HighLogic.LoadedScene == GameScenes.FLIGHT)
 			{
 				if (GUI.Button(new Rect(270, 350, 150, 20), "Place Object"))
