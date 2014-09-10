@@ -62,7 +62,8 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y $(TargetFileName) "C:\Program Files (x86)\Steam\SteamApps\common\Kerbal Space Program\GameData"</PostBuildEvent>
+    <PostBuildEvent>xcopy /S /Y "$(SolutionDir)GameData" "C:\Program Files (x86)\Steam\SteamApps\common\Kerbal Space Program\GameData"
+copy /Y $(TargetFileName) "C:\Program Files (x86)\Steam\SteamApps\common\Kerbal Space Program\GameData\medsouz\KerbalKonstructs"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
