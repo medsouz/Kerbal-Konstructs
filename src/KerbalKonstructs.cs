@@ -22,6 +22,7 @@ namespace KerbalKonstructs
 		private CameraController camControl = new CameraController();
 		private EditorGUI editor = new EditorGUI();
 		private LaunchSiteSelectorGUI selector = new LaunchSiteSelectorGUI();
+		private Boolean showSelector = false;
 
 		void Awake()
 		{
@@ -34,6 +35,7 @@ namespace KerbalKonstructs
 			loadObjects();
 			staticDB.loadObjectsForBody(currentBody.bodyName);
 			InvokeRepeating("updateCache", 0, 1);
+			ApplicationLauncher.Instance.AddModApplication(onSiteSelectorOn, onSiteSelectorOff, doNothing, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/SiteToolbarIcon", false));
 		}
 
 		void onLevelWasLoaded(GameScenes data)
@@ -47,6 +49,12 @@ namespace KerbalKonstructs
 			else if (!data.Equals(GameScenes.FLIGHT))//Cache everywhere except the space center or during flight
 			{
 				staticDB.onBodyChanged(null);
+			}
+
+			//Disable scene selector when not in the editor
+			if (!data.Equals(GameScenes.EDITOR) && !data.Equals(GameScenes.SPH))
+			{
+				showSelector = false;
 			}
 		}
 
@@ -244,7 +252,8 @@ namespace KerbalKonstructs
 			//Use KSP's GUI skin
 			GUI.skin = HighLogic.Skin;
 
-			//selector.drawSelector();
+			if(showSelector)
+				selector.drawSelector();
 
 			if (HighLogic.LoadedScene == GameScenes.FLIGHT)
 			{
@@ -297,6 +306,21 @@ namespace KerbalKonstructs
 		public CelestialBody getCurrentBody()
 		{
 			return currentBody;
+		}
+
+		void onSiteSelectorOn()
+		{
+			showSelector = true;
+		}
+
+		void onSiteSelectorOff()
+		{
+			showSelector = false;
+		}
+
+		void doNothing()
+		{
+			//wow so robust
 		}
 	}
 }
