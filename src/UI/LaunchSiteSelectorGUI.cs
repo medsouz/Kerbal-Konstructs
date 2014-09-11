@@ -7,10 +7,12 @@ namespace KerbalKonstructs.UI
 	public class LaunchSiteSelectorGUI
 	{
 		LaunchSite selectedSite;
+		private SiteType editorType = SiteType.Any;
 
 		public void drawSelector()
 		{
-			GUI.Window(0xB00B1E6, new Rect(((Screen.width - Camera.main.rect.x) / 2) + Camera.main.rect.x - 125, (Screen.height / 2 - 250), 600, 500), drawSelectorWindow, "Launch Site Selector");
+			if(Camera.main != null)//Camera.main is null when first loading a scene
+				GUI.Window(0xB00B1E6, new Rect(((Screen.width - Camera.main.rect.x) / 2) + Camera.main.rect.x - 125, (Screen.height / 2 - 250), 600, 500), drawSelectorWindow, "Launch Site Selector");
 		}
 
 		public Vector2 sitesScrollPosition;
@@ -20,7 +22,7 @@ namespace KerbalKonstructs.UI
 		{
 			GUILayout.BeginArea(new Rect(10, 25, 270, 465));
 				sitesScrollPosition = GUILayout.BeginScrollView(sitesScrollPosition);
-				foreach (LaunchSite site in LaunchSiteManager.getLaunchSites())
+				foreach (LaunchSite site in LaunchSiteManager.getLaunchSites(editorType))
 				{
 					GUI.enabled = !(selectedSite == site);
 					if (GUILayout.Button(site.name, GUILayout.Height(30)))
@@ -50,7 +52,21 @@ namespace KerbalKonstructs.UI
 			{
 				if (LaunchSiteManager.getLaunchSites().Count > 0)
 				{
-					selectedSite = LaunchSiteManager.getLaunchSites()[0];
+					selectedSite = LaunchSiteManager.getLaunchSites(editorType)[0];
+					LaunchSiteManager.setLaunchSite(selectedSite);
+				}
+			}
+		}
+
+		public void setEditorType(SiteType type)
+		{
+			editorType = type;
+			if (selectedSite != null)
+			{
+				if (selectedSite.type != editorType && selectedSite.type != SiteType.Any)
+				{
+					selectedSite = LaunchSiteManager.getLaunchSites(editorType)[0];
+					LaunchSiteManager.setLaunchSite(selectedSite);
 				}
 			}
 		}

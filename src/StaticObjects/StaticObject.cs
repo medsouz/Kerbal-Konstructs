@@ -19,6 +19,9 @@ namespace KerbalKonstructs.StaticObjects
 		public float rotation;
 		public string siteName;
 		public string siteTransform;
+		public string siteDescription;
+		public string siteLogo;
+		public LaunchSites.SiteType siteType;
 
 		public Boolean editing;
 

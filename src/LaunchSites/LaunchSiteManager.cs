@@ -47,7 +47,10 @@ namespace KerbalKonstructs.LaunchSites
 							newSites[newSites.Length - 1] = newSite;
 							fi.SetValue(PSystemSetup.Instance, newSites);
 							sites = newSites;
-							launchSites.Add(new LaunchSite(obj.siteName, obj.author, SiteType.Any, defaultLaunchSiteLogo, ""));
+							Texture logo = defaultLaunchSiteLogo;
+							if(obj.siteLogo != "")
+								logo = GameDatabase.Instance.GetTexture(obj.siteLogo, false);
+							launchSites.Add(new LaunchSite(obj.siteName, obj.author, obj.siteType, logo, obj.siteDescription));
 							Debug.Log("Created launch site \"" + newSite.name + "\" with transform " + newSite.launchPadName);
 						}
 						else

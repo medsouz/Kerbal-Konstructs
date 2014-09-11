@@ -51,10 +51,20 @@ namespace KerbalKonstructs
 				staticDB.onBodyChanged(null);
 			}
 
-			//Disable scene selector when not in the editor
-			if (!data.Equals(GameScenes.EDITOR) && !data.Equals(GameScenes.SPH))
+			if (data.Equals(GameScenes.EDITOR) || data.Equals(GameScenes.SPH))
 			{
-				showSelector = false;
+				switch (data)
+				{
+					case GameScenes.SPH:
+						selector.setEditorType(SiteType.SPH);
+						break;
+					case GameScenes.EDITOR:
+						selector.setEditorType(SiteType.VAB);
+						break;
+					default:
+						selector.setEditorType(SiteType.Any);
+						break;
+				}
 			}
 		}
 
@@ -113,6 +123,24 @@ namespace KerbalKonstructs
 					obj.groupName = ins.GetValue("Group") ?? "Ungrouped";
 					//Give credit yo
 					obj.author = author;
+					//Site description
+					obj.siteDescription = ins.GetValue("LaunchSiteDescription") ?? "No description available";
+					//Site icon
+					String icon = ins.GetValue("LaunchSiteLogo") ?? "";
+					obj.siteLogo = (icon != "") ? Path.GetDirectoryName(Path.GetDirectoryName(conf.url)) + "/" + icon : "";
+					//Site type: VAB, SPH, or ANY
+					switch (ins.GetValue("LaunchSiteType") ?? "ANY")
+					{
+						case "VAB":
+							obj.siteType = SiteType.VAB;
+							break;
+						case "SPH":
+							obj.siteType = SiteType.SPH;
+							break;
+						default:
+							obj.siteType = SiteType.Any;
+							break;
+					}
 
 					staticDB.addStatic(obj);
 					spawnObject(obj, false);
@@ -252,7 +280,7 @@ namespace KerbalKonstructs
 			//Use KSP's GUI skin
 			GUI.skin = HighLogic.Skin;
 
-			if(showSelector)
+			if (showSelector && (HighLogic.LoadedScene.Equals(GameScenes.EDITOR) || HighLogic.LoadedScene.Equals(GameScenes.SPH)))//Disable scene selector when not in the editor
 				selector.drawSelector();
 
 			if (HighLogic.LoadedScene == GameScenes.FLIGHT)
