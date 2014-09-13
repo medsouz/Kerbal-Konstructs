@@ -39,7 +39,7 @@ namespace KerbalKonstructs.UI
 		}
 
 		Rect toolRect = new Rect(50, 50, 336, 250);
-		Rect editorRect = new Rect(50, 350, 500, 400);
+		Rect editorRect = new Rect(50, 350, 500, 295);
 
 		private GUIStyle listStyle = new GUIStyle();
 		private GUIContent[] orientationOptions = {
@@ -216,9 +216,6 @@ namespace KerbalKonstructs.UI
 					GUI.enabled = true;
 				}
 				GUILayout.EndScrollView();
-			GUILayout.EndArea();
-			GUILayout.BeginArea(new Rect(10, 295, 480, 195));
-				GUILayout.Label("Current Object:");
 			GUILayout.EndArea();
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}

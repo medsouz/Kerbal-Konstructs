@@ -316,13 +316,6 @@ namespace KerbalKonstructs
 
 		public void selectObject(StaticObject obj)
 		{
-			selectedObject.editing = true;
-			Transform[] gameObjectList = selectedObject.gameObject.GetComponentsInChildren<Transform>();
-			List<GameObject> colliderList = (from t in gameObjectList where t.gameObject.collider != null select t.gameObject).ToList();
-			foreach (GameObject collider in colliderList)
-			{
-				collider.collider.enabled = false;
-			}
 			InputLockManager.SetControlLock(ControlTypes.ALL_SHIP_CONTROLS, "KKShipLock");
 			InputLockManager.SetControlLock(ControlTypes.EVA_INPUT, "KKEVALock");
 			InputLockManager.SetControlLock(ControlTypes.CAMERACONTROLS, "KKCamControls");
@@ -330,6 +323,13 @@ namespace KerbalKonstructs
 			if (selectedObject != null)
 				deselectObject();
 			selectedObject = obj;
+			selectedObject.editing = true;
+			Transform[] gameObjectList = selectedObject.gameObject.GetComponentsInChildren<Transform>();
+			List<GameObject> colliderList = (from t in gameObjectList where t.gameObject.collider != null select t.gameObject).ToList();
+			foreach (GameObject collider in colliderList)
+			{
+				collider.collider.enabled = false;
+			}
 			if(camControl.active)
 				camControl.disable();
 			camControl.enable(obj.gameObject);
