@@ -9,6 +9,7 @@ namespace KerbalKonstructs.StaticObjects
 	{
 		//Groups are stored by name within the body name
 		private Dictionary<string, Dictionary<string, StaticGroup>> groupList = new Dictionary<string,Dictionary<string,StaticGroup>>();
+		private List<StaticModel> modelList = new List<StaticModel>();
 		private string activeBodyName = "";
 
 		public void addStatic(StaticObject obj)
@@ -124,6 +125,32 @@ namespace KerbalKonstructs.StaticObjects
 			{
 				Debug.Log("Body not found! " + obj.parentBody.bodyName);
 			}
+		}
+
+		public List<StaticObject> getAllStatics()
+		{
+			List<StaticObject> objects = new List<StaticObject>();
+			foreach (Dictionary<string, StaticGroup> groups in groupList.Values)
+			{
+				foreach (StaticGroup group in groups.Values)
+				{
+					foreach (StaticObject obj in group.getStatics())
+					{
+						objects.Add(obj);
+					}
+				}
+			}
+			return objects;
+		}
+
+		public void registerModel(StaticModel model)
+		{
+			modelList.Add(model);
+		}
+
+		public List<StaticModel> getModels()
+		{
+			return modelList;
 		}
 	}
 }

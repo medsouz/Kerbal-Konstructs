@@ -101,5 +101,10 @@ namespace KerbalKonstructs.StaticObjects
 				Debug.Log("Tried to delete an object that doesn't exist in this group!");
 			}
 		}
+
+		public List<StaticObject> getStatics()
+		{
+			return childObjects;
+		}
 	}
 }

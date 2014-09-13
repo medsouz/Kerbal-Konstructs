@@ -15,12 +15,13 @@ namespace KerbalKonstructs
 		public static KerbalKonstructs instance;
 
 		private CelestialBody currentBody;
-		private StaticObject selectedObject;
+		public StaticObject selectedObject;
 
 		private StaticDatabase staticDB = new StaticDatabase();
 
 		private CameraController camControl = new CameraController();
 		private EditorGUI editor = new EditorGUI();
+		private Boolean showEditor = false;
 		private LaunchSiteSelectorGUI selector = new LaunchSiteSelectorGUI();
 		private Boolean showSelector = false;
 
@@ -40,6 +41,13 @@ namespace KerbalKonstructs
 
 		void onLevelWasLoaded(GameScenes data)
 		{
+			//TODO: fix camera when switching scenes if an object is selected
+			if (selectedObject != null)
+			{
+				deselectObject(false);
+				camControl.active = false;
+			}
+
 			if (data.Equals(GameScenes.SPACECENTER))
 			{
 				//Assume that the Space Center is on Kerbin
@@ -49,6 +57,13 @@ namespace KerbalKonstructs
 			else if (!data.Equals(GameScenes.FLIGHT))//Cache everywhere except the space center or during flight
 			{
 				staticDB.onBodyChanged(null);
+			}
+			else if (data.Equals(GameScenes.FLIGHT))
+			{
+				//Fixes statics not showing up on launch sometimes
+				//Still not 100% sure what causes that issue
+				staticDB.onBodyChanged(currentBody);
+				updateCache();
 			}
 
 			if (data.Equals(GameScenes.EDITOR) || data.Equals(GameScenes.SPH))
@@ -98,15 +113,16 @@ namespace KerbalKonstructs
 			UrlDir.UrlConfig[] configs = GameDatabase.Instance.GetConfigs("STATIC");
 			foreach(UrlDir.UrlConfig conf in configs)
 			{
-				string model = conf.config.GetValue("mesh");
-				string author = conf.config.GetValue("author");
-				model = model.Substring(0, model.LastIndexOf('.'));
-				string modelUrl = Path.GetDirectoryName(Path.GetDirectoryName(conf.url)) + "/" + model;
-				//Debug.Log("Loading " + modelUrl);
+				StaticModel model = new StaticModel();
+				model.author = conf.config.GetValue("author") ?? "Unknown";
+				model.meshName = conf.config.GetValue("mesh");
+				model.meshName = model.meshName.Substring(0, model.meshName.LastIndexOf('.'));//remove file extension
+				model.path = Path.GetDirectoryName(Path.GetDirectoryName(conf.url));
 				foreach (ConfigNode ins in conf.config.GetNodes("Instances"))
 				{
 					StaticObject obj = new StaticObject();
-					obj.gameObject = GameDatabase.Instance.GetModel(modelUrl);
+					obj.model = model;
+					obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.meshName);
 					string bodyName = ins.GetValue("CelestialBody");
 					CelestialBody body = Util.getCelestialBody(bodyName);
 					obj.parentBody = body;
@@ -121,13 +137,11 @@ namespace KerbalKonstructs
 					//NEW VARIABLES 
 					//KerbTown does not support group caching, for compatibility we will put these into "Ungrouped" group to be cached individually
 					obj.groupName = ins.GetValue("Group") ?? "Ungrouped";
-					//Give credit yo
-					obj.author = author;
 					//Site description
 					obj.siteDescription = ins.GetValue("LaunchSiteDescription") ?? "No description available";
 					//Site icon
 					String icon = ins.GetValue("LaunchSiteLogo") ?? "";
-					obj.siteLogo = (icon != "") ? Path.GetDirectoryName(Path.GetDirectoryName(conf.url)) + "/" + icon : "";
+					obj.siteLogo = (icon != "") ? model.path + "/" + icon : "";
 					//Site type: VAB, SPH, or ANY
 					switch (ins.GetValue("LaunchSiteType") ?? "ANY")
 					{
@@ -149,6 +163,7 @@ namespace KerbalKonstructs
 						LaunchSiteManager.createLaunchSite(obj);
 					}
 				}
+				staticDB.registerModel(model);
 			}
 		}
 
@@ -163,19 +178,7 @@ namespace KerbalKonstructs
 
 			if (editing)
 			{
-				obj.editing = true;
-				foreach (GameObject collider in colliderList)
-				{
-					collider.collider.enabled = false;
-				}
-				if(selectedObject != null)
-					deselectObject();
-				selectedObject = obj;
-				InputLockManager.SetControlLock(ControlTypes.ALL_SHIP_CONTROLS, "KKShipLock");
-				InputLockManager.SetControlLock(ControlTypes.EVA_INPUT, "KKEVALock");
-				InputLockManager.SetControlLock(ControlTypes.CAMERACONTROLS, "KKCamControls");
-				InputLockManager.SetControlLock(ControlTypes.CAMERAMODES, "KKCamModes");
-				camControl.enable(selectedObject.gameObject);
+				selectObject(obj);
 			}
 
 			PQSCity.LODRange range = new PQSCity.LODRange
@@ -207,7 +210,7 @@ namespace KerbalKonstructs
 			}
 		}
 
-		public void deselectObject()
+		public void deselectObject(Boolean disableCam = true)
 		{
 			selectedObject.editing = false;
 			Transform[] gameObjectList = selectedObject.gameObject.GetComponentsInChildren<Transform>();
@@ -221,7 +224,8 @@ namespace KerbalKonstructs
 			InputLockManager.RemoveControlLock("KKEVALock");
 			InputLockManager.RemoveControlLock("KKCamControls");
 			InputLockManager.RemoveControlLock("KKCamModes");
-			camControl.disable();
+			if(disableCam)//if you disable the camera when switching scenes shit will go down
+				camControl.disable();
 		}
 
 		void LateUpdate()
@@ -252,12 +256,12 @@ namespace KerbalKonstructs
 					selectedObject.position.x -= editor.getIncrement();
 					editor.updateSelection(selectedObject);
 				}
-				if (Input.GetKey(KeyCode.X))
+				if (Input.GetKey(KeyCode.E))
 				{
 					selectedObject.position.z += editor.getIncrement();
 					editor.updateSelection(selectedObject);
 				}
-				if (Input.GetKey(KeyCode.Z))
+				if (Input.GetKey(KeyCode.Q))
 				{
 					selectedObject.position.z -= editor.getIncrement();
 					editor.updateSelection(selectedObject);
@@ -273,6 +277,14 @@ namespace KerbalKonstructs
 					editor.updateSelection(selectedObject);
 				}
 			}
+
+			if(Input.GetKeyDown(KeyCode.K) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
+			{
+				if (selectedObject != null)
+					deselectObject();
+
+				showEditor = !showEditor;
+			}
 		}
 
 		void OnGUI()
@@ -285,23 +297,7 @@ namespace KerbalKonstructs
 
 			if (HighLogic.LoadedScene == GameScenes.FLIGHT)
 			{
-				if (GUI.Button(new Rect(270, 350, 150, 20), "Place Object"))
-				{
-					StaticObject obj = new StaticObject();
-					obj.gameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-					obj.altitude = (float)FlightGlobals.ActiveVessel.altitude;
-					obj.parentBody = currentBody;
-					obj.groupName = "New";
-					obj.position = currentBody.transform.InverseTransformPoint(FlightGlobals.ActiveVessel.transform.position);
-					obj.rotation = 0;
-					obj.orientation = Vector3.up;
-					obj.visibleRange = 25000;
-
-					staticDB.addStatic(obj);
-					spawnObject(obj, true);
-				}
-
-				if (selectedObject != null)
+				if (showEditor)
 				{
 					//Editor Window
 					editor.drawEditor(selectedObject);
@@ -316,6 +312,27 @@ namespace KerbalKonstructs
 				deselectObject();
 			}
 			staticDB.deleteObject(obj);
+		}
+
+		public void selectObject(StaticObject obj)
+		{
+			selectedObject.editing = true;
+			Transform[] gameObjectList = selectedObject.gameObject.GetComponentsInChildren<Transform>();
+			List<GameObject> colliderList = (from t in gameObjectList where t.gameObject.collider != null select t.gameObject).ToList();
+			foreach (GameObject collider in colliderList)
+			{
+				collider.collider.enabled = false;
+			}
+			InputLockManager.SetControlLock(ControlTypes.ALL_SHIP_CONTROLS, "KKShipLock");
+			InputLockManager.SetControlLock(ControlTypes.EVA_INPUT, "KKEVALock");
+			InputLockManager.SetControlLock(ControlTypes.CAMERACONTROLS, "KKCamControls");
+			InputLockManager.SetControlLock(ControlTypes.CAMERAMODES, "KKCamModes");
+			if (selectedObject != null)
+				deselectObject();
+			selectedObject = obj;
+			if(camControl.active)
+				camControl.disable();
+			camControl.enable(obj.gameObject);
 		}
 
 		private static void setLayerRecursively(GameObject sGameObject, int newLayerNumber)
@@ -349,6 +366,11 @@ namespace KerbalKonstructs
 		void doNothing()
 		{
 			//wow so robust
+		}
+
+		public StaticDatabase getStaticDB()
+		{
+			return staticDB;
 		}
 	}
 }

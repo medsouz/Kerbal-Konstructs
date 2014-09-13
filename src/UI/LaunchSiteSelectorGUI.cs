@@ -66,8 +66,8 @@ namespace KerbalKonstructs.UI
 				if (selectedSite.type != editorType && selectedSite.type != SiteType.Any)
 				{
 					selectedSite = LaunchSiteManager.getLaunchSites(editorType)[0];
-					LaunchSiteManager.setLaunchSite(selectedSite);
 				}
+				LaunchSiteManager.setLaunchSite(selectedSite);
 			}
 		}
 	}

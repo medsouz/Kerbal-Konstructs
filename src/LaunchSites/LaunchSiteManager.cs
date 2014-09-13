@@ -50,7 +50,7 @@ namespace KerbalKonstructs.LaunchSites
 							Texture logo = defaultLaunchSiteLogo;
 							if(obj.siteLogo != "")
 								logo = GameDatabase.Instance.GetTexture(obj.siteLogo, false);
-							launchSites.Add(new LaunchSite(obj.siteName, obj.author, obj.siteType, logo, obj.siteDescription));
+							launchSites.Add(new LaunchSite(obj.siteName, obj.model.author, obj.siteType, logo, obj.siteDescription));
 							Debug.Log("Created launch site \"" + newSite.name + "\" with transform " + newSite.launchPadName);
 						}
 						else

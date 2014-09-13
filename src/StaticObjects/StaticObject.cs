@@ -10,7 +10,7 @@ namespace KerbalKonstructs.StaticObjects
 
 		public CelestialBody parentBody;
 		public string groupName;
-		public string author;
+		public StaticModel model;
 
 		public Vector3 position;
 		public float altitude;

@@ -20,24 +20,29 @@ namespace KerbalKonstructs.UI
 			listStyle.padding.top =
 			listStyle.padding.bottom = 4;
 
-			orientationMenu = new ComboBox(comboBoxList[0], comboBoxList, "button", "box", setOrientation, listStyle);
+			orientationMenu = new ComboBox(orientationOptions[0], orientationOptions, "button", "box", setOrientation, listStyle);
 		}
 
 		public void drawEditor(StaticObject obj)
 		{
-			if (selectedObject != obj)
+			if (obj != null)
 			{
-				updateSelection(obj);
+				if (selectedObject != obj)
+				{
+					updateSelection(obj);
+				}
+
+				//It wanted a unique ID number ¯\_(ツ)_/¯
+				toolRect = GUI.Window(0xB00B1E5, toolRect, drawToolWindow, "Kerbal Konstructs Editor Tools");
 			}
-			
-			//It wanted a unique ID number ¯\_(ツ)_/¯
-			editorRect = GUI.Window(0xB00B1E5, editorRect, drawEditorWindow, "Kerbal Konstructs Editor");
+			editorRect = GUI.Window(0xB00B1E7, editorRect, drawEditorWindow, "Kerbal Konstruct Editor");
 		}
 
-		Rect editorRect = new Rect(70, 100, 336, 250);
+		Rect toolRect = new Rect(50, 50, 336, 250);
+		Rect editorRect = new Rect(50, 350, 500, 400);
 
 		private GUIStyle listStyle = new GUIStyle();
-		private GUIContent[] comboBoxList = {
+		private GUIContent[] orientationOptions = {
 										new GUIContent("Up"),
 										new GUIContent("Down"),
 										new GUIContent("Left"),
@@ -46,7 +51,10 @@ namespace KerbalKonstructs.UI
 										new GUIContent("Back")
 									};
 		ComboBox orientationMenu;
-		void drawEditorWindow(int windowID)
+
+		//TODO: rewrite this to use magical GUILayout code
+		//I wish I knew GUILayout was a thing when I made this :(
+		void drawToolWindow(int windowID)
 		{
 			GUI.Label(new Rect(21, 30, 203, 25), "Position");
 			GUI.Label(new Rect(6, 50, 25, 15), "X:");
@@ -149,6 +157,69 @@ namespace KerbalKonstructs.UI
 
 			//Draw last so it properly overlaps
 			orientationMenu.Show(new Rect(235, 50, 80, 25));
+			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
+		}
+
+		Vector2 scrollPos;
+		Boolean creating = false;
+
+		void drawEditorWindow(int id)
+		{
+			GUILayout.BeginArea(new Rect(10, 25, 240, 265));
+				GUILayout.BeginHorizontal();
+					GUI.enabled = !creating;
+					if (GUILayout.Button("New Object", GUILayout.Width(115)))
+						creating = true;
+					GUILayout.Space(5);
+					GUI.enabled = creating;
+					if (GUILayout.Button("Existing Object", GUILayout.Width(115)))
+						creating = false;
+					GUI.enabled = true;
+				GUILayout.EndHorizontal();
+			GUILayout.EndArea();
+			GUILayout.BeginArea(new Rect(255, 25, 240, 265));
+				scrollPos = GUILayout.BeginScrollView(scrollPos);
+				if (creating)
+				{
+					foreach (StaticModel model in KerbalKonstructs.instance.getStaticDB().getModels())
+					{
+						if (GUILayout.Button(model.meshName + " [" + model.path + "]"))
+						{
+							StaticObject obj = new StaticObject();
+							obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.meshName);
+							obj.altitude = (float)FlightGlobals.ActiveVessel.altitude;
+							obj.parentBody = KerbalKonstructs.instance.getCurrentBody();
+							obj.groupName = "New";
+							obj.position = KerbalKonstructs.instance.getCurrentBody().transform.InverseTransformPoint(FlightGlobals.ActiveVessel.transform.position);
+							obj.rotation = 0;
+							obj.orientation = Vector3.up;
+							obj.visibleRange = 25000;
+							obj.model = model;
+							obj.siteName = "";
+
+							KerbalKonstructs.instance.getStaticDB().addStatic(obj);
+							KerbalKonstructs.instance.spawnObject(obj, true);
+						}
+					}
+				}
+				else
+				{
+					foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
+					{
+						GUI.enabled = !(obj == selectedObject);
+						if (GUILayout.Button(((obj.siteName != "") ? obj.siteName + "(" + obj.model.meshName + ")" : obj.model.meshName) + " [" + obj.model.path + "]"))
+						{
+							//TODO: Move PQS target to object position
+							KerbalKonstructs.instance.selectObject(obj);
+						}
+					}
+					GUI.enabled = true;
+				}
+				GUILayout.EndScrollView();
+			GUILayout.EndArea();
+			GUILayout.BeginArea(new Rect(10, 295, 480, 195));
+				GUILayout.Label("Current Object:");
+			GUILayout.EndArea();
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
 
