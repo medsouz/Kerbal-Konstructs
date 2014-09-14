@@ -120,6 +120,7 @@ namespace KerbalKonstructs
 				model.path = Path.GetDirectoryName(Path.GetDirectoryName(conf.url));
 				model.config = conf.url;
 				model.configPath = conf.url.Substring(0, conf.url.LastIndexOf('/')) + ".cfg";
+				String defaultsiteTransform = conf.config.GetValue("DefaultLaunchPadTransform") ?? "";
 				foreach (ConfigNode ins in conf.config.GetNodes("Instances"))
 				{
 					StaticObject obj = new StaticObject();
@@ -135,6 +136,26 @@ namespace KerbalKonstructs
 					obj.visibleRange = float.Parse(ins.GetValue("VisibilityRange"));
 					obj.siteName = ins.GetValue("LaunchSiteName") ?? "";
 					obj.siteTransform = ins.GetValue("LaunchPadTransform") ?? "";
+
+					if (obj.siteTransform == "" && obj.siteName != "")
+					{
+						if (defaultsiteTransform != "")
+						{
+							obj.siteTransform = defaultsiteTransform;
+						}
+						else
+						{
+							Debug.Log("Launch site is missing a transform. Defaulting to " + obj.siteName + "_spawn...");
+							if (obj.gameObject.transform.Find(obj.siteName + "_spawn") != null)
+							{
+								obj.siteTransform = obj.siteName + "_spawn";
+							}
+							else
+							{
+								Debug.Log("FAILED: "+ obj.siteName + "_spawn does not exist!");
+							}
+						}
+					}
 
 					//NEW VARIABLES 
 					//KerbTown does not support group caching, for compatibility we will put these into "Ungrouped" group to be cached individually
