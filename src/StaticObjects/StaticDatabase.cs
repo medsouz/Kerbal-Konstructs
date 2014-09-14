@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 using UnityEngine;
 
 namespace KerbalKonstructs.StaticObjects
@@ -151,6 +152,11 @@ namespace KerbalKonstructs.StaticObjects
 		public List<StaticModel> getModels()
 		{
 			return modelList;
+		}
+
+		public List<StaticObject> getObjectsFromModel(StaticModel model)
+		{
+			return (from obj in getAllStatics() where obj.model == model select obj).ToList();
 		}
 	}
 }

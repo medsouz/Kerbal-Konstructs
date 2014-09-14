@@ -123,8 +123,10 @@ namespace KerbalKonstructs.UI
 			{
 				KerbalKonstructs.instance.deleteObject(selectedObject);
 			}
+			GUI.enabled = false;
 			GUI.Button(new Rect(106, 190, 90, 25), "Save Local");
 			GUI.Button(new Rect(106, 220, 90, 25), "Save Global");
+			GUI.enabled = true;
 			if (GUI.Button(new Rect(201, 190, 115, 25), "Snap to Surface"))
 			{
 				selectedObject.altitude = (float)(selectedObject.parentBody.pqsController.GetSurfaceHeight(selectedObject.position) - selectedObject.parentBody.pqsController.radius);
@@ -176,6 +178,8 @@ namespace KerbalKonstructs.UI
 						creating = false;
 					GUI.enabled = true;
 				GUILayout.EndHorizontal();
+				if (GUILayout.Button("Save Objects", GUILayout.Width(115)))
+					KerbalKonstructs.instance.saveObjects();
 			GUILayout.EndArea();
 			GUILayout.BeginArea(new Rect(255, 25, 240, 265));
 				scrollPos = GUILayout.BeginScrollView(scrollPos);

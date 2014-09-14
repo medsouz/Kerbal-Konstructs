@@ -10,5 +10,7 @@ namespace KerbalKonstructs.StaticObjects
 		public string author;
 		public string path;
 		public string meshName;
+		public string config;
+		public string configPath;
 	}
 }
