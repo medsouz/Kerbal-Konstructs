@@ -27,7 +27,7 @@ namespace KerbalKonstructs.StaticObjects
 			{
 				StaticGroup group = new StaticGroup(bodyName, groupName);
 				//Ungrouped objects get individually cached. New acts the same as Ungrouped but stores unsaved statics instead.
-				if (obj.groupName == "Ungrouped" || obj.groupName == "New")
+				if (obj.groupName == "Ungrouped")
 				{
 					group.alwaysActive = true;
 					group.active = true;

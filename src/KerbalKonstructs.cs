@@ -152,7 +152,17 @@ namespace KerbalKonstructs
 							}
 							else
 							{
-								Debug.Log("FAILED: "+ obj.siteName + "_spawn does not exist!");
+								Debug.Log("FAILED: "+ obj.siteName + "_spawn does not exist! Attempting to use any transform with _spawn in the name.");
+								Transform lastResort = obj.gameObject.transform.Cast<Transform>().FirstOrDefault(trans => trans.name.EndsWith("_spawn"));
+								if (lastResort != null)
+								{
+									Debug.Log("Using " + lastResort.name + " as launchpad transform");
+									obj.siteTransform = lastResort.name;
+								}
+								else
+								{
+									Debug.Log("All attempts at finding launchpad transform have failed (╯°□°）╯︵ ┻━┻");
+								}
 							}
 						}
 					}
@@ -208,11 +218,14 @@ namespace KerbalKonstructs
 					inst.AddValue("RotationAngle", obj.rotation.ToString());
 					inst.AddValue("VisibilityRange", obj.visibleRange.ToString());
 					inst.AddValue("Group", obj.groupName);
-					inst.AddValue("LaunchSiteName", obj.siteName);
-					inst.AddValue("LaunchPadTransform", obj.siteTransform);
-					inst.AddValue("LaunchPadDescription", obj.siteDescription);
-					inst.AddValue("LaunchPadLogo", obj.siteLogo);
-					inst.AddValue("LaunchPadType", obj.siteType.ToString().ToUpper());
+					if (obj.siteName != "")
+					{
+						inst.AddValue("LaunchSiteName", obj.siteName);
+						inst.AddValue("LaunchPadTransform", obj.siteTransform);
+						inst.AddValue("LaunchPadDescription", obj.siteDescription);
+						inst.AddValue("LaunchPadLogo", obj.siteLogo);
+						inst.AddValue("LaunchPadType", obj.siteType.ToString().ToUpper());
+					}
 					modelConfig.nodes.Add(inst);
 				}
 

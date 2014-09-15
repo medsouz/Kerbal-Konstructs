@@ -211,7 +211,7 @@ namespace KerbalKonstructs.UI
 							obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.meshName);
 							obj.altitude = (float)FlightGlobals.ActiveVessel.altitude;
 							obj.parentBody = KerbalKonstructs.instance.getCurrentBody();
-							obj.groupName = "New";
+							obj.groupName = "Ungrouped";
 							obj.position = KerbalKonstructs.instance.getCurrentBody().transform.InverseTransformPoint(FlightGlobals.ActiveVessel.transform.position);
 							obj.rotation = 0;
 							obj.orientation = Vector3.up;
