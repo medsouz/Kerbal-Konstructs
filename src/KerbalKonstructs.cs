@@ -120,7 +120,7 @@ namespace KerbalKonstructs
 				model.path = Path.GetDirectoryName(Path.GetDirectoryName(conf.url));
 				model.config = conf.url;
 				model.configPath = conf.url.Substring(0, conf.url.LastIndexOf('/')) + ".cfg";
-				String defaultsiteTransform = conf.config.GetValue("DefaultLaunchPadTransform") ?? "";
+				model.defaultSiteTransform = conf.config.GetValue("DefaultLaunchPadTransform") ?? "";
 				foreach (ConfigNode ins in conf.config.GetNodes("Instances"))
 				{
 					StaticObject obj = new StaticObject();
@@ -139,9 +139,9 @@ namespace KerbalKonstructs
 
 					if (obj.siteTransform == "" && obj.siteName != "")
 					{
-						if (defaultsiteTransform != "")
+						if (model.defaultSiteTransform != "")
 						{
-							obj.siteTransform = defaultsiteTransform;
+							obj.siteTransform = model.defaultSiteTransform;
 						}
 						else
 						{

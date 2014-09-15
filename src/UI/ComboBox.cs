@@ -144,7 +144,8 @@ namespace KerbalKonstructs.UI
 				{
 					selectedItemIndex = newSelectedItemIndex;
 					buttonContent = listContent[selectedItemIndex];
-					selectionCallback(selectedItemIndex);
+					if(selectionCallback != null)
+						selectionCallback(selectedItemIndex);
 				}
 			}
 

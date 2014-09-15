@@ -1,4 +1,5 @@
-﻿using KerbalKonstructs.StaticObjects;
+﻿using KerbalKonstructs.LaunchSites;
+using KerbalKonstructs.StaticObjects;
 using System;
 using UnityEngine;
 
@@ -7,6 +8,7 @@ namespace KerbalKonstructs.UI
 	class EditorGUI
 	{
 		StaticObject selectedObject;
+		private Boolean editingSite = false;
 		private String xPos, yPos, zPos, altitude, rotation;
 		private String increment = "1";
 
@@ -21,6 +23,7 @@ namespace KerbalKonstructs.UI
 			listStyle.padding.bottom = 4;
 
 			orientationMenu = new ComboBox(orientationOptions[0], orientationOptions, "button", "box", setOrientation, listStyle);
+			siteTypeMenu = new ComboBox(siteTypeOptions[0], siteTypeOptions, "button", "box", null, listStyle);
 		}
 
 		public void drawEditor(StaticObject obj)
@@ -28,18 +31,20 @@ namespace KerbalKonstructs.UI
 			if (obj != null)
 			{
 				if (selectedObject != obj)
-				{
 					updateSelection(obj);
-				}
 
 				//It wanted a unique ID number ¯\_(ツ)_/¯
 				toolRect = GUI.Window(0xB00B1E5, toolRect, drawToolWindow, "Kerbal Konstructs Editor Tools");
+
+				if(editingSite)
+					siteEditorRect = GUI.Window(0xB00B1E8, siteEditorRect, drawSiteEditorWindow, "Kerbal Konstruct Site Editor");
 			}
 			editorRect = GUI.Window(0xB00B1E7, editorRect, drawEditorWindow, "Kerbal Konstruct Editor");
 		}
 
 		Rect toolRect = new Rect(50, 50, 336, 250);
 		Rect editorRect = new Rect(50, 350, 500, 295);
+		Rect siteEditorRect = new Rect(400, 50, 330, 350);
 
 		private GUIStyle listStyle = new GUIStyle();
 		private GUIContent[] orientationOptions = {
@@ -132,7 +137,20 @@ namespace KerbalKonstructs.UI
 				selectedObject.altitude = (float)(selectedObject.parentBody.pqsController.GetSurfaceHeight(selectedObject.position) - selectedObject.parentBody.pqsController.radius);
 				updateSelection(selectedObject);
 			}
-			GUI.Button(new Rect(201, 220, 115, 25), "Create Launch Site");
+			GUI.enabled = !editingSite;
+			if (GUI.Button(new Rect(201, 220, 115, 25), ((selectedObject.siteName != "") ? "Edit" : "Create") + " Launch Site"))
+			{
+				siteName = selectedObject.siteName;
+				siteTrans = (selectedObject.siteTransform != "") ? selectedObject.siteTransform : selectedObject.model.defaultSiteTransform;
+				siteDesc = selectedObject.siteDescription;
+				siteType = selectedObject.siteType;
+				siteTypeMenu.SelectedItemIndex = (int)siteType;
+				siteLogo = selectedObject.siteLogo;
+				siteAuthor = selectedObject.model.author;
+				editingSite = true;
+			}
+				
+			GUI.enabled = true;
 
 			if (Event.current.keyCode == KeyCode.Return)
 			{
@@ -200,6 +218,9 @@ namespace KerbalKonstructs.UI
 							obj.visibleRange = 25000;
 							obj.model = model;
 							obj.siteName = "";
+							obj.siteDescription = "";
+							obj.siteTransform = "";
+							obj.siteLogo = "";
 
 							KerbalKonstructs.instance.getStaticDB().addStatic(obj);
 							KerbalKonstructs.instance.spawnObject(obj, true);
@@ -221,6 +242,70 @@ namespace KerbalKonstructs.UI
 				}
 				GUILayout.EndScrollView();
 			GUILayout.EndArea();
+			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
+		}
+
+		string siteName, siteTrans, siteDesc, siteAuthor, siteLogo;
+		SiteType siteType;
+		Vector2 descScroll;
+
+		private GUIContent[] siteTypeOptions = {
+										new GUIContent("VAB"),
+										new GUIContent("SPH"),
+										new GUIContent("ANY")
+									};
+		ComboBox siteTypeMenu;
+
+		void drawSiteEditorWindow(int id)
+		{
+			GUILayout.BeginHorizontal();
+				GUILayout.Label("Site Name: ");
+				siteName = GUILayout.TextField(siteName);
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+				GUILayout.Label("Pad Transform: ");
+				siteTrans = GUILayout.TextField(siteTrans);
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+				GUILayout.Label("Site Type:");
+				GUILayout.FlexibleSpace();
+				Rect rect = GUILayoutUtility.GetRect(siteTypeOptions[0], "button", GUILayout.Width(50));
+			GUILayout.EndHorizontal();
+			GUI.enabled = !siteTypeMenu.isClickedComboButton;
+			GUILayout.BeginHorizontal();
+				GUILayout.Label("Author: ");
+				siteAuthor = GUILayout.TextField(siteAuthor);
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+				GUILayout.Label("Logo: ");
+				siteLogo = GUILayout.TextField(siteLogo);
+			GUILayout.EndHorizontal();
+			GUILayout.Label("Site Description: ");
+			descScroll = GUILayout.BeginScrollView(descScroll);
+				siteDesc = GUILayout.TextArea(siteDesc, GUILayout.ExpandHeight(true));
+			GUILayout.EndScrollView();
+			GUI.enabled = true;
+			GUILayout.BeginHorizontal();
+				if (GUILayout.Button("Save", GUILayout.Width(115)))
+				{
+					Boolean addToDB = (selectedObject.siteName == "" && siteName != "");
+					selectedObject.siteName = siteName;
+					selectedObject.siteTransform = siteTrans;
+					selectedObject.siteDescription = siteDesc;
+					setSiteType(siteTypeMenu.SelectedItemIndex);
+					if(addToDB)
+					{
+						LaunchSiteManager.createLaunchSite(selectedObject);
+					}
+					editingSite = false;
+				}
+				GUILayout.FlexibleSpace();
+				if (GUILayout.Button("Cancel", GUILayout.Width(115)))
+				{
+					editingSite = false;
+				}
+			GUILayout.EndHorizontal();
+			siteTypeMenu.Show(rect);
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
 
@@ -298,6 +383,23 @@ namespace KerbalKonstructs.UI
 		public float getIncrement()
 		{
 			return float.Parse(increment);
+		}
+
+		public void setSiteType(int selection)
+		{
+			switch(selection)
+			{
+				case 0:
+					siteType = SiteType.VAB;
+					break;
+				case 1:
+					siteType = SiteType.SPH;
+					break;
+				case 2:
+					siteType = SiteType.Any;
+					break;
+			}
+
 		}
 	}
 }

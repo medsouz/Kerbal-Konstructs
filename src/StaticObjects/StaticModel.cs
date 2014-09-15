@@ -12,5 +12,6 @@ namespace KerbalKonstructs.StaticObjects
 		public string meshName;
 		public string config;
 		public string configPath;
+		public string defaultSiteTransform;
 	}
 }
