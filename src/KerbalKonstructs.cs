@@ -222,9 +222,9 @@ namespace KerbalKonstructs
 					{
 						inst.AddValue("LaunchSiteName", obj.siteName);
 						inst.AddValue("LaunchPadTransform", obj.siteTransform);
-						inst.AddValue("LaunchPadDescription", obj.siteDescription);
-						inst.AddValue("LaunchPadLogo", obj.siteLogo);
-						inst.AddValue("LaunchPadType", obj.siteType.ToString().ToUpper());
+						inst.AddValue("LaunchSiteDescription", obj.siteDescription);
+						inst.AddValue("LaunchSiteLogo", obj.siteLogo.Replace(obj.model.path + "/", ""));//Strip path from image
+						inst.AddValue("LaunchSiteType", obj.siteType.ToString().ToUpper());
 					}
 					modelConfig.nodes.Add(inst);
 				}
