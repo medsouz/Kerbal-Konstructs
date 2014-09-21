@@ -292,7 +292,7 @@ namespace KerbalKonstructs.UI
 					selectedObject.siteName = siteName;
 					selectedObject.siteTransform = siteTrans;
 					selectedObject.siteDescription = siteDesc;
-					setSiteType(siteTypeMenu.SelectedItemIndex);
+					selectedObject.siteType = getSiteType(siteTypeMenu.SelectedItemIndex);
 					if(addToDB)
 					{
 						LaunchSiteManager.createLaunchSite(selectedObject);
@@ -385,19 +385,16 @@ namespace KerbalKonstructs.UI
 			return float.Parse(increment);
 		}
 
-		public void setSiteType(int selection)
+		public SiteType getSiteType(int selection)
 		{
 			switch(selection)
 			{
 				case 0:
-					siteType = SiteType.VAB;
-					break;
+					return SiteType.VAB;
 				case 1:
-					siteType = SiteType.SPH;
-					break;
-				case 2:
-					siteType = SiteType.Any;
-					break;
+					return SiteType.SPH;
+				default:
+					return SiteType.Any;
 			}
 
 		}
