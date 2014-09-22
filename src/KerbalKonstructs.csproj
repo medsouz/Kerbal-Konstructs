@@ -50,6 +50,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LaunchSites\LaunchSite.cs" />
+    <Compile Include="Modules\AnimateOnClick.cs" />
+    <Compile Include="Modules\Compat\AnimateOnClick.cs" />
     <Compile Include="StaticObjects\StaticModel.cs" />
     <Compile Include="StaticObjects\StaticModule.cs" />
     <Compile Include="UI\CameraController.cs" />
