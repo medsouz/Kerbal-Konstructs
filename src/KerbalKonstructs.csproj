@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="LaunchSites\LaunchSite.cs" />
     <Compile Include="StaticObjects\StaticModel.cs" />
+    <Compile Include="StaticObjects\StaticModule.cs" />
     <Compile Include="UI\CameraController.cs" />
     <Compile Include="UI\ComboBox.cs" />
     <Compile Include="UI\EditorGUI.cs" />

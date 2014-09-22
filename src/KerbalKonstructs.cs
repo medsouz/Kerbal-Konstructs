@@ -6,6 +6,7 @@ using UnityEngine;
 using KerbalKonstructs.StaticObjects;
 using KerbalKonstructs.LaunchSites;
 using KerbalKonstructs.UI;
+using System.Reflection;
 
 namespace KerbalKonstructs
 {
@@ -121,6 +122,27 @@ namespace KerbalKonstructs
 				model.config = conf.url;
 				model.configPath = conf.url.Substring(0, conf.url.LastIndexOf('/')) + ".cfg";
 				model.defaultSiteTransform = conf.config.GetValue("DefaultLaunchPadTransform") ?? "";
+				foreach (ConfigNode ins in conf.config.GetNodes("MODULE"))
+				{
+					Debug.Log("Found module: "+ins.name+" in "+conf.name);
+					StaticModule module = new StaticModule();
+					foreach (ConfigNode.Value value in ins.values)
+					{
+						switch (value.name)
+						{
+							case "namespace":
+								module.moduleNamespace = value.value;
+								break;
+							case "name":
+								module.moduleClassname = value.value;
+								break;
+							default:
+								module.moduleFields.Add(value.name, value.value);
+								break;
+						}
+					}
+					model.modules.Add(module);
+				}
 				foreach (ConfigNode ins in conf.config.GetNodes("Instances"))
 				{
 					StaticObject obj = new StaticObject();
@@ -270,6 +292,32 @@ namespace KerbalKonstructs
 			obj.pqsCity.modEnabled = true;
 			obj.pqsCity.OnSetup();
 			obj.pqsCity.Orientate();
+
+			foreach (StaticModule module in obj.model.modules)
+			{
+				Type moduleType = AssemblyLoader.loadedAssemblies.SelectMany(asm => asm.assembly.GetTypes()).FirstOrDefault(t => t.Namespace == module.moduleNamespace && t.Name == module.moduleClassname);
+				MonoBehaviour mod = obj.gameObject.AddComponent(moduleType) as MonoBehaviour;
+
+				if (mod != null)
+				{
+					foreach (string fieldName in module.moduleFields.Keys)
+					{
+						FieldInfo field = mod.GetType().GetField(fieldName);
+						if (field != null)
+						{
+							field.SetValue(mod, Convert.ChangeType(module.moduleFields[fieldName], field.FieldType));
+						}
+						else
+						{
+							Debug.Log("WARNING: Field " + fieldName + " does not exist in " + module.moduleClassname);
+						}
+					}
+				}
+				else
+				{
+					Debug.Log("WARNING: Module " + module.moduleClassname + " could not be loaded in " + obj.gameObject.name);
+				}
+			}
 
 			foreach (GameObject renderer in rendererList)
 			{

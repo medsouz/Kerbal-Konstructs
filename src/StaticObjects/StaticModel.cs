@@ -13,5 +13,6 @@ namespace KerbalKonstructs.StaticObjects
 		public string config;
 		public string configPath;
 		public string defaultSiteTransform;
+		public List<StaticModule> modules = new List<StaticModule>();
 	}
 }
