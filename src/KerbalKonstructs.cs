@@ -227,6 +227,7 @@ namespace KerbalKonstructs
 		{
 			foreach (StaticModel model in staticDB.getModels())
 			{
+				Debug.Log("Saving "+model.config);
 				ConfigNode staticNode = new ConfigNode("STATIC");
 				ConfigNode modelConfig = GameDatabase.Instance.GetConfigNode(model.config);
 				modelConfig.RemoveNodes("Instances");
