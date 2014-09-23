@@ -210,6 +210,7 @@ namespace KerbalKonstructs
 							obj.siteType = SiteType.Any;
 							break;
 					}
+					obj.siteAuthor = ins.GetValue("LaunchSiteAuthor") ?? "";
 
 					staticDB.addStatic(obj);
 					spawnObject(obj, false);
@@ -247,6 +248,8 @@ namespace KerbalKonstructs
 						inst.AddValue("LaunchSiteDescription", obj.siteDescription);
 						inst.AddValue("LaunchSiteLogo", obj.siteLogo.Replace(obj.model.path + "/", ""));//Strip path from image
 						inst.AddValue("LaunchSiteType", obj.siteType.ToString().ToUpper());
+						if(obj.siteAuthor != "")
+							inst.AddValue("LaunchSiteAuthor", obj.siteAuthor);
 					}
 					modelConfig.nodes.Add(inst);
 				}

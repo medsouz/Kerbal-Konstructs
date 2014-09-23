@@ -21,6 +21,7 @@ namespace KerbalKonstructs.StaticObjects
 		public string siteTransform;
 		public string siteDescription;
 		public string siteLogo;
+		public string siteAuthor;
 		public LaunchSites.SiteType siteType;
 
 		public Boolean editing;

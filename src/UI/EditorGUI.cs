@@ -145,8 +145,8 @@ namespace KerbalKonstructs.UI
 				siteDesc = selectedObject.siteDescription;
 				siteType = selectedObject.siteType;
 				siteTypeMenu.SelectedItemIndex = (int)siteType;
-				siteLogo = selectedObject.siteLogo;
-				siteAuthor = selectedObject.model.author;
+				siteLogo = selectedObject.siteLogo.Replace(selectedObject.model.path + "/", "");
+				siteAuthor = (selectedObject.siteAuthor != "") ? selectedObject.siteAuthor : selectedObject.model.author;
 				editingSite = true;
 			}
 				
@@ -221,6 +221,7 @@ namespace KerbalKonstructs.UI
 							obj.siteDescription = "";
 							obj.siteTransform = "";
 							obj.siteLogo = "";
+							obj.siteAuthor = "";
 
 							KerbalKonstructs.instance.getStaticDB().addStatic(obj);
 							KerbalKonstructs.instance.spawnObject(obj, true);
@@ -293,6 +294,9 @@ namespace KerbalKonstructs.UI
 					selectedObject.siteTransform = siteTrans;
 					selectedObject.siteDescription = siteDesc;
 					selectedObject.siteType = getSiteType(siteTypeMenu.SelectedItemIndex);
+					selectedObject.siteLogo = (siteLogo != "") ? selectedObject.model.path + "/" + siteLogo : "";
+					if (siteAuthor != selectedObject.model.author)
+						selectedObject.siteAuthor = siteAuthor;
 					if(addToDB)
 					{
 						LaunchSiteManager.createLaunchSite(selectedObject);

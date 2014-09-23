@@ -21,7 +21,7 @@ namespace KerbalKonstructs.LaunchSites
 		//This is pretty much ripped from KerbTown, sorry
 		public static void createLaunchSite(StaticObject obj)
 		{
-			if (obj.siteTransform != "")
+			if (obj.siteTransform != "" && obj.gameObject.transform.Find(obj.siteTransform) != null)
 			{
 				Debug.Log("Creating launch site " + obj.siteName);
 				obj.gameObject.transform.name = obj.siteName;
@@ -50,7 +50,7 @@ namespace KerbalKonstructs.LaunchSites
 							Texture logo = defaultLaunchSiteLogo;
 							if(obj.siteLogo != "")
 								logo = GameDatabase.Instance.GetTexture(obj.siteLogo, false);
-							launchSites.Add(new LaunchSite(obj.siteName, obj.model.author, obj.siteType, logo, obj.siteDescription));
+							launchSites.Add(new LaunchSite(obj.siteName, (obj.siteAuthor != "") ? obj.siteAuthor : obj.model.author, obj.siteType, logo, obj.siteDescription));
 							Debug.Log("Created launch site \"" + newSite.name + "\" with transform " + newSite.launchPadName);
 						}
 						else
