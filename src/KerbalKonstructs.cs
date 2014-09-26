@@ -14,6 +14,7 @@ namespace KerbalKonstructs
 	public class KerbalKonstructs : MonoBehaviour
 	{
 		public static KerbalKonstructs instance;
+		public static string installDir = AssemblyLoader.loadedAssemblies.GetPathByType(typeof(KerbalKonstructs)).Replace('/', '\\');
 
 		private CelestialBody currentBody;
 		public StaticObject selectedObject;
@@ -26,9 +27,15 @@ namespace KerbalKonstructs
 		private LaunchSiteSelectorGUI selector = new LaunchSiteSelectorGUI();
 		private Boolean showSelector = false;
 
+		//Configurable variables
+		[KSPField]
+		public Boolean launchFromAnySite = false;
+
 		void Awake()
 		{
 			instance = this;
+			if (!loadConfig())
+				saveConfig();
 			//Assume that the Space Center is on Kerbin
 			currentBody = Util.getCelestialBody("Kerbin");
 			GameEvents.onDominantBodyChange.Add(onDominantBodyChange);
@@ -490,6 +497,37 @@ namespace KerbalKonstructs
 		public StaticDatabase getStaticDB()
 		{
 			return staticDB;
+		}
+
+		public bool loadConfig()
+		{
+			ConfigNode cfg = ConfigNode.Load(installDir + "/KerbalKonstructs.cfg");
+			if (cfg != null)
+			{
+				foreach (FieldInfo f in GetType().GetFields())
+				{
+					if (Attribute.IsDefined(f, typeof(KSPField)))
+					{
+						if(cfg.HasValue(f.Name))
+							f.SetValue(this, Convert.ChangeType(cfg.GetValue(f.Name), f.FieldType));
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+
+		public void saveConfig()
+		{
+			ConfigNode cfg = new ConfigNode();
+			foreach (FieldInfo f in GetType().GetFields())
+			{
+				if (Attribute.IsDefined(f, typeof(KSPField)))
+				{
+					cfg.AddValue(f.Name, f.GetValue(this));
+				}
+			}
+			cfg.Save(installDir + "/KerbalKonstructs.cfg", "Kerbal Konstructs - https://github.com/medsouz/Kerbal-Konstructs");
 		}
 	}
 }

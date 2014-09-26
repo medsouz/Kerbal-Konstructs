@@ -60,7 +60,7 @@ namespace KerbalKonstructs.UI
 
 		public void setEditorType(SiteType type)
 		{
-			editorType = type;
+			editorType = (KerbalKonstructs.instance.launchFromAnySite) ? SiteType.Any : type;
 			if (selectedSite != null)
 			{
 				if (selectedSite.type != editorType && selectedSite.type != SiteType.Any)
