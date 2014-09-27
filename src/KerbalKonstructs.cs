@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace KerbalKonstructs
 {
-	[KSPAddonFixed(KSPAddon.Startup.SpaceCentre, true, typeof(KerbalKonstructs))]
+	[KSPAddonFixed(KSPAddon.Startup.MainMenu, true, typeof(KerbalKonstructs))]
 	public class KerbalKonstructs : MonoBehaviour
 	{
 		public static KerbalKonstructs instance;
@@ -27,6 +27,7 @@ namespace KerbalKonstructs
 		private LaunchSiteSelectorGUI selector = new LaunchSiteSelectorGUI();
 		private Boolean showSelector = false;
 		private MapIconManager mapIconManager = new MapIconManager();
+		private ApplicationLauncherButton siteSelector;
 
 		//Configurable variables
 		[KSPField]
@@ -37,15 +38,22 @@ namespace KerbalKonstructs
 			instance = this;
 			if (!loadConfig())
 				saveConfig();
-			//Assume that the Space Center is on Kerbin
-			currentBody = Util.getCelestialBody("Kerbin");
 			GameEvents.onDominantBodyChange.Add(onDominantBodyChange);
 			GameEvents.onLevelWasLoaded.Add(onLevelWasLoaded);
 			DontDestroyOnLoad(this);
 			loadObjects();
-			staticDB.loadObjectsForBody(currentBody.bodyName);
 			InvokeRepeating("updateCache", 0, 1);
-			ApplicationLauncher.Instance.AddModApplication(onSiteSelectorOn, onSiteSelectorOff, doNothing, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/SiteToolbarIcon", false));
+		}
+
+		void OnGUIAppLauncherReady()
+		{
+			if (ApplicationLauncher.Ready)
+			{
+				//Just keep adding the button whenever the ApplicationLauncher is added to prevent it from disappearing, this is ineffecient but I don't care enough to come up with a better method.
+				if (siteSelector != null)
+					ApplicationLauncher.Instance.RemoveModApplication(siteSelector);
+				siteSelector = ApplicationLauncher.Instance.AddModApplication(onSiteSelectorOn, onSiteSelectorOff, doNothing, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/SiteToolbarIcon", false));
+			}
 		}
 
 		void onLevelWasLoaded(GameScenes data)
@@ -100,21 +108,24 @@ namespace KerbalKonstructs
 
 		public void updateCache()
 		{
-			Vector3 playerPos;
-			if (selectedObject != null)
+			if (HighLogic.LoadedSceneIsGame)
 			{
-				playerPos = selectedObject.gameObject.transform.position;
+				Vector3 playerPos = Vector3.zero;
+				if (selectedObject != null)
+				{
+					playerPos = selectedObject.gameObject.transform.position;
+				}
+				else if (FlightGlobals.ActiveVessel != null)
+				{
+					playerPos = FlightGlobals.ActiveVessel.transform.position;
+				}
+				else if (Camera.main != null)//Camera.main goes null when switching scenes
+				{
+					//HACKY: if there is no vessel use the camera, this could cause some issues
+					playerPos = Camera.main.transform.position;
+				}
+				staticDB.updateCache(playerPos);
 			}
-			else if (FlightGlobals.ActiveVessel != null)
-			{
-				playerPos = FlightGlobals.ActiveVessel.transform.position;
-			}
-			else
-			{
-				//HACKY: if there is no vessel use the camera, this could cause some issues
-				playerPos = Camera.main.transform.position;
-			}
-			staticDB.updateCache(playerPos);
 		}
 
 		public void loadObjects()
@@ -498,6 +509,8 @@ namespace KerbalKonstructs
 		void onSiteSelectorOff()
 		{
 			showSelector = false;
+			//Make sure the editor doesn't think you're still mousing over the site selector
+			InputLockManager.RemoveControlLock("KKEditorLock");
 		}
 
 		void doNothing()
