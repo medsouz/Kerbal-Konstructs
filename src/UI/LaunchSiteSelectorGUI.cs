@@ -9,10 +9,21 @@ namespace KerbalKonstructs.UI
 		LaunchSite selectedSite;
 		private SiteType editorType = SiteType.Any;
 
+		Rect windowRect = new Rect(((Screen.width - Camera.main.rect.x) / 2) + Camera.main.rect.x - 125, (Screen.height / 2 - 250), 600, 500);
+
 		public void drawSelector()
 		{
 			if(Camera.main != null)//Camera.main is null when first loading a scene
-				GUI.Window(0xB00B1E6, new Rect(((Screen.width - Camera.main.rect.x) / 2) + Camera.main.rect.x - 125, (Screen.height / 2 - 250), 600, 500), drawSelectorWindow, "Launch Site Selector");
+				GUI.Window(0xB00B1E6, windowRect, drawSelectorWindow, "Launch Site Selector");
+
+			if (windowRect.Contains(Event.current.mousePosition))
+			{
+				InputLockManager.SetControlLock(ControlTypes.EDITOR_LOCK, "KKEditorLock");
+			}
+			else
+			{
+				InputLockManager.RemoveControlLock("KKEditorLock");
+			}
 		}
 
 		public Vector2 sitesScrollPosition;
