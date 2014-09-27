@@ -30,17 +30,24 @@ namespace KerbalKonstructs.UI
 							{
 								Vector3 pos = MapView.MapCamera.camera.WorldToScreenPoint(ScaledSpace.LocalToScaledSpace(ls.launchPadTransform.position));
 								Rect screenRect = new Rect((pos.x - 8), (Screen.height - pos.y) - 8, 16, 16);
-								switch (site.type)
+								if (site.icon != null)
 								{
-									case SiteType.VAB:
-										Graphics.DrawTexture(screenRect, VABIcon);
-										break;
-									case SiteType.SPH:
-										Graphics.DrawTexture(screenRect, SPHIcon);
-										break;
-									default:
-										Graphics.DrawTexture(screenRect, ANYIcon);
-										break;
+									Graphics.DrawTexture(screenRect, site.icon);
+								}
+								else
+								{
+									switch (site.type)
+									{
+										case SiteType.VAB:
+											Graphics.DrawTexture(screenRect, VABIcon);
+											break;
+										case SiteType.SPH:
+											Graphics.DrawTexture(screenRect, SPHIcon);
+											break;
+										default:
+											Graphics.DrawTexture(screenRect, ANYIcon);
+											break;
+									}
 								}
 								if (screenRect.Contains(Event.current.mousePosition) && !displayingTooltip)
 								{

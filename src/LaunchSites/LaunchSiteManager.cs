@@ -14,8 +14,8 @@ namespace KerbalKonstructs.LaunchSites
 		static LaunchSiteManager()
 		{
 			//Accepting contributions to change my horrible descriptions
-			launchSites.Add(new LaunchSite("Runway", "Squad", SiteType.SPH, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCRunway", false), "The KSC runway is a concrete runway measuring about 2.5km long and 70m wide, on a magnetic heading of 90/270. It is not uncommon to see burning chunks of metal sliding across the surface."));
-			launchSites.Add(new LaunchSite("LaunchPad", "Squad", SiteType.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCLaunchpad", false), "The KSC launchpad is a platform used to fire screaming Kerbals into the kosmos. There was a tower here at one point but for some reason nobody seems to know where it went..."));
+			launchSites.Add(new LaunchSite("Runway", "Squad", SiteType.SPH, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCRunway", false), null, "The KSC runway is a concrete runway measuring about 2.5km long and 70m wide, on a magnetic heading of 90/270. It is not uncommon to see burning chunks of metal sliding across the surface."));
+			launchSites.Add(new LaunchSite("LaunchPad", "Squad", SiteType.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCLaunchpad", false), null, "The KSC launchpad is a platform used to fire screaming Kerbals into the kosmos. There was a tower here at one point but for some reason nobody seems to know where it went..."));
 		}
 
 		//This is pretty much ripped from KerbTown, sorry
@@ -48,9 +48,12 @@ namespace KerbalKonstructs.LaunchSites
 							fi.SetValue(PSystemSetup.Instance, newSites);
 							sites = newSites;
 							Texture logo = defaultLaunchSiteLogo;
+							Texture icon = null;
 							if(obj.siteLogo != "")
 								logo = GameDatabase.Instance.GetTexture(obj.siteLogo, false);
-							launchSites.Add(new LaunchSite(obj.siteName, (obj.siteAuthor != "") ? obj.siteAuthor : obj.model.author, obj.siteType, logo, obj.siteDescription));
+							if (obj.siteIcon != "")
+								icon = GameDatabase.Instance.GetTexture(obj.siteIcon, false);
+							launchSites.Add(new LaunchSite(obj.siteName, (obj.siteAuthor != "") ? obj.siteAuthor : obj.model.author, obj.siteType, logo, icon, obj.siteDescription));
 							Debug.Log("Created launch site \"" + newSite.name + "\" with transform " + newSite.launchPadName);
 						}
 						else

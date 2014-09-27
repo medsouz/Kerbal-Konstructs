@@ -202,9 +202,12 @@ namespace KerbalKonstructs
 					obj.groupName = ins.GetValue("Group") ?? "Ungrouped";
 					//Site description
 					obj.siteDescription = ins.GetValue("LaunchSiteDescription") ?? "No description available";
+					//Site logo
+					String logo = ins.GetValue("LaunchSiteLogo") ?? "";
+					obj.siteLogo = (logo != "") ? model.path + "/" + logo : "";
 					//Site icon
-					String icon = ins.GetValue("LaunchSiteLogo") ?? "";
-					obj.siteLogo = (icon != "") ? model.path + "/" + icon : "";
+					String icon = ins.GetValue("LaunchSiteIcon") ?? "";
+					obj.siteIcon = (icon != "") ? model.path + "/" + icon : "";
 					//Site type: VAB, SPH, or ANY
 					switch (ins.GetValue("LaunchSiteType") ?? "ANY")
 					{
@@ -256,6 +259,8 @@ namespace KerbalKonstructs
 						inst.AddValue("LaunchPadTransform", obj.siteTransform);
 						inst.AddValue("LaunchSiteDescription", obj.siteDescription);
 						inst.AddValue("LaunchSiteLogo", obj.siteLogo.Replace(obj.model.path + "/", ""));//Strip path from image
+						if (obj.siteIcon != "")
+							inst.AddValue("LaunchSiteIcon", obj.siteIcon.Replace(obj.model.path + "/", ""));
 						inst.AddValue("LaunchSiteType", obj.siteType.ToString().ToUpper());
 						if(obj.siteAuthor != "")
 							inst.AddValue("LaunchSiteAuthor", obj.siteAuthor);
