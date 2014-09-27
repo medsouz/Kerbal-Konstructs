@@ -26,6 +26,7 @@ namespace KerbalKonstructs
 		private Boolean showEditor = false;
 		private LaunchSiteSelectorGUI selector = new LaunchSiteSelectorGUI();
 		private Boolean showSelector = false;
+		private MapIconManager mapIconManager = new MapIconManager();
 
 		//Configurable variables
 		[KSPField]
@@ -428,6 +429,11 @@ namespace KerbalKonstructs
 					//Editor Window
 					editor.drawEditor(selectedObject);
 				}
+			}
+
+			if (MapView.MapIsEnabled)
+			{
+				mapIconManager.drawIcons();
 			}
 		}
 
