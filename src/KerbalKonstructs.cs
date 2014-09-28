@@ -7,6 +7,7 @@ using KerbalKonstructs.StaticObjects;
 using KerbalKonstructs.LaunchSites;
 using KerbalKonstructs.UI;
 using System.Reflection;
+using KerbalKonstructs.SpaceCenters;
 
 namespace KerbalKonstructs
 {
@@ -40,9 +41,18 @@ namespace KerbalKonstructs
 				saveConfig();
 			GameEvents.onDominantBodyChange.Add(onDominantBodyChange);
 			GameEvents.onLevelWasLoaded.Add(onLevelWasLoaded);
+			GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
+			GameEvents.OnVesselRecoveryRequested.Add(OnVesselRecoveryRequested);
 			DontDestroyOnLoad(this);
 			loadObjects();
 			InvokeRepeating("updateCache", 0, 1);
+			SpaceCenterManager.setKSC();
+		}
+
+		void OnVesselRecoveryRequested(Vessel data)
+		{
+			SpaceCenter csc = SpaceCenterManager.getClosestSpaceCenter(data.gameObject.transform.position);
+			SpaceCenter.Instance = csc;
 		}
 
 		void OnGUIAppLauncherReady()
