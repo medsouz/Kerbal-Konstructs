@@ -29,24 +29,30 @@ namespace KerbalKonstructs.LaunchSites
 
 				foreach (FieldInfo fi in PSystemSetup.Instance.GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance))
 				{
-					if (fi.FieldType.Name == "LaunchSite[]")
+					if (fi.FieldType.Name == "SpaceCenterFacility[]")
 					{
-						PSystemSetup.LaunchSite[] sites = (PSystemSetup.LaunchSite[])fi.GetValue(PSystemSetup.Instance);
-						if (PSystemSetup.Instance.GetLaunchSite(obj.siteName) == null)
+						PSystemSetup.SpaceCenterFacility[] facilities = (PSystemSetup.SpaceCenterFacility[])fi.GetValue(PSystemSetup.Instance);
+						if (PSystemSetup.Instance.GetSpaceCenterFacility(obj.siteName) == null)
 						{
-							PSystemSetup.LaunchSite newSite = new PSystemSetup.LaunchSite();
-							newSite.launchPadName = obj.siteName + "/" + obj.siteTransform;
-							newSite.name = obj.siteName;
-							newSite.pqsName = obj.parentBody.bodyName;
-
-							PSystemSetup.LaunchSite[] newSites = new PSystemSetup.LaunchSite[sites.Length + 1];
-							for (int i = 0; i < sites.Length; ++i)
+							PSystemSetup.SpaceCenterFacility newFacility = new PSystemSetup.SpaceCenterFacility();
+							newFacility.name = obj.siteName;
+							newFacility.facilityName = obj.gameObject.name;
+							newFacility.facilityPQS = obj.parentBody.pqsController;
+							newFacility.facilityTransformName = obj.gameObject.name;
+							newFacility.pqsName = obj.parentBody.pqsController.name;
+							PSystemSetup.SpaceCenterFacility.SpawnPoint spawnPoint = new PSystemSetup.SpaceCenterFacility.SpawnPoint();
+							spawnPoint.name = obj.siteName;
+							spawnPoint.spawnTransformURL = obj.siteTransform;
+							newFacility.spawnPoints = new PSystemSetup.SpaceCenterFacility.SpawnPoint[1];
+							newFacility.spawnPoints[0] = spawnPoint;
+							PSystemSetup.SpaceCenterFacility[] newFacilities = new PSystemSetup.SpaceCenterFacility[facilities.Length + 1];
+							for (int i = 0; i < facilities.Length; ++i)
 							{
-								newSites[i] = sites[i];
+								newFacilities[i] = facilities[i];
 							}
-							newSites[newSites.Length - 1] = newSite;
-							fi.SetValue(PSystemSetup.Instance, newSites);
-							sites = newSites;
+							newFacilities[newFacilities.Length - 1] = newFacility;
+							fi.SetValue(PSystemSetup.Instance, newFacilities);
+							facilities = newFacilities;
 							Texture logo = defaultLaunchSiteLogo;
 							Texture icon = null;
 							if(obj.siteLogo != "")
@@ -54,7 +60,7 @@ namespace KerbalKonstructs.LaunchSites
 							if (obj.siteIcon != "")
 								icon = GameDatabase.Instance.GetTexture(obj.siteIcon, false);
 							launchSites.Add(new LaunchSite(obj.siteName, (obj.siteAuthor != "") ? obj.siteAuthor : obj.model.author, obj.siteType, logo, icon, obj.siteDescription));
-							Debug.Log("Created launch site \"" + newSite.name + "\" with transform " + newSite.launchPadName);
+							Debug.Log("Created launch site \"" + newFacility.name + "\" with transform " + obj.siteName + "/" + obj.siteTransform);
 						}
 						else
 						{
@@ -63,9 +69,9 @@ namespace KerbalKonstructs.LaunchSites
 					}
 				}
 
-				MethodInfo updateSitesMI = PSystemSetup.Instance.GetType().GetMethod("SetupLaunchSites", BindingFlags.NonPublic | BindingFlags.Instance);
+				MethodInfo updateSitesMI = PSystemSetup.Instance.GetType().GetMethod("SetupFacilities", BindingFlags.NonPublic | BindingFlags.Instance);
 				if (updateSitesMI == null)
-					Debug.Log("Fail to find SetupLaunchSites().");
+					Debug.Log("Fail to find SetupFacilities().");
 				else
 					updateSitesMI.Invoke(PSystemSetup.Instance, null);
 			}
