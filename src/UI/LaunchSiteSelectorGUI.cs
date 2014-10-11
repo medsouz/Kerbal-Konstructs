@@ -1,5 +1,6 @@
 ﻿using KerbalKonstructs.LaunchSites;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KerbalKonstructs.UI
@@ -33,7 +34,8 @@ namespace KerbalKonstructs.UI
 		{
 			GUILayout.BeginArea(new Rect(10, 25, 270, 465));
 				sitesScrollPosition = GUILayout.BeginScrollView(sitesScrollPosition);
-				foreach (LaunchSite site in LaunchSiteManager.getLaunchSites(editorType))
+				List<LaunchSite> sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType);
+				foreach (LaunchSite site in sites)
 				{
 					GUI.enabled = !(selectedSite == site);
 					if (GUILayout.Button(site.name, GUILayout.Height(30)))

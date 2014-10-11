@@ -221,6 +221,7 @@ namespace KerbalKonstructs.UI
 							obj.siteDescription = "";
 							obj.siteTransform = "";
 							obj.siteLogo = "";
+							obj.siteIcon = "";
 							obj.siteAuthor = "";
 
 							KerbalKonstructs.instance.getStaticDB().addStatic(obj);

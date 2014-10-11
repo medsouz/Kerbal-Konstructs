@@ -15,7 +15,7 @@ namespace KerbalKonstructs
 	public class KerbalKonstructs : MonoBehaviour
 	{
 		public static KerbalKonstructs instance;
-		public static string installDir = AssemblyLoader.loadedAssemblies.GetPathByType(typeof(KerbalKonstructs)).Replace('/', '\\');
+		public static string installDir = AssemblyLoader.loadedAssemblies.GetPathByType(typeof(KerbalKonstructs));
 
 		private CelestialBody currentBody;
 		public StaticObject selectedObject;
@@ -37,8 +37,8 @@ namespace KerbalKonstructs
 		void Awake()
 		{
 			instance = this;
-			if (!loadConfig())
-				saveConfig();
+			loadConfig();
+			saveConfig();
 			GameEvents.onDominantBodyChange.Add(onDominantBodyChange);
 			GameEvents.onLevelWasLoaded.Add(onLevelWasLoaded);
 			GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
@@ -535,7 +535,7 @@ namespace KerbalKonstructs
 
 		public bool loadConfig()
 		{
-			ConfigNode cfg = ConfigNode.Load(installDir + "/KerbalKonstructs.cfg");
+			ConfigNode cfg = ConfigNode.Load(installDir + @"\KerbalKonstructs.cfg".Replace('/', '\\'));
 			if (cfg != null)
 			{
 				foreach (FieldInfo f in GetType().GetFields())
@@ -561,6 +561,7 @@ namespace KerbalKonstructs
 					cfg.AddValue(f.Name, f.GetValue(this));
 				}
 			}
+			Directory.CreateDirectory(installDir);
 			cfg.Save(installDir + "/KerbalKonstructs.cfg", "Kerbal Konstructs - https://github.com/medsouz/Kerbal-Konstructs");
 		}
 	}
