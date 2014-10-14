@@ -93,21 +93,22 @@ namespace KerbalKonstructs
 				updateCache();
 			}
 
-			if (data.Equals(GameScenes.EDITOR) || data.Equals(GameScenes.SPH))
-			{
-				switch (data)
-				{
-					case GameScenes.SPH:
-						selector.setEditorType(SiteType.SPH);
-						break;
-					case GameScenes.EDITOR:
-						selector.setEditorType(SiteType.VAB);
-						break;
-					default:
-						selector.setEditorType(SiteType.Any);
-						break;
-				}
-			}
+            if (data.Equals(GameScenes.EDITOR) || data.Equals(GameScenes.SPH))
+            {
+                selector.Close();
+                switch (data)
+                {
+                    case GameScenes.SPH:
+                        selector.setEditorType(SiteType.SPH);
+                        break;
+                    case GameScenes.EDITOR:
+                        selector.setEditorType(SiteType.VAB);
+                        break;
+                    default:
+                        selector.setEditorType(SiteType.Any);
+                        break;
+                }
+            }
 		}
 
 		void onDominantBodyChange(GameEvents.FromToAction<CelestialBody, CelestialBody> data)
@@ -187,6 +188,10 @@ namespace KerbalKonstructs
 					obj.visibleRange = float.Parse(ins.GetValue("VisibilityRange"));
 					obj.siteName = ins.GetValue("LaunchSiteName") ?? "";
 					obj.siteTransform = ins.GetValue("LaunchPadTransform") ?? "";
+                    obj.launchLength = ins.GetValue("LaunchLength") ?? "?";
+                    obj.launchWidth = ins.GetValue("LaunchWidth") ?? "?";
+                    obj.maxMass = ins.GetValue("MaxMass") ?? "?";
+                    obj.launchDevice = ins.GetValue("LaunchDevice") ?? "Other";
 
 					if (obj.siteTransform == "" && obj.siteName != "")
 					{
@@ -222,7 +227,7 @@ namespace KerbalKonstructs
 					//KerbTown does not support group caching, for compatibility we will put these into "Ungrouped" group to be cached individually
 					obj.groupName = ins.GetValue("Group") ?? "Ungrouped";
 					//Site description
-					obj.siteDescription = ins.GetValue("LaunchSiteDescription") ?? "No description available";
+					obj.siteDescription = ins.GetValue("LaunchSiteDescription") ?? "No description available.";
 					//Site logo
 					String logo = ins.GetValue("LaunchSiteLogo") ?? "";
 					obj.siteLogo = (logo != "") ? model.path + "/" + logo : "";

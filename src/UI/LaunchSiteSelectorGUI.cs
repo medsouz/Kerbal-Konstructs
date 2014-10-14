@@ -10,7 +10,7 @@ namespace KerbalKonstructs.UI
 		LaunchSite selectedSite;
 		private SiteType editorType = SiteType.Any;
 
-		Rect windowRect = new Rect(((Screen.width - Camera.main.rect.x) / 2) + Camera.main.rect.x - 125, (Screen.height / 2 - 250), 600, 500);
+		Rect windowRect = new Rect(300, 50, 700, 580);
 
 		public void drawSelector()
 		{
@@ -29,19 +29,60 @@ namespace KerbalKonstructs.UI
 
 		public Vector2 sitesScrollPosition;
 		public Vector2 descriptionScrollPosition;
-
-		public void drawSelectorWindow(int id)
+        
+        // Changed scope so we can change it by filter ASH 14102014
+        public List<LaunchSite> sites;
+		
+        public void drawSelectorWindow(int id)
 		{
-			GUILayout.BeginArea(new Rect(10, 25, 270, 465));
+            GUILayout.BeginArea(new Rect(10, 25, 370, 550));
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("RocketPads", GUILayout.Width(80)))
+                {
+                    sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "RocketPad");
+                }
+                GUILayout.Space(2);
+                if (GUILayout.Button("Runways", GUILayout.Width(73)))
+                {
+                    sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "Runway");
+                }
+                GUILayout.Space(2);
+                if (GUILayout.Button("Helipads", GUILayout.Width(73)))
+                {
+                    sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "Helipad");
+                }
+                GUILayout.Space(2);
+                if (GUILayout.Button("Other", GUILayout.Width(65)))
+                {
+                    sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "Other");
+                }
+                GUILayout.Space(2);
+                if (GUILayout.Button("ALL", GUILayout.Width(45)))
+                {
+                    sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "ALL");
+                }
+                GUILayout.EndHorizontal();
+
+                GUILayout.Space(10);
 				sitesScrollPosition = GUILayout.BeginScrollView(sitesScrollPosition);
-				List<LaunchSite> sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType);
+
+                if (sites == null) sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "ALL");
+
 				foreach (LaunchSite site in sites)
 				{
 					GUI.enabled = !(selectedSite == site);
 					if (GUILayout.Button(site.name, GUILayout.Height(30)))
 					{
 						selectedSite = site;
+                        // Only do this if site is OPEN - if OPEN then
 						LaunchSiteManager.setLaunchSite(site);
+                        // else
+                        // print up a message that this site is closed
+                        // and auto-deselect
+                        // HOW??
+                        //Like this?
+                        //selectedSite = LaunchSiteManager.getLaunchSites(editorType)[0];
+                        // No probably not cos filters
 					}
 				}
 				GUILayout.EndScrollView();
@@ -52,22 +93,40 @@ namespace KerbalKonstructs.UI
 
 			if (selectedSite != null)
 			{
-				GUILayout.BeginArea(new Rect(290, 25, 300, 465));
+				GUILayout.BeginArea(new Rect(385, 25, 310, 550));
 					GUILayout.Label(selectedSite.logo, GUILayout.Height(280));
-					GUILayout.Label(selectedSite.name);
-					GUILayout.Label("By "+selectedSite.author);
+                    GUILayout.Label(selectedSite.name + " By " + selectedSite.author, GUILayout.ExpandWidth(true));
 					descriptionScrollPosition = GUILayout.BeginScrollView(descriptionScrollPosition);
 						GUILayout.Label(selectedSite.description);
 					GUILayout.EndScrollView();
+                    GUILayout.Label("Length: " + selectedSite.launchLength + " m | Width: " + selectedSite.launchWidth + " m"); 
+                    GUILayout.Label("Recommended Mass: " + selectedSite.maxMass + " t");
+                    GUILayout.Label("Recovery Rating: A-F | Launch Cost: X%");
+                    // Button label should be determined by whether location is open or close
+                    if (GUILayout.Button("OPEN/CLOSE for X Funds", GUILayout.ExpandWidth(true)))
+                    {
+                        // Complex shit. Needs to keep track of whether a location
+                        // is open or closed per save
+                        // Launch selector should not allow launching from a location that is not open
+                        // CANNOT disable closed locations cos we need the second window populated
+                        // unless maybe have a second column of buttons for just pulling up info - ?
+                        // No will not work selected launch site is indicated by being disabled... hmmm
+                        // Funds should be charged for opening a location and gained for closing a location
+                    }
 				GUILayout.EndArea();
 			}
 			else
 			{
-				if (LaunchSiteManager.getLaunchSites().Count > 0)
-				{
-					selectedSite = LaunchSiteManager.getLaunchSites(editorType)[0];
-					LaunchSiteManager.setLaunchSite(selectedSite);
-				}
+                if (LaunchSiteManager.getLaunchSites().Count > 0)
+                {
+                    selectedSite = LaunchSiteManager.getLaunchSites(editorType)[0];
+                    LaunchSiteManager.setLaunchSite(selectedSite);
+                }
+                else
+                {
+                        // TODO Need to handle list filter not having any entries and thus falling back to KSC runway
+                        // or launchpad
+                }
 			}
 		}
 
@@ -83,5 +142,10 @@ namespace KerbalKonstructs.UI
 				LaunchSiteManager.setLaunchSite(selectedSite);
 			}
 		}
+
+        public void Close()
+        {
+            sites = null;
+        }
 	}
 }
