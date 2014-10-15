@@ -29,12 +29,13 @@ namespace KerbalKonstructs.UI
 
 		public Vector2 sitesScrollPosition;
 		public Vector2 descriptionScrollPosition;
-        
-        // Changed scope so we can change it by filter ASH 14102014
+
+        // ASH 14102014 Changed scope so we can change it by LaunchDevice filter
         public List<LaunchSite> sites;
 		
         public void drawSelectorWindow(int id)
 		{
+            // ASH 14102014 LaunchDevice filter handling added. Sloppy repeating of code Ash. Learn to code.
             GUILayout.BeginArea(new Rect(10, 25, 370, 550));
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("RocketPads", GUILayout.Width(80)))
@@ -74,6 +75,7 @@ namespace KerbalKonstructs.UI
 					if (GUILayout.Button(site.name, GUILayout.Height(30)))
 					{
 						selectedSite = site;
+                        // ASH Commentary on adding openclose feature in future
                         // Only do this if site is OPEN - if OPEN then
 						LaunchSiteManager.setLaunchSite(site);
                         // else
@@ -102,9 +104,11 @@ namespace KerbalKonstructs.UI
                     GUILayout.Label("Length: " + selectedSite.launchLength + " m | Width: " + selectedSite.launchWidth + " m"); 
                     GUILayout.Label("Recommended Mass: " + selectedSite.maxMass + " t");
                     GUILayout.Label("Recovery Rating: A-F | Launch Cost: X%");
+                    // ASH STUB for adding openclose feature in future
                     // Button label should be determined by whether location is open or close
                     if (GUILayout.Button("OPEN/CLOSE for X Funds", GUILayout.ExpandWidth(true)))
                     {
+                        // ASH Commentary on adding openclose feature in future
                         // Complex shit. Needs to keep track of whether a location
                         // is open or closed per save
                         // Launch selector should not allow launching from a location that is not open
@@ -113,6 +117,7 @@ namespace KerbalKonstructs.UI
                         // No will not work selected launch site is indicated by being disabled... hmmm
                         // Funds should be charged for opening a location and gained for closing a location
                     }
+                // Why does not GUILayout have an alignment method? I wanna center labels. Unity you suck.
 				GUILayout.EndArea();
 			}
 			else
@@ -124,8 +129,9 @@ namespace KerbalKonstructs.UI
                 }
                 else
                 {
-                        // TODO Need to handle list filter not having any entries and thus falling back to KSC runway
-                        // or launchpad
+                        // ASH
+                        // Maybe TODO Need to handle list filter not having any entries and thus falling back to KSC runway
+                        // or launchpad. Need to think about this more.
                 }
 			}
 		}
@@ -143,6 +149,10 @@ namespace KerbalKonstructs.UI
 			}
 		}
 
+        // ASH and Ravencrow 15102014
+        // Need to handle if Launch Selector is still open when switching from VAB to from SPH
+        // otherwise abuse possible!
+        // THIS HAS NOT BEEN TESTED YET
         public void Close()
         {
             sites = null;

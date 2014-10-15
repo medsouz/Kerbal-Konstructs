@@ -14,8 +14,11 @@ namespace KerbalKonstructs.LaunchSites
 		static LaunchSiteManager()
 		{
 			//Accepting contributions to change my horrible descriptions
-			launchSites.Add(new LaunchSite("KSC Runway", "Squad", SiteType.SPH, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCRunway", false), null, "The KSC runway is a concrete runway measuring about 2.5km long and 70m wide, on a magnetic heading of 90/270. It is not uncommon to see burning chunks of metal sliding across the surface.", "X", "X", "NA", "Runway"));
-            launchSites.Add(new LaunchSite("KSC LaunchPad", "Squad", SiteType.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCLaunchpad", false), null, "The KSC launchpad is a platform used to fire screaming Kerbals into the kosmos. There was a tower here at one point but for some reason nobody seems to know where it went...", "X", "X", "NA", "RocketPad"));
+
+            // ASH 15102014
+            // Added new parameters. Also do not change the name again. Apparently they are unique IDs. Squad, you suck sometimes.
+			launchSites.Add(new LaunchSite("Runway", "Squad", SiteType.SPH, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCRunway", false), null, "The KSC runway is a concrete runway measuring about 2.5km long and 70m wide, on a magnetic heading of 90/270. It is not uncommon to see burning chunks of metal sliding across the surface.", "X", "X", "NA", "Runway"));
+            launchSites.Add(new LaunchSite("LaunchPad", "Squad", SiteType.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCLaunchpad", false), null, "The KSC launchpad is a platform used to fire screaming Kerbals into the kosmos. There was a tower here at one point but for some reason nobody seems to know where it went...", "X", "X", "NA", "RocketPad"));
 		}
 
 		//This is pretty much ripped from KerbTown, sorry
@@ -59,6 +62,8 @@ namespace KerbalKonstructs.LaunchSites
 								logo = GameDatabase.Instance.GetTexture(obj.siteLogo, false);
 							if (obj.siteIcon != "")
 								icon = GameDatabase.Instance.GetTexture(obj.siteIcon, false);
+
+                            // ASH 15102014 Added new parameters
 							launchSites.Add(new LaunchSite(obj.siteName, (obj.siteAuthor != "") ? obj.siteAuthor : obj.model.author, obj.siteType, logo, icon, obj.siteDescription, obj.launchLength, obj.launchWidth, obj.maxMass, obj.launchDevice));
 							Debug.Log("Created launch site \"" + newFacility.name + "\" with transform " + obj.siteName + "/" + obj.siteTransform);
 						}
@@ -83,6 +88,7 @@ namespace KerbalKonstructs.LaunchSites
 
         public static List<LaunchSite> getLaunchSites(String usedFilter = "ALL")
 		{
+            // ASH 15102014 Added handling for new LaunchDevice filter
             List<LaunchSite> sites = new List<LaunchSite>();
             foreach (LaunchSite site in launchSites)
             {
@@ -104,6 +110,7 @@ namespace KerbalKonstructs.LaunchSites
 
 		public static List<LaunchSite> getLaunchSites(SiteType type, Boolean allowAny = true, String appliedFilter = "ALL")
 		{
+            // ASH 15102014 Added handling for new LaunchDevice filter
 			List<LaunchSite> sites = new List<LaunchSite>();
 			foreach (LaunchSite site in launchSites)
 			{

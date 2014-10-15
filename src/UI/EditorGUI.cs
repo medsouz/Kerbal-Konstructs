@@ -59,6 +59,8 @@ namespace KerbalKonstructs.UI
 
 		//TODO: rewrite this to use magical GUILayout code
 		//I wish I knew GUILayout was a thing when I made this :(
+
+        // ASH I feel your pain. Want me to rewrite this?
 		void drawToolWindow(int windowID)
 		{
 			GUI.Label(new Rect(21, 30, 203, 25), "Position");
@@ -185,6 +187,7 @@ namespace KerbalKonstructs.UI
 
 		void drawEditorWindow(int id)
 		{
+            // ASH 15102014 Layout changes. medsouz, let me know if you like.
 			GUILayout.BeginArea(new Rect(10, 25, 125, 365));
 				//GUILayout.BeginHorizontal();
 					GUI.enabled = !creating;
@@ -206,6 +209,7 @@ namespace KerbalKonstructs.UI
 				{
 					foreach (StaticModel model in KerbalKonstructs.instance.getStaticDB().getModels())
 					{
+                        // ASH 15102014 Removed redundant info from the path. Only need to know the content mod really
                         String[] modelpaths = model.path.Split('/');
                         String firstpath = modelpaths.Length > 0 ? modelpaths[0] : model.path;
 
@@ -318,6 +322,7 @@ namespace KerbalKonstructs.UI
 			GUILayout.EndHorizontal();
 			siteTypeMenu.Show(rect);
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
+            // ASH Worth considering doing this for the launch selector?
 		}
 
 		public void updateSelection(StaticObject obj)

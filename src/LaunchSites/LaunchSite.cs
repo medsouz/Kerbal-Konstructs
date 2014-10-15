@@ -11,6 +11,9 @@ namespace KerbalKonstructs.LaunchSites
 		public Texture logo;
 		public Texture icon;
 		public string description;
+
+        // ASH 15102014 Added new parameters. Damn KerbTown had sucky architecture. I love legacy code.
+        // OO means I should not have to change multiple classes just to add some parameters. Gah.
         public string launchLength;
         public string launchWidth;
         public string maxMass;
@@ -24,6 +27,8 @@ namespace KerbalKonstructs.LaunchSites
 			logo = sLogo;
 			icon = sIcon;
 			description = sDescription;
+
+            // ASH 15102014 Added new parameters. Again. Sigh.
             launchLength = sLength;
             launchWidth = sWidth;
             maxMass = sMass;

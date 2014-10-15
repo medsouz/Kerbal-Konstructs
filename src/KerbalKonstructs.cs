@@ -188,6 +188,7 @@ namespace KerbalKonstructs
 					obj.visibleRange = float.Parse(ins.GetValue("VisibilityRange"));
 					obj.siteName = ins.GetValue("LaunchSiteName") ?? "";
 					obj.siteTransform = ins.GetValue("LaunchPadTransform") ?? "";
+                    // ASH New 15102014
                     obj.launchLength = ins.GetValue("LaunchLength") ?? "?";
                     obj.launchWidth = ins.GetValue("LaunchWidth") ?? "?";
                     obj.maxMass = ins.GetValue("MaxMass") ?? "?";
@@ -526,6 +527,8 @@ namespace KerbalKonstructs
 			showSelector = false;
 			//Make sure the editor doesn't think you're still mousing over the site selector
 			InputLockManager.RemoveControlLock("KKEditorLock");
+
+            // ASH May need another look now that left top is absolute. Now causing issues with parts info window
 		}
 
 		void doNothing()
