@@ -173,3 +173,6 @@ UpgradeLog*.htm
 # Microsoft Fakes
 FakesAssemblies/
 /External binaries
+
+#Kerbal Space Program assets
+KSPResources/*.dll
