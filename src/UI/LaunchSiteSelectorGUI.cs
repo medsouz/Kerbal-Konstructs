@@ -97,12 +97,14 @@ namespace KerbalKonstructs.UI
 			{
 				GUILayout.BeginArea(new Rect(385, 25, 310, 550));
 					GUILayout.Label(selectedSite.logo, GUILayout.Height(280));
-                    GUILayout.Label(selectedSite.name + " By " + selectedSite.author, GUILayout.ExpandWidth(true));
+					// ASH 17102014 Still trying to find the odd centering bug. I think GUILayout is just unreliable crap.
+                    GUILayout.Label(selectedSite.name + " By " + selectedSite.author);
 					descriptionScrollPosition = GUILayout.BeginScrollView(descriptionScrollPosition);
 						GUILayout.Label(selectedSite.description);
 					GUILayout.EndScrollView();
                     GUILayout.Label("Length: " + selectedSite.launchLength + " m | Width: " + selectedSite.launchWidth + " m"); 
                     GUILayout.Label("Recommended Mass: " + selectedSite.maxMass + " t");
+					// ASH STUB for adding recovery rating and launch cost modifier feature in future
                     GUILayout.Label("Recovery Rating: A-F | Launch Cost: X%");
                     // ASH STUB for adding openclose feature in future
                     // Button label should be determined by whether location is open or close
@@ -116,6 +118,9 @@ namespace KerbalKonstructs.UI
                         // unless maybe have a second column of buttons for just pulling up info - ?
                         // No will not work selected launch site is indicated by being disabled... hmmm
                         // Funds should be charged for opening a location and gained for closing a location
+
+                        // Funding.Instance.AddFunds(X, TransactionReasons.X);
+                        Double CurrentFunds = Funding.Instance.Funds;
                     }
                 // Why does not GUILayout have an alignment method? I wanna center labels. Unity you suck.
 				GUILayout.EndArea();
@@ -152,7 +157,6 @@ namespace KerbalKonstructs.UI
         // ASH and Ravencrow 15102014
         // Need to handle if Launch Selector is still open when switching from VAB to from SPH
         // otherwise abuse possible!
-        // THIS HAS NOT BEEN TESTED YET
         public void Close()
         {
             sites = null;

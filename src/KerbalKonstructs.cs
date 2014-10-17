@@ -268,6 +268,10 @@ namespace KerbalKonstructs
 				Debug.Log("Saving "+model.config);
 				ConfigNode staticNode = new ConfigNode("STATIC");
 				ConfigNode modelConfig = GameDatabase.Instance.GetConfigNode(model.config);
+				
+				// ASH 17102014 WTF??? This is why configs lose additions
+				// Instances are being completely rewritten
+				// Is there a better way?
 				modelConfig.RemoveNodes("Instances");
 
 				foreach (StaticObject obj in staticDB.getObjectsFromModel(model))
@@ -291,6 +295,17 @@ namespace KerbalKonstructs
 						inst.AddValue("LaunchSiteType", obj.siteType.ToString().ToUpper());
 						if(obj.siteAuthor != "")
 							inst.AddValue("LaunchSiteAuthor", obj.siteAuthor);
+
+						// ASH 17102014 Added new instance parameters cos they were getting wiped
+						if (obj.launchDevice != "")
+							inst.AddValue("LaunchDevice", obj.launchDevice);
+						if (obj.launchLength != "")
+							inst.AddValue("LaunchLength", obj.launchLength);
+						if (obj.launchWidth != "")
+							inst.AddValue("LaunchWidth", obj.launchWidth);
+						if (obj.maxMass != "")
+							inst.AddValue("MaxMass", obj.maxMass);
+
 					}
 					modelConfig.nodes.Add(inst);
 				}
