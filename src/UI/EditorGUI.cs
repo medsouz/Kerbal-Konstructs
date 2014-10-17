@@ -43,7 +43,7 @@ namespace KerbalKonstructs.UI
 		}
 
 		Rect toolRect = new Rect(50, 50, 336, 250);
-		Rect editorRect = new Rect(50, 350, 500, 295);
+		Rect editorRect = new Rect(50, 100, 700, 400);
 		Rect siteEditorRect = new Rect(400, 50, 330, 350);
 
 		private GUIStyle listStyle = new GUIStyle();
@@ -59,6 +59,8 @@ namespace KerbalKonstructs.UI
 
 		//TODO: rewrite this to use magical GUILayout code
 		//I wish I knew GUILayout was a thing when I made this :(
+
+        // ASH I feel your pain. Want me to rewrite this?
 		void drawToolWindow(int windowID)
 		{
 			GUI.Label(new Rect(21, 30, 203, 25), "Position");
@@ -185,27 +187,33 @@ namespace KerbalKonstructs.UI
 
 		void drawEditorWindow(int id)
 		{
-			GUILayout.BeginArea(new Rect(10, 25, 240, 265));
-				GUILayout.BeginHorizontal();
+            // ASH 15102014 Layout changes. medsouz, let me know if you like.
+			GUILayout.BeginArea(new Rect(10, 25, 125, 365));
+				//GUILayout.BeginHorizontal();
 					GUI.enabled = !creating;
 					if (GUILayout.Button("New Object", GUILayout.Width(115)))
 						creating = true;
-					GUILayout.Space(5);
+					//GUILayout.Space(5);
 					GUI.enabled = creating;
 					if (GUILayout.Button("Existing Object", GUILayout.Width(115)))
 						creating = false;
 					GUI.enabled = true;
-				GUILayout.EndHorizontal();
+				//GUILayout.EndHorizontal();
+                    GUILayout.Space(10);
 				if (GUILayout.Button("Save Objects", GUILayout.Width(115)))
 					KerbalKonstructs.instance.saveObjects();
 			GUILayout.EndArea();
-			GUILayout.BeginArea(new Rect(255, 25, 240, 265));
+			GUILayout.BeginArea(new Rect(135, 25, 540, 365));
 				scrollPos = GUILayout.BeginScrollView(scrollPos);
 				if (creating)
 				{
 					foreach (StaticModel model in KerbalKonstructs.instance.getStaticDB().getModels())
 					{
-						if (GUILayout.Button(model.meshName + " [" + model.path + "]"))
+                        // ASH 15102014 Removed redundant info from the path. Only need to know the content mod really
+                        String[] modelpaths = model.path.Split('/');
+                        String firstpath = modelpaths.Length > 0 ? modelpaths[0] : model.path;
+
+						if (GUILayout.Button(model.meshName + " [" + firstpath + "]"))
 						{
 							StaticObject obj = new StaticObject();
 							obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.meshName);
@@ -233,8 +241,10 @@ namespace KerbalKonstructs.UI
 				{
 					foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
 					{
+                        String[] modelpaths = obj.model.path.Split('/');
+                        String firstpath = modelpaths.Length > 0 ? modelpaths[0] : obj.model.path;
 						GUI.enabled = !(obj == selectedObject);
-						if (GUILayout.Button(((obj.siteName != "") ? obj.siteName + "(" + obj.model.meshName + ")" : obj.model.meshName) + " [" + obj.model.path + "]"))
+						if (GUILayout.Button(((obj.siteName != "") ? obj.siteName + "(" + obj.model.meshName + ")" : obj.model.meshName) + " [" + firstpath + "]"))
 						{
 							//TODO: Move PQS target to object position
 							KerbalKonstructs.instance.selectObject(obj);
@@ -312,6 +322,7 @@ namespace KerbalKonstructs.UI
 			GUILayout.EndHorizontal();
 			siteTypeMenu.Show(rect);
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
+            // ASH Worth considering doing this for the launch selector?
 		}
 
 		public void updateSelection(StaticObject obj)

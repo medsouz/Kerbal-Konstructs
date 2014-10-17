@@ -93,21 +93,22 @@ namespace KerbalKonstructs
 				updateCache();
 			}
 
-			if (data.Equals(GameScenes.EDITOR) || data.Equals(GameScenes.SPH))
-			{
-				switch (data)
-				{
-					case GameScenes.SPH:
-						selector.setEditorType(SiteType.SPH);
-						break;
-					case GameScenes.EDITOR:
-						selector.setEditorType(SiteType.VAB);
-						break;
-					default:
-						selector.setEditorType(SiteType.Any);
-						break;
-				}
-			}
+            if (data.Equals(GameScenes.EDITOR) || data.Equals(GameScenes.SPH))
+            {
+                selector.Close();
+                switch (data)
+                {
+                    case GameScenes.SPH:
+                        selector.setEditorType(SiteType.SPH);
+                        break;
+                    case GameScenes.EDITOR:
+                        selector.setEditorType(SiteType.VAB);
+                        break;
+                    default:
+                        selector.setEditorType(SiteType.Any);
+                        break;
+                }
+            }
 		}
 
 		void onDominantBodyChange(GameEvents.FromToAction<CelestialBody, CelestialBody> data)
@@ -187,6 +188,11 @@ namespace KerbalKonstructs
 					obj.visibleRange = float.Parse(ins.GetValue("VisibilityRange"));
 					obj.siteName = ins.GetValue("LaunchSiteName") ?? "";
 					obj.siteTransform = ins.GetValue("LaunchPadTransform") ?? "";
+                    // ASH New 15102014
+                    obj.launchLength = ins.GetValue("LaunchLength") ?? "?";
+                    obj.launchWidth = ins.GetValue("LaunchWidth") ?? "?";
+                    obj.maxMass = ins.GetValue("MaxMass") ?? "?";
+                    obj.launchDevice = ins.GetValue("LaunchDevice") ?? "Other";
 
 					if (obj.siteTransform == "" && obj.siteName != "")
 					{
@@ -222,7 +228,7 @@ namespace KerbalKonstructs
 					//KerbTown does not support group caching, for compatibility we will put these into "Ungrouped" group to be cached individually
 					obj.groupName = ins.GetValue("Group") ?? "Ungrouped";
 					//Site description
-					obj.siteDescription = ins.GetValue("LaunchSiteDescription") ?? "No description available";
+					obj.siteDescription = ins.GetValue("LaunchSiteDescription") ?? "No description available.";
 					//Site logo
 					String logo = ins.GetValue("LaunchSiteLogo") ?? "";
 					obj.siteLogo = (logo != "") ? model.path + "/" + logo : "";
@@ -262,6 +268,10 @@ namespace KerbalKonstructs
 				Debug.Log("Saving "+model.config);
 				ConfigNode staticNode = new ConfigNode("STATIC");
 				ConfigNode modelConfig = GameDatabase.Instance.GetConfigNode(model.config);
+				
+				// ASH 17102014 WTF??? This is why configs lose additions
+				// Instances are being completely rewritten
+				// Is there a better way?
 				modelConfig.RemoveNodes("Instances");
 
 				foreach (StaticObject obj in staticDB.getObjectsFromModel(model))
@@ -285,6 +295,17 @@ namespace KerbalKonstructs
 						inst.AddValue("LaunchSiteType", obj.siteType.ToString().ToUpper());
 						if(obj.siteAuthor != "")
 							inst.AddValue("LaunchSiteAuthor", obj.siteAuthor);
+
+						// ASH 17102014 Added new instance parameters cos they were getting wiped
+						if (obj.launchDevice != "")
+							inst.AddValue("LaunchDevice", obj.launchDevice);
+						if (obj.launchLength != "")
+							inst.AddValue("LaunchLength", obj.launchLength);
+						if (obj.launchWidth != "")
+							inst.AddValue("LaunchWidth", obj.launchWidth);
+						if (obj.maxMass != "")
+							inst.AddValue("MaxMass", obj.maxMass);
+
 					}
 					modelConfig.nodes.Add(inst);
 				}
@@ -521,6 +542,8 @@ namespace KerbalKonstructs
 			showSelector = false;
 			//Make sure the editor doesn't think you're still mousing over the site selector
 			InputLockManager.RemoveControlLock("KKEditorLock");
+
+            // ASH May need another look now that left top is absolute. Now causing issues with parts info window
 		}
 
 		void doNothing()

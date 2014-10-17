@@ -23,6 +23,13 @@ namespace KerbalKonstructs.StaticObjects
 		public string siteLogo;
 		public string siteIcon;
 		public string siteAuthor;
+
+        // ASH 15102014 Added new parameters
+        public string launchLength;
+        public string launchWidth;
+        public string maxMass;
+        public string launchDevice;
+
 		public LaunchSites.SiteType siteType;
 
 		public Boolean editing;
