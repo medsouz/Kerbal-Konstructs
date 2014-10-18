@@ -21,28 +21,28 @@ namespace KerbalKonstructs.LaunchSites
 		//This is pretty much ripped from KerbTown, sorry
 		public static void createLaunchSite(StaticObject obj)
 		{
-			if (obj.siteTransform != "" && obj.gameObject.transform.Find(obj.siteTransform) != null)
+			if (obj.settings.ContainsKey("LaunchSiteName") && obj.gameObject.transform.Find((string) obj.getSetting("LaunchPadTransform")) != null)
 			{
-				Debug.Log("Creating launch site " + obj.siteName);
-				obj.gameObject.transform.name = obj.siteName;
-				obj.gameObject.name = obj.siteName;
+				Debug.Log("Creating launch site " + obj.getSetting("LaunchSiteName"));
+				obj.gameObject.transform.name = (string) obj.getSetting("LaunchSiteName");
+				obj.gameObject.name = (string) obj.getSetting("LaunchSiteName");
 
 				foreach (FieldInfo fi in PSystemSetup.Instance.GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance))
 				{
 					if (fi.FieldType.Name == "SpaceCenterFacility[]")
 					{
 						PSystemSetup.SpaceCenterFacility[] facilities = (PSystemSetup.SpaceCenterFacility[])fi.GetValue(PSystemSetup.Instance);
-						if (PSystemSetup.Instance.GetSpaceCenterFacility(obj.siteName) == null)
+						if (PSystemSetup.Instance.GetSpaceCenterFacility((string) obj.getSetting("LaunchSiteName")) == null)
 						{
 							PSystemSetup.SpaceCenterFacility newFacility = new PSystemSetup.SpaceCenterFacility();
-							newFacility.name = obj.siteName;
+							newFacility.name = (string) obj.getSetting("LaunchSiteName");
 							newFacility.facilityName = obj.gameObject.name;
-							newFacility.facilityPQS = obj.parentBody.pqsController;
+							newFacility.facilityPQS = ((CelestialBody) obj.getSetting("CelestialBody")).pqsController;
 							newFacility.facilityTransformName = obj.gameObject.name;
-							newFacility.pqsName = obj.parentBody.pqsController.name;
+							newFacility.pqsName = ((CelestialBody) obj.getSetting("CelestialBody")).pqsController.name;
 							PSystemSetup.SpaceCenterFacility.SpawnPoint spawnPoint = new PSystemSetup.SpaceCenterFacility.SpawnPoint();
-							spawnPoint.name = obj.siteName;
-							spawnPoint.spawnTransformURL = obj.siteTransform;
+							spawnPoint.name = (string) obj.getSetting("LaunchSiteName");
+							spawnPoint.spawnTransformURL = (string) obj.getSetting("LaunchPadTransform");
 							newFacility.spawnPoints = new PSystemSetup.SpaceCenterFacility.SpawnPoint[1];
 							newFacility.spawnPoints[0] = spawnPoint;
 							PSystemSetup.SpaceCenterFacility[] newFacilities = new PSystemSetup.SpaceCenterFacility[facilities.Length + 1];
@@ -55,16 +55,16 @@ namespace KerbalKonstructs.LaunchSites
 							facilities = newFacilities;
 							Texture logo = defaultLaunchSiteLogo;
 							Texture icon = null;
-							if(obj.siteLogo != "")
-								logo = GameDatabase.Instance.GetTexture(obj.siteLogo, false);
-							if (obj.siteIcon != "")
-								icon = GameDatabase.Instance.GetTexture(obj.siteIcon, false);
-							launchSites.Add(new LaunchSite(obj.siteName, (obj.siteAuthor != "") ? obj.siteAuthor : obj.model.author, obj.siteType, logo, icon, obj.siteDescription));
-							Debug.Log("Created launch site \"" + newFacility.name + "\" with transform " + obj.siteName + "/" + obj.siteTransform);
+							if(obj.settings.ContainsKey("LaunchSiteLogo"))
+								logo = GameDatabase.Instance.GetTexture(obj.model.path + "/" + obj.getSetting("LaunchSiteLogo"), false);
+							if(obj.settings.ContainsKey("LaunchSiteIcon"))
+								icon = GameDatabase.Instance.GetTexture(obj.model.path + "/" + obj.getSetting("LaunchSiteIcon"), false);
+							launchSites.Add(new LaunchSite((string) obj.getSetting("LaunchSiteName"), (obj.settings.ContainsKey("LaunchSiteAuthor")) ? (string)obj.getSetting("LaunchSiteAuthor") : (string)obj.model.getSetting("author"), (SiteType) obj.getSetting("LaunchSiteType"), logo, icon, (string) obj.getSetting("LaunchSiteDescription")));
+							Debug.Log("Created launch site \"" + newFacility.name + "\" with transform " + obj.getSetting("LaunchSiteName") + "/" + obj.getSetting("LaunchPadTransform"));
 						}
 						else
 						{
-							Debug.Log("Launch site " + obj.siteName + " already exists");
+							Debug.Log("Launch site " + obj.getSetting("LaunchSiteName") + " already exists");
 						}
 					}
 				}
@@ -77,7 +77,7 @@ namespace KerbalKonstructs.LaunchSites
 			}
 			else
 			{
-				Debug.Log("Launch pad transform \"" + obj.siteTransform + "\" missing for " + obj.siteName);
+				Debug.Log("Launch pad transform \"" + obj.getSetting("LaunchPadTransform") + "\" missing for " + obj.getSetting("LaunchSiteName"));
 			}
 		}
 

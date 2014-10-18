@@ -34,8 +34,8 @@ namespace KerbalKonstructs.StaticObjects
 			Vector3 center = Vector3.zero;
 			foreach (StaticObject obj in childObjects)
 			{
-				if (obj.visibleRange > highestVisibility)
-					highestVisibility = obj.visibleRange;
+				if ((float) obj.getSetting("VisibilityRange") > highestVisibility)
+					highestVisibility = (float) obj.getSetting("VisibilityRange");
 
 				center += obj.gameObject.transform.position;
 			}
@@ -65,7 +65,7 @@ namespace KerbalKonstructs.StaticObjects
 			foreach (StaticObject obj in childObjects)
 			{
 				float dist = Vector3.Distance(obj.gameObject.transform.position, playerPos);
-				bool visible = (dist < obj.visibleRange);
+				bool visible = (dist < (float) obj.getSetting("VisibilityRange"));
 				if (visible != obj.gameObject.activeSelf)
 				{
 					//Debug.Log("Setting " + obj.gameObject.name + " to visible=" + visible);

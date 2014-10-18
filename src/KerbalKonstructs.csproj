@@ -51,6 +51,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="API\Config\ConfigCelestialBody.cs" />
+    <Compile Include="API\Config\ConfigFile.cs" />
+    <Compile Include="API\Config\ConfigFloat.cs" />
+    <Compile Include="API\Config\ConfigGenericString.cs" />
+    <Compile Include="API\Config\ConfigSiteType.cs" />
+    <Compile Include="API\Config\ConfigVector3.cs" />
+    <Compile Include="API\Config\IConfigItem.cs" />
+    <Compile Include="API\KKAPI.cs" />
     <Compile Include="LaunchSites\LaunchSite.cs" />
     <Compile Include="Modules\AnimateOnClick.cs" />
     <Compile Include="Modules\Compat\AnimateOnClick.cs" />
@@ -70,7 +78,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\LaunchSiteSelectorGUI.cs" />
     <Compile Include="UI\MapIconManager.cs" />
-    <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

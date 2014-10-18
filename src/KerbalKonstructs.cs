@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using KerbalKonstructs.StaticObjects;
 using KerbalKonstructs.LaunchSites;
 using KerbalKonstructs.UI;
 using System.Reflection;
 using KerbalKonstructs.SpaceCenters;
+using KerbalKonstructs.API;
+using KerbalKonstructs.API.Config;
 
 namespace KerbalKonstructs
 {
@@ -37,6 +40,34 @@ namespace KerbalKonstructs
 		void Awake()
 		{
 			instance = this;
+			//Setup configuration
+			KKAPI.addModelSetting("mesh", new ConfigFile());
+			ConfigGenericString authorConfig = new ConfigGenericString();
+			authorConfig.setDefaultValue("Unknown");
+			KKAPI.addModelSetting("author", authorConfig);
+			KKAPI.addModelSetting("DefaultLaunchPadTransform", new ConfigGenericString());
+
+			KKAPI.addInstanceSetting("CelestialBody", new ConfigCelestialBody());
+			KKAPI.addInstanceSetting("RadialPosition", new ConfigVector3());
+			KKAPI.addInstanceSetting("Orientation", new ConfigVector3());
+			KKAPI.addInstanceSetting("RadiusOffset", new ConfigFloat());
+			KKAPI.addInstanceSetting("RotationAngle", new ConfigFloat());
+			ConfigFloat visibilityConfig = new ConfigFloat();
+			visibilityConfig.setDefaultValue(25000f);
+			KKAPI.addInstanceSetting("VisibilityRange", visibilityConfig);
+			KKAPI.addInstanceSetting("LaunchSiteName", new ConfigGenericString());
+			KKAPI.addInstanceSetting("LaunchPadTransform", new ConfigGenericString());
+			KKAPI.addInstanceSetting("LaunchSiteAuthor", new ConfigGenericString());
+			ConfigGenericString groupConfig = new ConfigGenericString();
+			groupConfig.setDefaultValue("Ungrouped");
+			KKAPI.addInstanceSetting("Group", groupConfig);
+			ConfigGenericString descriptionConfig = new ConfigGenericString();
+			descriptionConfig.setDefaultValue("No description available");
+			KKAPI.addInstanceSetting("LaunchSiteDescription", descriptionConfig);
+			KKAPI.addInstanceSetting("LaunchSiteLogo", new ConfigGenericString());
+			KKAPI.addInstanceSetting("LaunchSiteIcon", new ConfigGenericString());
+			KKAPI.addInstanceSetting("LaunchSiteType", new ConfigSiteType());
+
 			loadConfig();
 			saveConfig();
 			GameEvents.onDominantBodyChange.Add(onDominantBodyChange);
@@ -78,7 +109,7 @@ namespace KerbalKonstructs
 			if (data.Equals(GameScenes.SPACECENTER))
 			{
 				//Assume that the Space Center is on Kerbin
-				currentBody = Util.getCelestialBody("Kerbin");
+				currentBody = KKAPI.getCelestialBody("Kerbin");
 				staticDB.onBodyChanged(currentBody);
 			}
 			else if (!data.Equals(GameScenes.FLIGHT))//Cache everywhere except the space center or during flight
@@ -144,13 +175,11 @@ namespace KerbalKonstructs
 			foreach(UrlDir.UrlConfig conf in configs)
 			{
 				StaticModel model = new StaticModel();
-				model.author = conf.config.GetValue("author") ?? "Unknown";
-				model.meshName = conf.config.GetValue("mesh");
-				model.meshName = model.meshName.Substring(0, model.meshName.LastIndexOf('.'));//remove file extension
 				model.path = Path.GetDirectoryName(Path.GetDirectoryName(conf.url));
 				model.config = conf.url;
 				model.configPath = conf.url.Substring(0, conf.url.LastIndexOf('/')) + ".cfg";
-				model.defaultSiteTransform = conf.config.GetValue("DefaultLaunchPadTransform") ?? "";
+				model.settings = KKAPI.loadConfig(conf.config, KKAPI.getModelSettings());
+
 				foreach (ConfigNode ins in conf.config.GetNodes("MODULE"))
 				{
 					Debug.Log("Found module: "+ins.name+" in "+conf.name);
@@ -176,77 +205,43 @@ namespace KerbalKonstructs
 				{
 					StaticObject obj = new StaticObject();
 					obj.model = model;
-					obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.meshName);
-					string bodyName = ins.GetValue("CelestialBody");
-					CelestialBody body = Util.getCelestialBody(bodyName);
-					obj.parentBody = body;
-					obj.position = ConfigNode.ParseVector3(ins.GetValue("RadialPosition"));
-					obj.altitude = float.Parse(ins.GetValue("RadiusOffset"));
-					obj.orientation = ConfigNode.ParseVector3(ins.GetValue("Orientation"));
-					obj.rotation = float.Parse(ins.GetValue("RotationAngle"));
-					obj.visibleRange = float.Parse(ins.GetValue("VisibilityRange"));
-					obj.siteName = ins.GetValue("LaunchSiteName") ?? "";
-					obj.siteTransform = ins.GetValue("LaunchPadTransform") ?? "";
+					obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.getSetting("mesh"));
 
-					if (obj.siteTransform == "" && obj.siteName != "")
+					obj.settings = KKAPI.loadConfig(ins, KKAPI.getInstanceSettings());
+
+					if (!obj.settings.ContainsKey("LaunchPadTransform") && obj.settings.ContainsKey("LaunchSiteName"))
 					{
-						if (model.defaultSiteTransform != "")
+						if (model.settings.Keys.Contains("DefaultLaunchPadTransform"))
 						{
-							obj.siteTransform = model.defaultSiteTransform;
+							obj.settings.Add("LaunchPadTransform", model.getSetting("DefaultLaunchPadTransform"));
 						}
 						else
 						{
-							Debug.Log("Launch site is missing a transform. Defaulting to " + obj.siteName + "_spawn...");
-							if (obj.gameObject.transform.Find(obj.siteName + "_spawn") != null)
+							Debug.Log("Launch site is missing a transform. Defaulting to " + obj.getSetting("LaunchSiteName") + "_spawn...");
+							if (obj.gameObject.transform.Find(obj.getSetting("LaunchSiteName") + "_spawn") != null)
 							{
-								obj.siteTransform = obj.siteName + "_spawn";
+								obj.settings.Add("LaunchPadTransform", obj.getSetting("LaunchSiteName") + "_spawn");
 							}
 							else
 							{
-								Debug.Log("FAILED: "+ obj.siteName + "_spawn does not exist! Attempting to use any transform with _spawn in the name.");
+								Debug.Log("FAILED: " + obj.getSetting("LaunchSiteName") + "_spawn does not exist! Attempting to use any transform with _spawn in the name.");
 								Transform lastResort = obj.gameObject.transform.Cast<Transform>().FirstOrDefault(trans => trans.name.EndsWith("_spawn"));
 								if (lastResort != null)
 								{
 									Debug.Log("Using " + lastResort.name + " as launchpad transform");
-									obj.siteTransform = lastResort.name;
+									obj.settings.Add("LaunchPadTransform", lastResort.name);
 								}
 								else
 								{
-									Debug.Log("All attempts at finding launchpad transform have failed (╯°□°）╯︵ ┻━┻");
+									Debug.Log("All attempts at finding a launchpad transform have failed (╯°□°）╯︵ ┻━┻");
 								}
 							}
 						}
 					}
 
-					//NEW VARIABLES 
-					//KerbTown does not support group caching, for compatibility we will put these into "Ungrouped" group to be cached individually
-					obj.groupName = ins.GetValue("Group") ?? "Ungrouped";
-					//Site description
-					obj.siteDescription = ins.GetValue("LaunchSiteDescription") ?? "No description available";
-					//Site logo
-					String logo = ins.GetValue("LaunchSiteLogo") ?? "";
-					obj.siteLogo = (logo != "") ? model.path + "/" + logo : "";
-					//Site icon
-					String icon = ins.GetValue("LaunchSiteIcon") ?? "";
-					obj.siteIcon = (icon != "") ? model.path + "/" + icon : "";
-					//Site type: VAB, SPH, or ANY
-					switch (ins.GetValue("LaunchSiteType") ?? "ANY")
-					{
-						case "VAB":
-							obj.siteType = SiteType.VAB;
-							break;
-						case "SPH":
-							obj.siteType = SiteType.SPH;
-							break;
-						default:
-							obj.siteType = SiteType.Any;
-							break;
-					}
-					obj.siteAuthor = ins.GetValue("LaunchSiteAuthor") ?? "";
-
 					staticDB.addStatic(obj);
 					spawnObject(obj, false);
-					if (obj.siteName != "")
+					if (obj.settings.ContainsKey("LaunchSiteName"))
 					{
 						LaunchSiteManager.createLaunchSite(obj);
 					}
@@ -257,7 +252,8 @@ namespace KerbalKonstructs
 
 		public void saveObjects()
 		{
-			foreach (StaticModel model in staticDB.getModels())
+			//TODO: REIMPLEMENT THIS YOU LAZY FUCK
+			/*foreach (StaticModel model in staticDB.getModels())
 			{
 				Debug.Log("Saving "+model.config);
 				ConfigNode staticNode = new ConfigNode("STATIC");
@@ -291,7 +287,7 @@ namespace KerbalKonstructs
 
 				staticNode.AddNode(modelConfig);
 				staticNode.Save(KSPUtil.ApplicationRootPath + "GameData/" + model.configPath, "Generated by Kerbal Konstructs - https://github.com/medsouz/Kerbal-Konstructs");
-			}
+			}*/
 		}
 
 		public void spawnObject(StaticObject obj, Boolean editing)
@@ -299,7 +295,6 @@ namespace KerbalKonstructs
 			obj.gameObject.SetActive(editing);//Objects spawned at runtime should be active
 			Transform[] gameObjectList = obj.gameObject.GetComponentsInChildren<Transform>();
 			List<GameObject> rendererList = (from t in gameObjectList where t.gameObject.renderer != null select t.gameObject).ToList();
-			List<GameObject> colliderList = (from t in gameObjectList where t.gameObject.collider != null select t.gameObject).ToList();
 
 			setLayerRecursively(obj.gameObject, 15);
 
@@ -312,20 +307,20 @@ namespace KerbalKonstructs
 			{
 				renderers = rendererList.ToArray(),
 				objects = new GameObject[0],
-				visibleRange = obj.visibleRange
+				visibleRange = (float)obj.getSetting("VisibilityRange")
 			};
 			obj.pqsCity = obj.gameObject.AddComponent<PQSCity>();
 			obj.pqsCity.lod = new[] { range };
 			obj.pqsCity.frameDelta = 1; //Unknown
 			obj.pqsCity.repositionToSphere = true; //enable repositioning
 			obj.pqsCity.repositionToSphereSurface = false; //Snap to surface?
-			obj.pqsCity.repositionRadial = obj.position; //position
-			obj.pqsCity.repositionRadiusOffset = obj.altitude; //height
-			obj.pqsCity.reorientInitialUp = obj.orientation; //orientation
-			obj.pqsCity.reorientFinalAngle = obj.rotation; //rotation x axis
+			obj.pqsCity.repositionRadial = (Vector3)obj.getSetting("RadialPosition"); //position
+			obj.pqsCity.repositionRadiusOffset = (float)obj.getSetting("RadiusOffset"); //height
+			obj.pqsCity.reorientInitialUp = (Vector3)obj.getSetting("Orientation"); //orientation
+			obj.pqsCity.reorientFinalAngle = (float)obj.getSetting("RotationAngle"); //rotation x axis
 			obj.pqsCity.reorientToSphere = true; //adjust rotations to match the direction of gravity
-			obj.gameObject.transform.parent = obj.parentBody.pqsController.transform;
-			obj.pqsCity.sphere = obj.parentBody.pqsController;
+			obj.gameObject.transform.parent = ((CelestialBody)obj.getSetting("CelestialBody")).pqsController.transform;
+			obj.pqsCity.sphere = ((CelestialBody)obj.getSetting("CelestialBody")).pqsController;
 			obj.pqsCity.order = 100;
 			obj.pqsCity.modEnabled = true;
 			obj.pqsCity.OnSetup();
@@ -389,46 +384,59 @@ namespace KerbalKonstructs
 			}
 			if (selectedObject != null)
 			{
+				Vector3 pos = Vector3.zero;
+				float alt = 0;
+				bool changed = false;
 				if (Input.GetKey(KeyCode.W))
 				{
-					selectedObject.position.y += editor.getIncrement();
-					editor.updateSelection(selectedObject);
+					pos.y += editor.getIncrement();
+					changed = true;
 				}
 				if (Input.GetKey(KeyCode.S))
 				{
-					selectedObject.position.y -= editor.getIncrement();
-					editor.updateSelection(selectedObject);
+					pos.y -= editor.getIncrement();
+					changed = true;
 				}
 				if (Input.GetKey(KeyCode.D))
 				{
-					selectedObject.position.x += editor.getIncrement();
-					editor.updateSelection(selectedObject);
+					pos.x += editor.getIncrement();
+					changed = true;
 				}
 				if (Input.GetKey(KeyCode.A))
 				{
-					selectedObject.position.x -= editor.getIncrement();
-					editor.updateSelection(selectedObject);
+					pos.x -= editor.getIncrement();
+					changed = true;
 				}
 				if (Input.GetKey(KeyCode.E))
 				{
-					selectedObject.position.z += editor.getIncrement();
-					editor.updateSelection(selectedObject);
+					pos.z += editor.getIncrement();
+					changed = true;
 				}
 				if (Input.GetKey(KeyCode.Q))
 				{
-					selectedObject.position.z -= editor.getIncrement();
-					editor.updateSelection(selectedObject);
+					pos.z -= editor.getIncrement();
+					changed = true;
 				}
 				if (Input.GetKey(KeyCode.LeftShift))
 				{
-					selectedObject.altitude += editor.getIncrement();
-					editor.updateSelection(selectedObject);
+					alt += editor.getIncrement();
+					changed = true;
 				}
 				if (Input.GetKey(KeyCode.LeftControl))
 				{
-					selectedObject.altitude -= editor.getIncrement();
+					alt -= editor.getIncrement();
+					changed = true;
+				}
+				if (changed)
+				{
+					//This should probably be changed...
+					pos += (Vector3) selectedObject.getSetting("RadialPosition");
+					alt += (float) selectedObject.getSetting("RadiusOffset");
+					selectedObject.setSetting("RadialPosition", pos);
+					selectedObject.setSetting("RadiusOffset", alt);
 					editor.updateSelection(selectedObject);
 				}
+					
 			}
 
 			if(Input.GetKeyDown(KeyCode.K) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))

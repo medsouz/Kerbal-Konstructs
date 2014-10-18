@@ -1,6 +1,7 @@
 ﻿using KerbalKonstructs.LaunchSites;
 using KerbalKonstructs.StaticObjects;
 using System;
+using LibNoise.Unity.Operator;
 using UnityEngine;
 
 namespace KerbalKonstructs.UI
@@ -64,52 +65,56 @@ namespace KerbalKonstructs.UI
 			GUI.Label(new Rect(21, 30, 203, 25), "Position");
 			GUI.Label(new Rect(6, 50, 25, 15), "X:");
 			xPos = GUI.TextField(new Rect(85, 50, 80, 25), xPos, 25);
+			Vector3 position = Vector3.zero;
+			float alt = 0;
+			float newRot = 0;
+			bool shouldUpdateSelection = false;
 			if (GUI.Button(new Rect(53, 50, 30, 25), "<") || GUI.RepeatButton(new Rect(21, 50, 30, 25), "<<"))
 			{
-				selectedObject.position.x -= float.Parse(increment);
-				updateSelection(selectedObject);
+				position.x -= float.Parse(increment);
+				shouldUpdateSelection = true;
 			}
 			if (GUI.Button(new Rect(167, 50, 30, 25), ">") || GUI.RepeatButton(new Rect(199, 50, 30, 25), ">>"))
 			{
-				selectedObject.position.x += float.Parse(increment);
-				updateSelection(selectedObject);
+				position.x += float.Parse(increment);
+				shouldUpdateSelection = true;
 			}
 			GUI.Label(new Rect(6, 80, 25, 15), "Y:");
 			yPos = GUI.TextField(new Rect(85, 80, 80, 25), yPos, 25);
 			if (GUI.Button(new Rect(53, 80, 30, 25), "<") || GUI.RepeatButton(new Rect(21, 80, 30, 25), "<<"))
 			{
-				selectedObject.position.y -= float.Parse(increment);
-				updateSelection(selectedObject);
+				position.y -= float.Parse(increment);
+				shouldUpdateSelection = true;
 			}
 			if (GUI.Button(new Rect(167, 80, 30, 25), ">") || GUI.RepeatButton(new Rect(199, 80, 30, 25), ">>"))
 			{
-				selectedObject.position.y += float.Parse(increment);
-				updateSelection(selectedObject);
+				position.y += float.Parse(increment);
+				shouldUpdateSelection = true;
 			}
 			GUI.Label(new Rect(6, 110, 25, 15), "Z:");
 			zPos = GUI.TextField(new Rect(85, 110, 80, 25), zPos, 25);
 			if (GUI.Button(new Rect(53, 110, 30, 25), "<") || GUI.RepeatButton(new Rect(21, 110, 30, 25), "<<"))
 			{
-				selectedObject.position.z -= float.Parse(increment);
-				updateSelection(selectedObject);
+				position.z -= float.Parse(increment);
+				shouldUpdateSelection = true;
 			}
 			if (GUI.Button(new Rect(167, 110, 30, 25), ">") || GUI.RepeatButton(new Rect(199, 110, 30, 25), ">>"))
 			{
-				selectedObject.position.z += float.Parse(increment);
-				updateSelection(selectedObject);
+				position.z += float.Parse(increment);
+				shouldUpdateSelection = true;
 			}
 			GUI.Label(new Rect(21, 140, 203, 25), "Altitude");
 
 			altitude = GUI.TextField(new Rect(85, 160, 80, 25), altitude, 25);
 			if (GUI.Button(new Rect(53, 160, 30, 25), "<") || GUI.RepeatButton(new Rect(21, 160, 30, 25), "<<"))
 			{
-				selectedObject.altitude -= float.Parse(increment);
-				updateSelection(selectedObject);
+				alt -= float.Parse(increment);
+				shouldUpdateSelection = true;
 			}
 			if (GUI.Button(new Rect(167, 160, 30, 25), ">") || GUI.RepeatButton(new Rect(199, 160, 30, 25), ">>"))
 			{
-				selectedObject.altitude += float.Parse(increment);
-				updateSelection(selectedObject);
+				alt += float.Parse(increment);
+				shouldUpdateSelection = true;
 			}
 			GUI.Label(new Rect(235, 30, 80, 25), "Orientation");
 			//disable anything beneath the dropdown to prevent clicking through
@@ -134,19 +139,19 @@ namespace KerbalKonstructs.UI
 			GUI.enabled = true;
 			if (GUI.Button(new Rect(201, 190, 115, 25), "Snap to Surface"))
 			{
-				selectedObject.altitude = (float)(selectedObject.parentBody.pqsController.GetSurfaceHeight(selectedObject.position) - selectedObject.parentBody.pqsController.radius);
-				updateSelection(selectedObject);
+				alt = (float)(((CelestialBody)selectedObject.getSetting("CelestialBody")).pqsController.GetSurfaceHeight((Vector3)selectedObject.getSetting("RadialPosition")) - ((CelestialBody)selectedObject.getSetting("CelestialBody")).pqsController.radius);
+				shouldUpdateSelection = true;
 			}
 			GUI.enabled = !editingSite;
-			if (GUI.Button(new Rect(201, 220, 115, 25), ((selectedObject.siteName != "") ? "Edit" : "Create") + " Launch Site"))
+			if (GUI.Button(new Rect(201, 220, 115, 25), ((selectedObject.settings.ContainsKey("LaunchSiteName")) ? "Edit" : "Create") + " Launch Site"))
 			{
-				siteName = selectedObject.siteName;
-				siteTrans = (selectedObject.siteTransform != "") ? selectedObject.siteTransform : selectedObject.model.defaultSiteTransform;
-				siteDesc = selectedObject.siteDescription;
-				siteType = selectedObject.siteType;
+				siteName = (string)selectedObject.getSetting("LaunchSiteName");
+				siteTrans = (selectedObject.settings.ContainsKey("LaunchPadTransform")) ? (string)selectedObject.getSetting("LaunchPadTransform") : (string)selectedObject.model.getSetting("DefaultLaunchPadTransform");
+				siteDesc = (string)selectedObject.getSetting("LaunchSiteDescription");
+				siteType = (SiteType) selectedObject.getSetting("LaunchSiteType");
 				siteTypeMenu.SelectedItemIndex = (int)siteType;
-				siteLogo = selectedObject.siteLogo.Replace(selectedObject.model.path + "/", "");
-				siteAuthor = (selectedObject.siteAuthor != "") ? selectedObject.siteAuthor : selectedObject.model.author;
+				siteLogo = ((string) selectedObject.getSetting("LaunchSiteLogo"));//.Replace(selectedObject.model.path + "/", "");
+				siteAuthor = (selectedObject.settings.ContainsKey("author")) ? (string)selectedObject.getSetting("author") : (string)selectedObject.model.getSetting("author");
 				editingSite = true;
 			}
 				
@@ -154,10 +159,10 @@ namespace KerbalKonstructs.UI
 
 			if (Event.current.keyCode == KeyCode.Return)
 			{
-				selectedObject.position.x = float.Parse(xPos);
-				selectedObject.position.y = float.Parse(yPos);
-				selectedObject.position.z = float.Parse(zPos);
-				selectedObject.altitude = float.Parse(altitude);
+				position.x = float.Parse(xPos);
+				position.y = float.Parse(yPos);
+				position.z = float.Parse(zPos);
+				alt = float.Parse(altitude);
 				float rot = float.Parse(rotation);
 				while (rot > 360 || rot < 0)
 				{
@@ -170,8 +175,16 @@ namespace KerbalKonstructs.UI
 						rot += 360;
 					}
 				}
-				selectedObject.rotation = rot;
+				newRot = rot;
 				rotation = rot.ToString();
+				shouldUpdateSelection = true;
+			}
+
+			if (shouldUpdateSelection)
+			{
+				selectedObject.setSetting("RadialPosition", position);
+				selectedObject.setSetting("RadiusOffset", alt);
+				selectedObject.setSetting("RotationAngle", newRot);
 				updateSelection(selectedObject);
 			}
 
@@ -205,24 +218,18 @@ namespace KerbalKonstructs.UI
 				{
 					foreach (StaticModel model in KerbalKonstructs.instance.getStaticDB().getModels())
 					{
-						if (GUILayout.Button(model.meshName + " [" + model.path + "]"))
+						if (GUILayout.Button(model.getSetting("mesh") + " [" + model.path + "]"))
 						{
 							StaticObject obj = new StaticObject();
-							obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.meshName);
-							obj.altitude = (float)FlightGlobals.ActiveVessel.altitude;
-							obj.parentBody = KerbalKonstructs.instance.getCurrentBody();
-							obj.groupName = "Ungrouped";
-							obj.position = KerbalKonstructs.instance.getCurrentBody().transform.InverseTransformPoint(FlightGlobals.ActiveVessel.transform.position);
-							obj.rotation = 0;
-							obj.orientation = Vector3.up;
-							obj.visibleRange = 25000;
+							obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.getSetting("mesh"));
+							obj.setSetting("RadiusOffset", FlightGlobals.ActiveVessel.altitude);
+							obj.setSetting("CelestialBody", KerbalKonstructs.instance.getCurrentBody());
+							obj.setSetting("Group", "Ungrouped");
+							obj.setSetting("RadialPosition", KerbalKonstructs.instance.getCurrentBody().transform.InverseTransformPoint(FlightGlobals.ActiveVessel.transform.position));
+							obj.setSetting("RotationAngle", 0);
+							obj.setSetting("Orientation", Vector3.up);
+							obj.setSetting("VisibilityRange", 25000);
 							obj.model = model;
-							obj.siteName = "";
-							obj.siteDescription = "";
-							obj.siteTransform = "";
-							obj.siteLogo = "";
-							obj.siteIcon = "";
-							obj.siteAuthor = "";
 
 							KerbalKonstructs.instance.getStaticDB().addStatic(obj);
 							KerbalKonstructs.instance.spawnObject(obj, true);
@@ -233,8 +240,8 @@ namespace KerbalKonstructs.UI
 				{
 					foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
 					{
-						GUI.enabled = !(obj == selectedObject);
-						if (GUILayout.Button(((obj.siteName != "") ? obj.siteName + "(" + obj.model.meshName + ")" : obj.model.meshName) + " [" + obj.model.path + "]"))
+						GUI.enabled = obj != selectedObject;
+						if (GUILayout.Button(((obj.settings.ContainsKey("LaunchSiteName")) ? obj.getSetting("LaunchSiteName") + "(" + obj.model.getSetting("mesh") + ")" : obj.model.getSetting("mesh")) + " [" + obj.model.path + "]"))
 						{
 							//TODO: Move PQS target to object position
 							KerbalKonstructs.instance.selectObject(obj);
@@ -290,14 +297,15 @@ namespace KerbalKonstructs.UI
 			GUILayout.BeginHorizontal();
 				if (GUILayout.Button("Save", GUILayout.Width(115)))
 				{
-					Boolean addToDB = (selectedObject.siteName == "" && siteName != "");
-					selectedObject.siteName = siteName;
-					selectedObject.siteTransform = siteTrans;
-					selectedObject.siteDescription = siteDesc;
-					selectedObject.siteType = getSiteType(siteTypeMenu.SelectedItemIndex);
-					selectedObject.siteLogo = (siteLogo != "") ? selectedObject.model.path + "/" + siteLogo : "";
-					if (siteAuthor != selectedObject.model.author)
-						selectedObject.siteAuthor = siteAuthor;
+					Boolean addToDB = (selectedObject.settings.ContainsKey("LaunchSiteName") && siteName != "");
+					selectedObject.setSetting("LaunchSiteName", siteName);
+					selectedObject.setSetting("LaunchPadTransform", siteTrans);
+					selectedObject.setSetting("LaunchSiteDescription", siteDesc);
+					selectedObject.setSetting("LaunchSiteType", getSiteType(siteTypeMenu.SelectedItemIndex));
+					if(siteLogo != "")
+						selectedObject.setSetting("LaunchSiteLogo", siteLogo);
+					if (siteAuthor != (string)selectedObject.model.getSetting("author"))
+						selectedObject.setSetting("LaunchSiteAuthor", siteAuthor);
 					if(addToDB)
 					{
 						LaunchSiteManager.createLaunchSite(selectedObject);
@@ -317,12 +325,12 @@ namespace KerbalKonstructs.UI
 		public void updateSelection(StaticObject obj)
 		{
 			selectedObject = obj;
-			xPos = obj.position.x.ToString();
-			yPos = obj.position.y.ToString();
-			zPos = obj.position.z.ToString();
-			altitude = obj.altitude.ToString();
-			rotation = obj.rotation.ToString();
-			orientationMenu.SelectedItemIndex = getOrientation(obj.orientation);
+			xPos = ((Vector3)obj.getSetting("RadialPosition")).x.ToString();
+			yPos = ((Vector3)obj.getSetting("RadialPosition")).y.ToString();
+			zPos = ((Vector3)obj.getSetting("RadialPosition")).z.ToString();
+			altitude = ((float)obj.getSetting("RadiusOffset")).ToString();
+			rotation = ((float)obj.getSetting("RotationAngle")).ToString();
+			orientationMenu.SelectedItemIndex = getOrientation((Vector3)obj.getSetting("Orientation"));
 			selectedObject.update();
 		}
 
@@ -330,25 +338,26 @@ namespace KerbalKonstructs.UI
 		{
 			if (selectedObject != null)
 			{
+				//TODO: do this with an array
 				switch (selection)
 				{
 					case 0:
-						selectedObject.orientation = Vector3.up;
+						selectedObject.setSetting("Orientation", Vector3.up);
 						break;
 					case 1:
-						selectedObject.orientation = Vector3.down;
+						selectedObject.setSetting("Orientation", Vector3.down);
 						break;
 					case 2:
-						selectedObject.orientation = Vector3.left;
+						selectedObject.setSetting("Orientation", Vector3.left);
 						break;
 					case 3:
-						selectedObject.orientation = Vector3.right;
+						selectedObject.setSetting("Orientation", Vector3.right);
 						break;
 					case 4:
-						selectedObject.orientation = Vector3.forward;
+						selectedObject.setSetting("Orientation", Vector3.forward);
 						break;
 					case 5:
-						selectedObject.orientation = Vector3.back;
+						selectedObject.setSetting("Orientation", Vector3.back);
 						break;
 				}
 				selectedObject.update();
