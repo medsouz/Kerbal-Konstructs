@@ -25,5 +25,10 @@ namespace KerbalKonstructs.API.Config
 		{
 			return null;
 		}
+
+		public string convertValueToConfig(object value)
+		{
+			return ((CelestialBody) value).bodyName;
+		}
 	}
 }

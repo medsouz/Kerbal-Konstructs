@@ -11,5 +11,6 @@ namespace KerbalKonstructs.API.Config
 		object getValue();
 		void setDefaultValue(object value);
 		object getDefaultValue();
+		string convertValueToConfig(object value);
 	}
 }

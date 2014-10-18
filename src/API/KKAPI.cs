@@ -36,7 +36,7 @@ namespace KerbalKonstructs.API
 			Dictionary<string, object> settings = new Dictionary<string, object>();
 			foreach (KeyValuePair<string, IConfigItem> configValue in kkConfig)
 			{
-				if (cfgNode.GetValue(configValue.Key) != null)
+				if (cfgNode.GetValue(configValue.Key) != null && cfgNode.GetValue(configValue.Key) != "")
 				{
 					IConfigItem item = configValue.Value;
 					item.setValue(cfgNode.GetValue(configValue.Key));

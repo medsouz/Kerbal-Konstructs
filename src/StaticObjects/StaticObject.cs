@@ -11,22 +11,6 @@ namespace KerbalKonstructs.StaticObjects
 		public PQSCity pqsCity;
 		public StaticModel model;
 
-		/*public CelestialBody parentBody;
-		public string groupName;
-
-		public Vector3 position;
-		public float altitude;
-		public float visibleRange;
-		public Vector3 orientation;
-		public float rotation;
-		public string siteName;
-		public string siteTransform;
-		public string siteDescription;
-		public string siteLogo;
-		public string siteIcon;
-		public string siteAuthor;
-		public LaunchSites.SiteType siteType;*/
-
 		public Dictionary<string, object> settings = new Dictionary<string, object>();
 
 		public Boolean editing;

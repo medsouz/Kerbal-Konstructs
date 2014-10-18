@@ -27,6 +27,11 @@ namespace KerbalKonstructs.API.Config
 			return defaultType;
 		}
 
+		public string convertValueToConfig(object value)
+		{
+			return value.ToString().ToUpper();
+		}
+
 		public static SiteType getSiteTypefromString(string siteType)
 		{
 			SiteType outType;

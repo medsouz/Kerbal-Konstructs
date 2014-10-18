@@ -69,6 +69,7 @@ namespace KerbalKonstructs.UI
 			float alt = 0;
 			float newRot = 0;
 			bool shouldUpdateSelection = false;
+			bool manuallySet = false;
 			if (GUI.Button(new Rect(53, 50, 30, 25), "<") || GUI.RepeatButton(new Rect(21, 50, 30, 25), "<<"))
 			{
 				position.x -= float.Parse(increment);
@@ -159,6 +160,7 @@ namespace KerbalKonstructs.UI
 
 			if (Event.current.keyCode == KeyCode.Return)
 			{
+				manuallySet = true;
 				position.x = float.Parse(xPos);
 				position.y = float.Parse(yPos);
 				position.z = float.Parse(zPos);
@@ -182,6 +184,13 @@ namespace KerbalKonstructs.UI
 
 			if (shouldUpdateSelection)
 			{
+				if (!manuallySet)
+				{
+					position += (Vector3)selectedObject.getSetting("RadialPosition");
+					alt += (float)selectedObject.getSetting("RadiusOffset");
+					newRot += (float)selectedObject.getSetting("RotationAngle");
+				}
+
 				selectedObject.setSetting("RadialPosition", position);
 				selectedObject.setSetting("RadiusOffset", alt);
 				selectedObject.setSetting("RotationAngle", newRot);
@@ -222,13 +231,13 @@ namespace KerbalKonstructs.UI
 						{
 							StaticObject obj = new StaticObject();
 							obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.getSetting("mesh"));
-							obj.setSetting("RadiusOffset", FlightGlobals.ActiveVessel.altitude);
+							obj.setSetting("RadiusOffset", (float) FlightGlobals.ActiveVessel.altitude);
 							obj.setSetting("CelestialBody", KerbalKonstructs.instance.getCurrentBody());
 							obj.setSetting("Group", "Ungrouped");
 							obj.setSetting("RadialPosition", KerbalKonstructs.instance.getCurrentBody().transform.InverseTransformPoint(FlightGlobals.ActiveVessel.transform.position));
-							obj.setSetting("RotationAngle", 0);
+							obj.setSetting("RotationAngle", 0f);
 							obj.setSetting("Orientation", Vector3.up);
-							obj.setSetting("VisibilityRange", 25000);
+							obj.setSetting("VisibilityRange", 25000f);
 							obj.model = model;
 
 							KerbalKonstructs.instance.getStaticDB().addStatic(obj);

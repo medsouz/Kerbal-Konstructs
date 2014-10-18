@@ -26,5 +26,10 @@ namespace KerbalKonstructs.API.Config
 		{
 			return defaultValue;
 		}
+
+		public string convertValueToConfig(object value)
+		{
+			return (string) value;
+		}
 	}
 }

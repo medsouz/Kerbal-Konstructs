@@ -27,5 +27,10 @@ namespace KerbalKonstructs.API.Config
 		{
 			return defaultValue;
 		}
+
+		public string convertValueToConfig(object value)
+		{
+			return ConfigNode.WriteVector((Vector3) value);
+		}
 	}
 }
