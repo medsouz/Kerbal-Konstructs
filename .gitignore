@@ -176,3 +176,5 @@ FakesAssemblies/
 
 #Kerbal Space Program assets
 KSPResources/*.dll
+GameData/medsouz/KerbalKonstructs/KerbalKonstructs.dll
+KerbalKonstructs.zip
