@@ -80,6 +80,9 @@ namespace KerbalKonstructs
 				//Assume that the Space Center is on Kerbin
 				currentBody = Util.getCelestialBody("Kerbin");
 				staticDB.onBodyChanged(currentBody);
+				// ASH 23102014
+				// Is this why space centre additions do not load sometimes? TEST ME
+				updateCache();
 			}
 			else if (!data.Equals(GameScenes.FLIGHT))//Cache everywhere except the space center or during flight
 			{

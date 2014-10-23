@@ -40,6 +40,8 @@ namespace KerbalKonstructs.StaticObjects
 
 		public void cacheAll()
 		{
+			// ASH 23102014 Does this handle activeBodyName null?
+			// Testing suggests it is fine. No intrusions in the VAB or SPH so extra space centre stuff is being deactivated
 			if (groupList.ContainsKey(activeBodyName))
 			{
 				foreach (StaticGroup group in groupList[KerbalKonstructs.instance.getCurrentBody().bodyName].Values)
@@ -79,6 +81,10 @@ namespace KerbalKonstructs.StaticObjects
 			}
 			else
 			{
+				// ASH 23102014 Does cacheAll actually handle activeBodyName being null?
+				// Are these two lines the wrong way round?
+				// No this must be working because no intrusions appearing in the VAB or SPH
+				// Leave it alone Ash
 				cacheAll();
 				activeBodyName = "";
 			}
