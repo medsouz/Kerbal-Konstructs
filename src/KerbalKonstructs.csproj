@@ -86,10 +86,10 @@
   echo Using KSPDIR
 ) ELSE IF DEFINED ProgramFiles(x86) (
   echo Using 64bit Steam directory
-  set KSPDIR = "%25ProgramFiles(x86)%25\Steam\SteamApps\common\Kerbal Space Program"
+  set "KSPDIR=%25ProgramFiles(x86)%25\Steam\SteamApps\common\Kerbal Space Program"
 ) ELSE (
   echo Falling back to 32bit Steam directory, this might fail
-  set KSPDIR = "%25ProgramFiles%25\Steam\SteamApps\common\Kerbal Space Program"
+  set "KSPDIR=%25ProgramFiles%25\Steam\SteamApps\common\Kerbal Space Program"
 )
 
 copy /Y $(TargetFileName) "$(SolutionDir)GameData\medsouz\KerbalKonstructs"
