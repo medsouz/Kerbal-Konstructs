@@ -118,11 +118,10 @@ namespace KerbalKonstructs
 			}
 			else if (data.Equals(GameScenes.FLIGHT))
 			{
-				//Fixes statics not showing up on launch sometimes
-				//Still not 100% sure what causes that issue
 				staticDB.onBodyChanged(currentBody);
-				updateCache();
 			}
+
+			updateCache();
 
 			if (data.Equals(GameScenes.EDITOR) || data.Equals(GameScenes.SPH))
 			{
