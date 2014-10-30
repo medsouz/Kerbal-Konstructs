@@ -12,7 +12,10 @@ namespace KerbalKonstructs.LaunchSites
 		public Texture icon;
 		public string description;
 
-		public LaunchSite(string sName, string sAuthor, SiteType sType, Texture sLogo, Texture sIcon, string sDescription)
+		// ASH 28102014 - Added category
+		public string category;
+
+		public LaunchSite(string sName, string sAuthor, SiteType sType, Texture sLogo, Texture sIcon, string sDescription, string sDevice = "Other")
 		{
 			name = sName;
 			author = sAuthor;
@@ -20,6 +23,8 @@ namespace KerbalKonstructs.LaunchSites
 			logo = sLogo;
 			icon = sIcon;
 			description = sDescription;
+			// ASH 28102014 - Added category
+			category = sDevice;
 		}
 	}
 

@@ -68,6 +68,11 @@ namespace KerbalKonstructs
 			KKAPI.addInstanceSetting("LaunchSiteIcon", new ConfigGenericString());
 			KKAPI.addInstanceSetting("LaunchSiteType", new ConfigSiteType());
 
+			// ASH 28102014
+			ConfigGenericString category = new ConfigGenericString();
+			category.setDefaultValue("Other");
+			KKAPI.addInstanceSetting("Category", category);
+
 			loadConfig();
 			saveConfig();
 			GameEvents.onDominantBodyChange.Add(onDominantBodyChange);
@@ -125,6 +130,9 @@ namespace KerbalKonstructs
 
 			if (data.Equals(GameScenes.EDITOR) || data.Equals(GameScenes.SPH))
 			{
+				// ASH and Ravencrow 28102014
+				// Prevent abuse if selector left open when switching to from VAB and SPH
+				selector.Close();
 				switch (data)
 				{
 					case GameScenes.SPH:

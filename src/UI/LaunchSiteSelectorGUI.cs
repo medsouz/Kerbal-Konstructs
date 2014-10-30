@@ -10,7 +10,8 @@ namespace KerbalKonstructs.UI
 		LaunchSite selectedSite;
 		private SiteType editorType = SiteType.Any;
 
-		Rect windowRect = new Rect(((Screen.width - Camera.main.rect.x) / 2) + Camera.main.rect.x - 125, (Screen.height / 2 - 250), 600, 500);
+		// ASH 28102014 - Needs to be bigger for filter
+		Rect windowRect = new Rect(((Screen.width - Camera.main.rect.x) / 2) + Camera.main.rect.x - 125, (Screen.height / 2 - 250), 700, 580);
 
 		public void drawSelector()
 		{
@@ -30,12 +31,49 @@ namespace KerbalKonstructs.UI
 		public Vector2 sitesScrollPosition;
 		public Vector2 descriptionScrollPosition;
 
+		// ASH 28102014 Changed scope so we can change it by Category filter
+		public List<LaunchSite> sites;
+
 		public void drawSelectorWindow(int id)
 		{
-			GUILayout.BeginArea(new Rect(10, 25, 270, 465));
-				sitesScrollPosition = GUILayout.BeginScrollView(sitesScrollPosition);
-				List<LaunchSite> sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType);
-				foreach (LaunchSite site in sites)
+			// ASH 28102014 Category filter handling added.
+			GUILayout.BeginArea(new Rect(10, 25, 370, 550));
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button("RocketPads", GUILayout.Width(80)))
+			{
+				sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "RocketPad");
+			}
+			GUILayout.Space(2);
+			if (GUILayout.Button("Runways", GUILayout.Width(73)))
+			{
+				sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "Runway");
+			}
+			GUILayout.Space(2);
+			if (GUILayout.Button("Helipads", GUILayout.Width(73)))
+			{
+				sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "Helipad");
+			}
+			GUILayout.Space(2);
+			if (GUILayout.Button("Other", GUILayout.Width(65)))
+			{
+				sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "Other");
+			}
+			GUILayout.Space(2);
+			if (GUILayout.Button("ALL", GUILayout.Width(45)))
+			{
+				sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "ALL");
+			}
+			GUILayout.EndHorizontal();
+
+			GUILayout.Space(10);
+
+			sitesScrollPosition = GUILayout.BeginScrollView(sitesScrollPosition);
+			// ASH 28102014 Category filter handling added
+			//List<LaunchSite> sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType);
+
+			if (sites == null) sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "ALL");
+
+			foreach (LaunchSite site in sites)
 				{
 					GUI.enabled = !(selectedSite == site);
 					if (GUILayout.Button(site.name, GUILayout.Height(30)))
@@ -52,13 +90,12 @@ namespace KerbalKonstructs.UI
 
 			if (selectedSite != null)
 			{
-				GUILayout.BeginArea(new Rect(290, 25, 300, 465));
-					GUILayout.Label(selectedSite.logo, GUILayout.Height(280));
-					GUILayout.Label(selectedSite.name);
-					GUILayout.Label("By "+selectedSite.author);
-					descriptionScrollPosition = GUILayout.BeginScrollView(descriptionScrollPosition);
-						GUILayout.Label(selectedSite.description);
-					GUILayout.EndScrollView();
+				GUILayout.BeginArea(new Rect(385, 25, 310, 550));
+				GUILayout.Label(selectedSite.logo, GUILayout.Height(280));
+				GUILayout.Label(selectedSite.name + " By " + selectedSite.author);
+				descriptionScrollPosition = GUILayout.BeginScrollView(descriptionScrollPosition);
+				GUILayout.Label(selectedSite.description);
+				GUILayout.EndScrollView();
 				GUILayout.EndArea();
 			}
 			else
@@ -82,6 +119,14 @@ namespace KerbalKonstructs.UI
 				}
 				LaunchSiteManager.setLaunchSite(selectedSite);
 			}
+		}
+		
+		// ASH and Ravencrow 28102014
+		// Need to handle if Launch Selector is still open when switching from VAB to from SPH
+		// otherwise abuse possible!
+		public void Close()
+		{
+			sites = null;
 		}
 	}
 }
