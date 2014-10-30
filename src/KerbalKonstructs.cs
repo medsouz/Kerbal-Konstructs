@@ -69,9 +69,9 @@ namespace KerbalKonstructs
 			KKAPI.addInstanceSetting("LaunchSiteType", new ConfigSiteType());
 
 			// ASH 28102014
-			ConfigGenericString launchDevice = new ConfigGenericString();
-			launchDevice.setDefaultValue("Other");
-			KKAPI.addInstanceSetting("LaunchDevice", launchDevice);
+			ConfigGenericString category = new ConfigGenericString();
+			category.setDefaultValue("Other");
+			KKAPI.addInstanceSetting("Category", category);
 
 			loadConfig();
 			saveConfig();

@@ -31,12 +31,12 @@ namespace KerbalKonstructs.UI
 		public Vector2 sitesScrollPosition;
 		public Vector2 descriptionScrollPosition;
 
-		// ASH 28102014 Changed scope so we can change it by LaunchDevice filter
+		// ASH 28102014 Changed scope so we can change it by Category filter
 		public List<LaunchSite> sites;
 
 		public void drawSelectorWindow(int id)
 		{
-			// ASH 28102014 LaunchDevice filter handling added.
+			// ASH 28102014 Category filter handling added.
 			GUILayout.BeginArea(new Rect(10, 25, 370, 550));
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("RocketPads", GUILayout.Width(80)))
@@ -68,7 +68,7 @@ namespace KerbalKonstructs.UI
 			GUILayout.Space(10);
 
 			sitesScrollPosition = GUILayout.BeginScrollView(sitesScrollPosition);
-			// ASH 28102014 LaunchDevice filter handling added
+			// ASH 28102014 Category filter handling added
 			//List<LaunchSite> sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType);
 
 			if (sites == null) sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "ALL");
