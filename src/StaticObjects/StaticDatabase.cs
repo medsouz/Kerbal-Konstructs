@@ -39,13 +39,33 @@ namespace KerbalKonstructs.StaticObjects
 
 		public void cacheAll()
 		{
+			// ASH 01112014 Need to handle this.
+			Debug.Log("KK: cacheAll() activeBodyname is " + activeBodyName);
+			if (activeBodyName == "")
+				return;
+
+			var body = KerbalKonstructs.instance.getCurrentBody();
+			Debug.Log("KK: getCurrentBody()" + (body == null ? " = NULL" : (".bodyName = " + body.bodyName)));
+
 			if (groupList.ContainsKey(activeBodyName))
 			{
-				foreach (StaticGroup group in groupList[KerbalKonstructs.instance.getCurrentBody().bodyName].Values)
+				// ASH 01112014 This is wrong.
+				//foreach (StaticGroup group in groupList[KerbalKonstructs.instance.getCurrentBody().bodyName].Values)
+
+				// ASH 01112014 This is right.
+				foreach (StaticGroup group in groupList[activeBodyName].Values)
 				{
 					group.cacheAll();
+					Debug.Log("KK: cacheAll for " + activeBodyName + " " + group.getGroupName());
 					if (!group.alwaysActive)
+					{
 						group.active = false;
+						Debug.Log("KK: group alwaysActive is FALSE. Group is deactivated.");
+					}
+					else
+					{
+						Debug.Log("KK: group alwaysActive is TRUE. Group stays active.");
+					}
 				}
 			}
 		}
