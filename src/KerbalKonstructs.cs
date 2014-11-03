@@ -122,9 +122,9 @@ namespace KerbalKonstructs
 			if (data.Equals(GameScenes.FLIGHT))
 			{
 				Debug.Log("KK: onLevelWasLoaded is FLIGHT");
-				Debug.Log("KK: onLevelWasLoaded calling onBodyChanged with " + currentBody.bodyName);
-				staticDB.onBodyChanged(currentBody);
-				// ASH 03112014 Trying to fix recovery issue
+				// ASH 03112014 Fix recovery issue and remove redundant code.
+				// Debug.Log("KK: onLevelWasLoaded calling onBodyChanged with " + currentBody.bodyName);
+				// staticDB.onBodyChanged(currentBody);
 				updateCache();
 				Debug.Log("KK: Invoking updateCache");
 				InvokeRepeating("updateCache", 0, 1);
@@ -186,7 +186,6 @@ namespace KerbalKonstructs
 
 		void onDominantBodyChange(GameEvents.FromToAction<CelestialBody, CelestialBody> data)
 		{
-			// ASH 03112014 Is this wrong? Nope.
 			currentBody = data.to;
 			Debug.Log("KK: event onDominantBodyChange to " + data.to.bodyName);
 			staticDB.onBodyChanged(data.to);
