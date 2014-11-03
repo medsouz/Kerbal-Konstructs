@@ -68,7 +68,7 @@ namespace KerbalKonstructs.StaticObjects
 				bool visible = (dist < (float) obj.getSetting("VisibilityRange"));
 				if (visible != obj.gameObject.activeSelf)
 				{
-					//Debug.Log("Setting " + obj.gameObject.name + " to visible=" + visible);
+					Debug.Log("Setting " + obj.gameObject.name + " to visible=" + visible);
 					obj.gameObject.SetActive(visible);
 				}
 			}
@@ -98,7 +98,7 @@ namespace KerbalKonstructs.StaticObjects
 			}
 			else
 			{
-				Debug.Log("Tried to delete an object that doesn't exist in this group!");
+				Debug.Log("KK: Tried to delete an object that doesn't exist in this group!");
 			}
 		}
 

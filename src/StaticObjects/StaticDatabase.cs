@@ -73,6 +73,7 @@ namespace KerbalKonstructs.StaticObjects
 		public void loadObjectsForBody(String bodyName)
 		{
 			activeBodyName = bodyName;
+			Debug.Log("KK: loadObjectsForBody() bodyName is " + bodyName);
 			if (groupList.ContainsKey(bodyName))
 			{
 				foreach (KeyValuePair<String, StaticGroup> bodyGroups in groupList[bodyName])
@@ -90,14 +91,18 @@ namespace KerbalKonstructs.StaticObjects
 		{
 			if (body != null)
 			{
+				Debug.Log("KK: onBodyChanged() body.bodyName is " + body.bodyName);
+				Debug.Log("KK: onBodyChanged() activebodyName is " + activeBodyName);
 				if (body.bodyName != activeBodyName)
 				{
+					Debug.Log("KK: onBodyChanged() calls cacheAll() then loadObjectsForBody()");
 					cacheAll();
 					loadObjectsForBody(body.bodyName);
 				}
 			}
 			else
 			{
+				Debug.Log("KK: onBodyChanged() calls cacheAll() THEN sets activeBodyName blank");
 				cacheAll();
 				activeBodyName = "";
 			}
@@ -105,6 +110,7 @@ namespace KerbalKonstructs.StaticObjects
 
 		public void updateCache(Vector3 playerPos)
 		{
+			Debug.Log("KK: StaticDatabase.updateCache() - " + activeBodyName);
 			if (groupList.ContainsKey(activeBodyName))
 			{
 				foreach (StaticGroup group in groupList[activeBodyName].Values)
@@ -115,7 +121,7 @@ namespace KerbalKonstructs.StaticObjects
 						Boolean active = dist < group.getVisibilityRange();
 						if (active != group.active && active == false)
 						{
-							Debug.Log("Caching group " + group.getGroupName());
+							Debug.Log("KK: Caching group " + group.getGroupName());
 							group.cacheAll();
 						}
 						group.active = active;
@@ -141,12 +147,12 @@ namespace KerbalKonstructs.StaticObjects
 				}
 				else
 				{
-					Debug.Log("Group not found! " + groupName);
+					Debug.Log("KK: Group not found! " + groupName);
 				}
 			}
 			else
 			{
-				Debug.Log("Body not found! " + bodyName);
+				Debug.Log("KK: Body not found! " + bodyName);
 			}
 		}
 
@@ -187,10 +193,10 @@ namespace KerbalKonstructs.StaticObjects
 			if (objList.Count >= 1)
 			{
 				if (objList.Count > 1)
-					Debug.Log("WARNING: More than one StaticObject references to GameObject " + gameObject.name);
+					Debug.Log("KK: WARNING: More than one StaticObject references to GameObject " + gameObject.name);
 				return objList[0];
 			}
-			Debug.Log("WARNING: StaticObject doesn't exist for " + gameObject.name);
+			Debug.Log("KK: WARNING: StaticObject doesn't exist for " + gameObject.name);
 			return null;
 		}
 	}

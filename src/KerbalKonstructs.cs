@@ -83,13 +83,14 @@ namespace KerbalKonstructs
 			loadObjects();
 			// ASH 01112014 Toggle on and off for the flight scene only
 			//InvokeRepeating("updateCache", 0, 1);
-			SpaceCenterManager.setKSC();
+			//SpaceCenterManager.setKSC();
 		}
 
 		void OnVesselRecoveryRequested(Vessel data)
 		{
-			SpaceCenter csc = SpaceCenterManager.getClosestSpaceCenter(data.gameObject.transform.position);
-			SpaceCenter.Instance = csc;
+			Debug.Log("KK: event onVesselRecoveryRequested");
+			//SpaceCenter csc = SpaceCenterManager.getClosestSpaceCenter(data.gameObject.transform.position);
+			//SpaceCenter.Instance = csc;
 		}
 
 		void OnGUIAppLauncherReady()
@@ -123,6 +124,8 @@ namespace KerbalKonstructs
 				Debug.Log("KK: onLevelWasLoaded is FLIGHT");
 				Debug.Log("KK: onLevelWasLoaded calling onBodyChanged with " + currentBody.bodyName);
 				staticDB.onBodyChanged(currentBody);
+				// ASH 03112014 Trying to fix recovery issue
+				updateCache();
 				Debug.Log("KK: Invoking updateCache");
 				InvokeRepeating("updateCache", 0, 1);
 				something = false;
@@ -138,8 +141,9 @@ namespace KerbalKonstructs
 				Debug.Log("KK: onLevelWasLoaded is SPACECENTER");
 				//Assume that the Space Center is on Kerbin
 				
-				// ASH This is wrong
-				// currentBody = KKAPI.getCelestialBody("Kerbin")
+				// ASH This is wrong IS IT?
+				currentBody = KKAPI.getCelestialBody("Kerbin");
+				// staticDB.onBodyChanged(currentBody);
 				Debug.Log("KK: onLevelWasLoaded calling onBodyChanged with Kerbin");
 
 				// ASH This is right
@@ -177,20 +181,20 @@ namespace KerbalKonstructs
 				Debug.Log("KK: onLevelWasLoaded is SOMEOTHERSCENE");
 				Debug.Log("KK: onLevelWasLoaded calling onBodyChanged with NULL");
 				staticDB.onBodyChanged(null);
-				Debug.Log("KK: onLevelWasLoaded calling updateCache");
-				updateCache();
 			}
 		}
 
 		void onDominantBodyChange(GameEvents.FromToAction<CelestialBody, CelestialBody> data)
 		{
+			// ASH 03112014 Is this wrong? Nope.
 			currentBody = data.to;
-			Debug.Log("KK: event onDominantBodyChange to " + currentBody.bodyName);
+			Debug.Log("KK: event onDominantBodyChange to " + data.to.bodyName);
 			staticDB.onBodyChanged(data.to);
 		}
 
 		public void updateCache()
 		{
+			Debug.Log("KK: updateCache()");
 			if (HighLogic.LoadedSceneIsGame)
 			{
 				Vector3 playerPos = Vector3.zero;
@@ -207,6 +211,7 @@ namespace KerbalKonstructs
 					//HACKY: if there is no vessel use the camera, this could cause some issues
 					playerPos = Camera.main.transform.position;
 				}
+				Debug.Log("KK: playerPos is" + playerPos);
 				staticDB.updateCache(playerPos);
 			}
 		}
