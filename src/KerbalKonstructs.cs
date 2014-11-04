@@ -107,12 +107,16 @@ namespace KerbalKonstructs
 		// ASH 01112014 Lots of debug
 		void onLevelWasLoaded(GameScenes data)
 		{
-			Debug.Log("KK: event onLevelWasLoaded");
+			// ASH 04112014 Likely responsible for camera locks in the flight and space centre scenes
+			// For some reason the lock is not reliably dropped... I think.
+			Debug.Log("KK: event onLevelWasLoaded. Drop selector input lock.");
+			InputLockManager.RemoveControlLock("KKEditorLock");
 			
 			if (selectedObject != null)
 			{
-				Debug.Log("KK: Deselecting an object");
+				Debug.Log("KK: Deselecting an object.");
 				deselectObject(false);
+				// ASH 04112014 Why?
 				camControl.active = false;
 			}
 
