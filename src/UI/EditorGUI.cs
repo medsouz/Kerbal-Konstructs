@@ -140,7 +140,8 @@ namespace KerbalKonstructs.UI
 			GUI.enabled = true;
 			if (GUI.Button(new Rect(201, 190, 115, 25), "Snap to Surface"))
 			{
-				alt = (float)(((CelestialBody)selectedObject.getSetting("CelestialBody")).pqsController.GetSurfaceHeight((Vector3)selectedObject.getSetting("RadialPosition")) - ((CelestialBody)selectedObject.getSetting("CelestialBody")).pqsController.radius);
+                var pqsc = ((CelestialBody)selectedObject.getSetting("CelestialBody")).pqsController;
+                alt = (float)(pqsc.GetSurfaceHeight((Vector3)selectedObject.getSetting("RadialPosition")) - pqsc.radius - (float)selectedObject.getSetting("RadiusOffset"));
 				shouldUpdateSelection = true;
 			}
 			GUI.enabled = !editingSite;
