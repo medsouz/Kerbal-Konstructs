@@ -90,13 +90,7 @@ namespace KerbalKonstructs.UI
 
 			if (selectedSite != null)
 			{
-				GUILayout.BeginArea(new Rect(385, 25, 310, 550));
-				GUILayout.Label(selectedSite.logo, GUILayout.Height(280));
-				GUILayout.Label(selectedSite.name + " By " + selectedSite.author);
-				descriptionScrollPosition = GUILayout.BeginScrollView(descriptionScrollPosition);
-				GUILayout.Label(selectedSite.description);
-				GUILayout.EndScrollView();
-				GUILayout.EndArea();
+				drawRightSelectorWindow();
 			}
 			else
 			{
@@ -104,8 +98,27 @@ namespace KerbalKonstructs.UI
 				{
 					selectedSite = LaunchSiteManager.getLaunchSites(editorType)[0];
 					LaunchSiteManager.setLaunchSite(selectedSite);
+
+					// ASH 05112014 Might fix the selector centering issue on the right panel
+					drawRightSelectorWindow();
+				}
+				else
+				{
+					Debug.Log("KK: ERROR Launch Selector cannot find KSC Runway or Launch Pad! PANIC! Runaway! Hide!");
 				}
 			}
+		}
+
+		// ASH 05112014 Might fix the selector centering issue on the right panel
+		private void drawRightSelectorWindow()
+		{
+			GUILayout.BeginArea(new Rect(385, 25, 310, 550));
+			GUILayout.Label(selectedSite.logo, GUILayout.Height(280));
+			GUILayout.Label(selectedSite.name + " By " + selectedSite.author);
+			descriptionScrollPosition = GUILayout.BeginScrollView(descriptionScrollPosition);
+			GUILayout.Label(selectedSite.description);
+			GUILayout.EndScrollView();
+			GUILayout.EndArea();
 		}
 
 		public void setEditorType(SiteType type)

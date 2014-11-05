@@ -174,7 +174,7 @@ namespace KerbalKonstructs
 						selector.setEditorType(SiteType.VAB);
 						break;
 					default:
-						Debug.Log("KK: onLevelWasLoaded is DEFAULT");
+						Debug.Log("KK: onLevelWasLoaded is DEFAULT.");
 						selector.setEditorType(SiteType.Any);
 						break;
 				}
