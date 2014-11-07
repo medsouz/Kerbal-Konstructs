@@ -66,14 +66,11 @@ namespace KerbalKonstructs.StaticObjects
 			foreach (StaticObject obj in childObjects)
 			{
 				float dist = Vector3.Distance(obj.gameObject.transform.position, playerPos);
-				// Debug.Log("KK: Distance is " + dist);
 				bool visible = (dist < (float) obj.getSetting("VisibilityRange"));
 				if (visible != obj.gameObject.activeSelf)
 				{
 					// Debug.Log("KK: Setting " + obj.gameObject.name + " to visible =" + visible);
 					obj.gameObject.SetActive(visible);
-					// Debug.Log("KK: .layer is " + obj.gameObject.layer);
-					// Debug.Log("KK: .activeInHierarchy is " + obj.gameObject.activeInHierarchy);
 
 					// ASH 06112014
 					// What if SetActive isn't actually properly activating children?
@@ -81,11 +78,7 @@ namespace KerbalKonstructs.StaticObjects
 					List<GameObject> rendererList = (from t in gameObjectList where t.gameObject.renderer != null select t.gameObject).ToList();
 					foreach (GameObject renderer in rendererList)
 					{
-						// Debug.Log("KK: Child renderer.visible is " + renderer.renderer.isVisible);
-						// Debug.Log("KK: Child renderer.enabled is " + renderer.renderer.enabled);
 						// Debug.Log("KK: Child activeself is " + renderer.activeSelf);
-
-						// YAY GOT YOU YOU BASTARD BUG DIE DIE DIE
 						bool childVisible = renderer.activeSelf;
 						if (childVisible != true)
 						{

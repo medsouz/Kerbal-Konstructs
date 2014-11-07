@@ -15,8 +15,10 @@ namespace KerbalKonstructs.UI
 
 		public void drawSelector()
 		{
-			if(Camera.main != null)//Camera.main is null when first loading a scene
+			if (Camera.main != null)//Camera.main is null when first loading a scene
+			{
 				GUI.Window(0xB00B1E6, windowRect, drawSelectorWindow, "Launch Site Selector");
+			}
 
 			if (windowRect.Contains(Event.current.mousePosition))
 			{
@@ -37,22 +39,38 @@ namespace KerbalKonstructs.UI
 		public void drawSelectorWindow(int id)
 		{
 			// ASH 28102014 Category filter handling added.
+			// ASH 07112014 Disabling of restricted categories added.
 			GUILayout.BeginArea(new Rect(10, 25, 370, 550));
 			GUILayout.BeginHorizontal();
+			if (editorType == SiteType.SPH)
+			{
+				GUI.enabled = false;
+			}
 			if (GUILayout.Button("RocketPads", GUILayout.Width(80)))
 			{
 				sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "RocketPad");
 			}
+			GUI.enabled = true;
 			GUILayout.Space(2);
+			if (editorType == SiteType.VAB)
+			{
+				GUI.enabled = false;
+			}
 			if (GUILayout.Button("Runways", GUILayout.Width(73)))
 			{
 				sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "Runway");
 			}
+			GUI.enabled = true;
 			GUILayout.Space(2);
+			if (editorType == SiteType.VAB)
+			{
+				GUI.enabled = false;
+			}
 			if (GUILayout.Button("Helipads", GUILayout.Width(73)))
 			{
 				sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "Helipad");
 			}
+			GUI.enabled = true;
 			GUILayout.Space(2);
 			if (GUILayout.Button("Other", GUILayout.Width(65)))
 			{
