@@ -197,7 +197,7 @@ namespace KerbalKonstructs
 
 		public void updateCache()
 		{
-			Debug.Log("KK: updateCache()");
+			// Debug.Log("KK: updateCache()");
 			if (HighLogic.LoadedSceneIsGame)
 			{
 				Vector3 playerPos = Vector3.zero;
@@ -214,7 +214,7 @@ namespace KerbalKonstructs
 					//HACKY: if there is no vessel use the camera, this could cause some issues
 					playerPos = Camera.main.transform.position;
 				}
-				Debug.Log("KK: playerPos is" + playerPos);
+				// Debug.Log("KK: playerPos is" + playerPos);
 				staticDB.updateCache(playerPos);
 			}
 		}

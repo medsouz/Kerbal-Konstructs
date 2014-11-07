@@ -35,16 +35,16 @@ namespace KerbalKonstructs.UI
 					updateSelection(obj);
 
 				//It wanted a unique ID number ¯\_(ツ)_/¯
-				toolRect = GUI.Window(0xB00B1E5, toolRect, drawToolWindow, "Kerbal Konstructs Editor Tools");
+				toolRect = GUI.Window(0xB00B1E5, toolRect, drawToolWindow, "KK Instance Editor");
 
 				if(editingSite)
-					siteEditorRect = GUI.Window(0xB00B1E8, siteEditorRect, drawSiteEditorWindow, "Kerbal Konstruct Site Editor");
+					siteEditorRect = GUI.Window(0xB00B1E8, siteEditorRect, drawSiteEditorWindow, "KK Launchsite Editor");
 			}
-			editorRect = GUI.Window(0xB00B1E7, editorRect, drawEditorWindow, "Kerbal Konstruct Editor");
+			editorRect = GUI.Window(0xB00B1E7, editorRect, drawEditorWindow, "Kerbal Konstructs Statics Editor");
 		}
 
 		Rect toolRect = new Rect(50, 50, 336, 250);
-		Rect editorRect = new Rect(50, 100, 700, 400);
+		Rect editorRect = new Rect(10, 25, 520, 520);
 		Rect siteEditorRect = new Rect(400, 50, 330, 350);
 
 		private GUIStyle listStyle = new GUIStyle();
@@ -206,71 +206,103 @@ namespace KerbalKonstructs.UI
 
 		Vector2 scrollPos;
 		Boolean creating = false;
+		Boolean showLocal = false;
 
 		void drawEditorWindow(int id)
 		{
 			// ASH 07112014 Layout changes
-			GUILayout.BeginArea(new Rect(10, 25, 125, 365));
-			//GUILayout.BeginHorizontal();
-			GUI.enabled = !creating;
-			if (GUILayout.Button("New Object", GUILayout.Width(115)))
-				creating = true;
-			//GUILayout.Space(5);
-			GUI.enabled = creating;
-			if (GUILayout.Button("Existing Object", GUILayout.Width(115)))
-				creating = false;
-			GUI.enabled = true;
-			//GUILayout.EndHorizontal();
-			GUILayout.Space(15);
-			if (GUILayout.Button("Save Objects", GUILayout.Width(115)))
-				KerbalKonstructs.instance.saveObjects();
-			GUILayout.EndArea();
-			GUILayout.BeginArea(new Rect(135, 25, 540, 365));
-				scrollPos = GUILayout.BeginScrollView(scrollPos);
-				if (creating)
-				{
-					foreach (StaticModel model in KerbalKonstructs.instance.getStaticDB().getModels())
+			GUILayout.BeginArea(new Rect(10, 25, 500, 485));
+				GUILayout.BeginHorizontal();
+					GUI.enabled = !creating;
+					if (GUILayout.Button("Spawn New", GUILayout.Width(115)))
 					{
-                        // ASH 07112014 Removed redundant info from the path. Only need to know the content mod really
-                        String[] modelpaths = model.path.Split('/');
-                        String firstpath = modelpaths.Length > 0 ? modelpaths[0] : model.path;
-						
-						if (GUILayout.Button(model.getSetting("mesh") + " [" + firstpath + "]"))
-						{						
-							StaticObject obj = new StaticObject();
-							obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.getSetting("mesh"));
-							obj.setSetting("RadiusOffset", (float) FlightGlobals.ActiveVessel.altitude);
-							obj.setSetting("CelestialBody", KerbalKonstructs.instance.getCurrentBody());
-							obj.setSetting("Group", "Ungrouped");
-							obj.setSetting("RadialPosition", KerbalKonstructs.instance.getCurrentBody().transform.InverseTransformPoint(FlightGlobals.ActiveVessel.transform.position));
-							obj.setSetting("RotationAngle", 0f);
-							obj.setSetting("Orientation", Vector3.up);
-							obj.setSetting("VisibilityRange", 25000f);
-							obj.model = model;
-
-							KerbalKonstructs.instance.getStaticDB().addStatic(obj);
-							KerbalKonstructs.instance.spawnObject(obj, true);
-						}
+						creating = true;
+						showLocal = false;
 					}
-				}
-				else
-				{
-					foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
+					GUILayout.Space(8);
+					GUI.enabled = creating || showLocal;
+					if (GUILayout.Button("All Instances", GUILayout.Width(108)))
 					{
-						// ASH 07112014 Removed redundant info from the path. Only need to know the content mod really
-						String[] modelpaths = obj.model.path.Split('/');
-						String firstpath = modelpaths.Length > 0 ? modelpaths[0] : obj.model.path;
-						GUI.enabled = obj != selectedObject;
-						if (GUILayout.Button(((obj.settings.ContainsKey("LaunchSiteName")) ? obj.getSetting("LaunchSiteName") + "(" + obj.model.getSetting("mesh") + ")" : obj.model.getSetting("mesh")) + " [" + firstpath + "]"))
-						{
-							//TODO: Move PQS target to object position
-							KerbalKonstructs.instance.selectObject(obj);
-						}
+						creating = false;
+						showLocal = false;
 					}
 					GUI.enabled = true;
-				}
+					GUILayout.Space(2);
+					GUI.enabled = creating || !showLocal;
+					if (GUILayout.Button("Local Instances", GUILayout.Width(108)))
+					{
+						creating = false;
+						showLocal = true;
+					}
+					GUI.enabled = true;
+					GUILayout.Space(8);
+					if (GUILayout.Button("Save Objects", GUILayout.Width(115)))
+						KerbalKonstructs.instance.saveObjects();
+				GUILayout.EndHorizontal();
+				//GUILayout.EndArea();
+				//GUILayout.BeginArea(new Rect(135, 25, 540, 365));
+			
+				scrollPos = GUILayout.BeginScrollView(scrollPos);
+					if (creating)
+					{
+						foreach (StaticModel model in KerbalKonstructs.instance.getStaticDB().getModels())
+						{
+							// ASH 07112014 Removed redundant info from the path. Only need to know the content mod really
+							String[] modelpaths = model.path.Split('/');
+							String firstpath = modelpaths.Length > 0 ? modelpaths[0] : model.path;
+						
+							if (GUILayout.Button(model.getSetting("mesh") + " [" + firstpath + "]"))
+							{						
+								StaticObject obj = new StaticObject();
+								obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.getSetting("mesh"));
+								obj.setSetting("RadiusOffset", (float) FlightGlobals.ActiveVessel.altitude);
+								obj.setSetting("CelestialBody", KerbalKonstructs.instance.getCurrentBody());
+								obj.setSetting("Group", "Ungrouped");
+								obj.setSetting("RadialPosition", KerbalKonstructs.instance.getCurrentBody().transform.InverseTransformPoint(FlightGlobals.ActiveVessel.transform.position));
+								obj.setSetting("RotationAngle", 0f);
+								obj.setSetting("Orientation", Vector3.up);
+								obj.setSetting("VisibilityRange", 25000f);
+								obj.model = model;
+
+								KerbalKonstructs.instance.getStaticDB().addStatic(obj);
+								KerbalKonstructs.instance.spawnObject(obj, true);
+							}
+						}
+					}
+					else
+					{
+						foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
+						{
+							bool isLocal = true;
+							if (showLocal)
+							{
+								if (obj.pqsCity.sphere == FlightGlobals.currentMainBody.pqsController)
+								{
+									var dist = Vector3.Distance(FlightGlobals.ActiveVessel.GetTransform().position, obj.gameObject.transform.position);
+									isLocal = dist < 10000f;
+								}
+							}
+							
+							if (isLocal)
+							{
+								// ASH 07112014 Removed redundant info from the path. Only need to know the content mod really
+								String[] modelpaths = obj.model.path.Split('/');
+								String firstpath = modelpaths.Length > 0 ? modelpaths[0] : obj.model.path;
+
+								GUI.enabled = obj != selectedObject;
+								if (GUILayout.Button(((obj.settings.ContainsKey("LaunchSiteName")) ? obj.getSetting("LaunchSiteName") + "(" + obj.model.getSetting("mesh") + ")" : obj.model.getSetting("mesh")) + " [" + firstpath + "]"))
+								{
+									//TODO: Move PQS target to object position
+									KerbalKonstructs.instance.selectObject(obj);
+								}
+							}
+						}
+						GUI.enabled = true;
+					}
 				GUILayout.EndScrollView();
+
 			GUILayout.EndArea();
+
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
 
