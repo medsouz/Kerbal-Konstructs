@@ -10,7 +10,7 @@ namespace KerbalKonstructs.UI
 	{
 		StaticObject selectedObject;
 		private Boolean editingSite = false;
-		private String xPos, yPos, zPos, altitude, rotation;
+		private String xPos, yPos, zPos, altitude, rotation, customgroup = "";
 		private String increment = "1";
 
 		public EditorGUI()
@@ -219,7 +219,7 @@ namespace KerbalKonstructs.UI
 						creating = true;
 						showLocal = false;
 					}
-					GUILayout.Space(8);
+					GUILayout.Space(10);
 					GUI.enabled = creating || showLocal;
 					if (GUILayout.Button("All Instances", GUILayout.Width(108)))
 					{
@@ -235,7 +235,7 @@ namespace KerbalKonstructs.UI
 						showLocal = true;
 					}
 					GUI.enabled = true;
-					GUILayout.Space(8);
+					GUILayout.FlexibleSpace();
 					if (GUILayout.Button("Save Objects", GUILayout.Width(115)))
 						KerbalKonstructs.instance.saveObjects();
 				GUILayout.EndHorizontal();
@@ -247,11 +247,12 @@ namespace KerbalKonstructs.UI
 					{
 						foreach (StaticModel model in KerbalKonstructs.instance.getStaticDB().getModels())
 						{
-							// ASH 07112014 Removed redundant info from the path. Only need to know the content mod really
-							String[] modelpaths = model.path.Split('/');
-							String firstpath = modelpaths.Length > 0 ? modelpaths[0] : model.path;
-						
-							if (GUILayout.Button(model.getSetting("mesh") + " [" + firstpath + "]"))
+							// ASH 07112014 Removed redundant info from the path.
+							// String[] modelpaths = model.path.Split('/');
+							// String firstpath = modelpaths.Length > 0 ? modelpaths[0] : model.path;
+
+							if (GUILayout.Button(model.getSetting("title") + " : " + model.getSetting("mesh")))
+							// if (GUILayout.Button(model.getSetting("mesh") + " [" + firstpath + "]"))
 							{						
 								StaticObject obj = new StaticObject();
 								obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.getSetting("mesh"));
@@ -286,11 +287,11 @@ namespace KerbalKonstructs.UI
 							if (isLocal)
 							{
 								// ASH 07112014 Removed redundant info from the path. Only need to know the content mod really
-								String[] modelpaths = obj.model.path.Split('/');
-								String firstpath = modelpaths.Length > 0 ? modelpaths[0] : obj.model.path;
+								// String[] modelpaths = obj.model.path.Split('/');
+								// String firstpath = modelpaths.Length > 0 ? modelpaths[0] : obj.model.path;
 
 								GUI.enabled = obj != selectedObject;
-								if (GUILayout.Button(((obj.settings.ContainsKey("LaunchSiteName")) ? obj.getSetting("LaunchSiteName") + "(" + obj.model.getSetting("mesh") + ")" : obj.model.getSetting("mesh")) + " [" + firstpath + "]"))
+								if (GUILayout.Button("[" + obj.getSetting("Group") + "] " + (obj.settings.ContainsKey("LaunchSiteName") ? obj.getSetting("LaunchSiteName") + " : " + obj.model.getSetting("title") : obj.model.getSetting("title"))))
 								{
 									//TODO: Move PQS target to object position
 									KerbalKonstructs.instance.selectObject(obj);
@@ -300,10 +301,39 @@ namespace KerbalKonstructs.UI
 						GUI.enabled = true;
 					}
 				GUILayout.EndScrollView();
+				
+				GUILayout.BeginHorizontal();
+					GUILayout.FlexibleSpace();
+					GUILayout.Label("Group:");
+					GUILayout.Space(5);
+					GUI.enabled = showLocal;
+					customgroup = GUILayout.TextField(customgroup, 25, GUILayout.Width(150));
+					GUI.enabled = true;
+					GUILayout.Space(5);
+					GUI.enabled = showLocal;
+					if (GUILayout.Button("Set as Group", GUILayout.Width(115)))
+					{
+						setLocalsGroup(customgroup);
+					}
+					GUI.enabled = true;
+				GUILayout.EndHorizontal();
 
 			GUILayout.EndArea();
 
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
+		}
+
+		void setLocalsGroup(string sGroup)
+		{
+			if (sGroup == "")
+				return;
+
+			foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
+			{
+				var dist = Vector3.Distance(FlightGlobals.ActiveVessel.GetTransform().position, obj.gameObject.transform.position);
+				if (dist < 10000f)
+					obj.setSetting("Group", sGroup);
+			}
 		}
 
 		string siteName, siteTrans, siteDesc, siteAuthor, siteLogo;

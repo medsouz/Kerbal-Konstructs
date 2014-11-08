@@ -46,6 +46,8 @@ namespace KerbalKonstructs
 			authorConfig.setDefaultValue("Unknown");
 			KKAPI.addModelSetting("author", authorConfig);
 			KKAPI.addModelSetting("DefaultLaunchPadTransform", new ConfigGenericString());
+			// ASH Need the title
+			KKAPI.addModelSetting("title", new ConfigGenericString());
 
 			KKAPI.addInstanceSetting("CelestialBody", new ConfigCelestialBody());
 			KKAPI.addInstanceSetting("RadialPosition", new ConfigVector3());
