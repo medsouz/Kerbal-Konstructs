@@ -28,6 +28,12 @@ namespace KerbalKonstructs.StaticObjects
 			updateCacheSettings();
 		}
 
+		public void removeStatic(StaticObject obj)
+		{
+			childObjects.Remove(obj);
+			updateCacheSettings();
+		}
+
 		public void updateCacheSettings()
 		{
 			float highestVisibility = 0;

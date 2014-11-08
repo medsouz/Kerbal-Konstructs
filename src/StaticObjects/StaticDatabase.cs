@@ -12,6 +12,16 @@ namespace KerbalKonstructs.StaticObjects
 		private List<StaticModel> modelList = new List<StaticModel>();
 		private string activeBodyName = "";
 
+		public void changeGroup(StaticObject obj, string newGroup)
+		{
+			String bodyName = ((CelestialBody)obj.getSetting("CelestialBody")).bodyName;
+			String groupName = (string)obj.getSetting("Group");
+
+			groupList[bodyName][groupName].removeStatic(obj);
+			obj.setSetting("Group", newGroup);
+			addStatic(obj);
+		}
+
 		public void addStatic(StaticObject obj)
 		{
 			String bodyName = ((CelestialBody) obj.getSetting("CelestialBody")).bodyName;

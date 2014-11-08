@@ -290,7 +290,8 @@ namespace KerbalKonstructs.UI
 								// String[] modelpaths = obj.model.path.Split('/');
 								// String firstpath = modelpaths.Length > 0 ? modelpaths[0] : obj.model.path;
 
-								GUI.enabled = obj != selectedObject;
+								// ASH 08112014 No point in disabling the button
+								// GUI.enabled = obj != selectedObject;
 								if (GUILayout.Button("[" + obj.getSetting("Group") + "] " + (obj.settings.ContainsKey("LaunchSiteName") ? obj.getSetting("LaunchSiteName") + " : " + obj.model.getSetting("title") : obj.model.getSetting("title"))))
 								{
 									//TODO: Move PQS target to object position
@@ -332,7 +333,9 @@ namespace KerbalKonstructs.UI
 			{
 				var dist = Vector3.Distance(FlightGlobals.ActiveVessel.GetTransform().position, obj.gameObject.transform.position);
 				if (dist < 10000f)
-					obj.setSetting("Group", sGroup);
+				{
+					KerbalKonstructs.instance.getStaticDB().changeGroup(obj, sGroup);
+				}					
 			}
 		}
 

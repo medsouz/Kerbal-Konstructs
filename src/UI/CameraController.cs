@@ -48,7 +48,8 @@ namespace KerbalKonstructs.UI
 
 			if (Input.GetAxis("Mouse ScrollWheel") != 0)
 			{
-				zoom = Mathf.Clamp(zoom - Input.GetAxis("Mouse ScrollWheel") * 20.0f, cam.minDistance, cam.maxDistance);
+				// ASH 08112014 Make zoom faster
+				zoom = Mathf.Clamp(zoom - Input.GetAxis("Mouse ScrollWheel") * 100.0f, cam.minDistance, cam.maxDistance);
 			}
 
 			cam.transform.localRotation = Quaternion.Euler(y, x, 0);

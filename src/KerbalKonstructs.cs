@@ -453,12 +453,13 @@ namespace KerbalKonstructs
 					pos.z -= editor.getIncrement();
 					changed = true;
 				}
-				if (Input.GetKey(KeyCode.LeftShift))
+				// ASH 08112014 Fix clashing with camera zooming?
+				if (Input.GetKey(KeyCode.RightBracket))
 				{
 					alt += editor.getIncrement();
 					changed = true;
 				}
-				if (Input.GetKey(KeyCode.LeftControl))
+				if (Input.GetKey(KeyCode.LeftBracket))
 				{
 					alt -= editor.getIncrement();
 					changed = true;
@@ -472,7 +473,6 @@ namespace KerbalKonstructs
 					selectedObject.setSetting("RadiusOffset", alt);
 					editor.updateSelection(selectedObject);
 				}
-					
 			}
 
 			if(Input.GetKeyDown(KeyCode.K) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
