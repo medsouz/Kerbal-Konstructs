@@ -43,7 +43,7 @@ namespace KerbalKonstructs.UI
 			editorRect = GUI.Window(0xB00B1E7, editorRect, drawEditorWindow, "Kerbal Konstructs Statics Editor");
 		}
 
-		Rect toolRect = new Rect(50, 50, 336, 250);
+		Rect toolRect = new Rect(150, 25, 300, 325);
 		Rect editorRect = new Rect(10, 25, 520, 520);
 		Rect siteEditorRect = new Rect(400, 50, 330, 350);
 
@@ -58,149 +58,183 @@ namespace KerbalKonstructs.UI
 									};
 		ComboBox orientationMenu;
 
-		//TODO: rewrite this to use magical GUILayout code
-		//I wish I knew GUILayout was a thing when I made this :(
 		void drawToolWindow(int windowID)
 		{
-			GUI.Label(new Rect(21, 30, 203, 25), "Position");
-			GUI.Label(new Rect(6, 50, 25, 15), "X:");
-			xPos = GUI.TextField(new Rect(85, 50, 80, 25), xPos, 25);
 			Vector3 position = Vector3.zero;
 			float alt = 0;
 			float newRot = 0;
 			bool shouldUpdateSelection = false;
 			bool manuallySet = false;
-			if (GUI.Button(new Rect(53, 50, 30, 25), "<") || GUI.RepeatButton(new Rect(21, 50, 30, 25), "<<"))
-			{
-				position.x -= float.Parse(increment);
-				shouldUpdateSelection = true;
-			}
-			if (GUI.Button(new Rect(167, 50, 30, 25), ">") || GUI.RepeatButton(new Rect(199, 50, 30, 25), ">>"))
-			{
-				position.x += float.Parse(increment);
-				shouldUpdateSelection = true;
-			}
-			GUI.Label(new Rect(6, 80, 25, 15), "Y:");
-			yPos = GUI.TextField(new Rect(85, 80, 80, 25), yPos, 25);
-			if (GUI.Button(new Rect(53, 80, 30, 25), "<") || GUI.RepeatButton(new Rect(21, 80, 30, 25), "<<"))
-			{
-				position.y -= float.Parse(increment);
-				shouldUpdateSelection = true;
-			}
-			if (GUI.Button(new Rect(167, 80, 30, 25), ">") || GUI.RepeatButton(new Rect(199, 80, 30, 25), ">>"))
-			{
-				position.y += float.Parse(increment);
-				shouldUpdateSelection = true;
-			}
-			GUI.Label(new Rect(6, 110, 25, 15), "Z:");
-			zPos = GUI.TextField(new Rect(85, 110, 80, 25), zPos, 25);
-			if (GUI.Button(new Rect(53, 110, 30, 25), "<") || GUI.RepeatButton(new Rect(21, 110, 30, 25), "<<"))
-			{
-				position.z -= float.Parse(increment);
-				shouldUpdateSelection = true;
-			}
-			if (GUI.Button(new Rect(167, 110, 30, 25), ">") || GUI.RepeatButton(new Rect(199, 110, 30, 25), ">>"))
-			{
-				position.z += float.Parse(increment);
-				shouldUpdateSelection = true;
-			}
-			GUI.Label(new Rect(21, 140, 203, 25), "Altitude");
 
-			altitude = GUI.TextField(new Rect(85, 160, 80, 25), altitude, 25);
-			if (GUI.Button(new Rect(53, 160, 30, 25), "<") || GUI.RepeatButton(new Rect(21, 160, 30, 25), "<<"))
-			{
-				alt -= float.Parse(increment);
-				shouldUpdateSelection = true;
-			}
-			if (GUI.Button(new Rect(167, 160, 30, 25), ">") || GUI.RepeatButton(new Rect(199, 160, 30, 25), ">>"))
-			{
-				alt += float.Parse(increment);
-				shouldUpdateSelection = true;
-			}
-			GUI.Label(new Rect(235, 30, 80, 25), "Orientation");
-			//disable anything beneath the dropdown to prevent clicking through
-			GUI.enabled = !orientationMenu.isClickedComboButton;
-			GUI.Label(new Rect(235, 80, 80, 25), "Increment");
-			increment = GUI.TextField(new Rect(235, 100, 80, 25), increment, 25);
-			GUI.Label(new Rect(235, 130, 80, 25), "Rotation");
-			rotation = GUI.TextField(new Rect(235, 150, 80, 25), rotation, 25);
-			GUI.enabled = true;
+			GUILayout.BeginArea(new Rect(10, 25, 275, 300));
+				GUILayout.BeginHorizontal();
+					GUILayout.Label("Position");
+					GUILayout.FlexibleSpace();
+					GUILayout.Label("Increment");
+					increment = GUILayout.TextField(increment, 4, GUILayout.Width(50));
+				GUILayout.EndHorizontal();
 
-			if (GUI.Button(new Rect(21, 190, 80, 25), "Deselect"))
-			{
-				KerbalKonstructs.instance.deselectObject();
-			}
-			if (GUI.Button(new Rect(21, 220, 80, 25), "Delete"))
-			{
-				KerbalKonstructs.instance.deleteObject(selectedObject);
-			}
-			// ASH 07112014 Redundant
-			// GUI.enabled = false;
-			// GUI.Button(new Rect(106, 190, 90, 25), "Save Local");
-			// GUI.Button(new Rect(106, 220, 90, 25), "Save Global");
-			// GUI.enabled = true;
-			if (GUI.Button(new Rect(201, 190, 115, 25), "Snap to Surface"))
-			{
-                var pqsc = ((CelestialBody)selectedObject.getSetting("CelestialBody")).pqsController;
-                alt = (float)(pqsc.GetSurfaceHeight((Vector3)selectedObject.getSetting("RadialPosition")) - pqsc.radius - (float)selectedObject.getSetting("RadiusOffset"));
-				shouldUpdateSelection = true;
-			}
-			GUI.enabled = !editingSite;
-			if (GUI.Button(new Rect(201, 220, 115, 25), ((selectedObject.settings.ContainsKey("LaunchSiteName")) ? "Edit" : "Create") + " Launch Site"))
-			{
-				siteName = (string)selectedObject.getSetting("LaunchSiteName");
-				siteTrans = (selectedObject.settings.ContainsKey("LaunchPadTransform")) ? (string)selectedObject.getSetting("LaunchPadTransform") : (string)selectedObject.model.getSetting("DefaultLaunchPadTransform");
-				siteDesc = (string)selectedObject.getSetting("LaunchSiteDescription");
-				siteType = (SiteType) selectedObject.getSetting("LaunchSiteType");
-				siteTypeMenu.SelectedItemIndex = (int)siteType;
-				siteLogo = ((string) selectedObject.getSetting("LaunchSiteLogo"));//.Replace(selectedObject.model.path + "/", "");
-				siteAuthor = (selectedObject.settings.ContainsKey("author")) ? (string)selectedObject.getSetting("author") : (string)selectedObject.model.getSetting("author");
-				editingSite = true;
-			}
-				
-			GUI.enabled = true;
-
-			if (Event.current.keyCode == KeyCode.Return)
-			{
-				manuallySet = true;
-				position.x = float.Parse(xPos);
-				position.y = float.Parse(yPos);
-				position.z = float.Parse(zPos);
-				alt = float.Parse(altitude);
-				float rot = float.Parse(rotation);
-				while (rot > 360 || rot < 0)
-				{
-					if (rot > 360)
+				GUILayout.BeginHorizontal();
+					GUILayout.Label("X:");
+					GUILayout.FlexibleSpace();
+					xPos = GUILayout.TextField(xPos, 25, GUILayout.Width(70));
+					if (GUILayout.RepeatButton("<<", GUILayout.Width(30)) || GUILayout.Button("<", GUILayout.Width(30)))
 					{
-						rot -= 360;
+						position.x -= float.Parse(increment);
+						shouldUpdateSelection = true;
 					}
-					else if (rot < 0)
+					if (GUILayout.Button(">", GUILayout.Width(30)) || GUILayout.RepeatButton(">>", GUILayout.Width(30)))
 					{
-						rot += 360;
+						position.x += float.Parse(increment);
+						shouldUpdateSelection = true;
 					}
-				}
-				newRot = rot;
-				rotation = rot.ToString();
-				shouldUpdateSelection = true;
-			}
+				GUILayout.EndHorizontal();
 
-			if (shouldUpdateSelection)
-			{
-				if (!manuallySet)
+				GUILayout.BeginHorizontal();
+					GUILayout.Label("Y:");
+					GUILayout.FlexibleSpace();
+					yPos = GUILayout.TextField(yPos, 25, GUILayout.Width(70));
+					if (GUILayout.RepeatButton("<<", GUILayout.Width(30)) || GUILayout.Button("<", GUILayout.Width(30)))
+					{
+						position.y -= float.Parse(increment);
+						shouldUpdateSelection = true;
+					}
+					if (GUILayout.Button(">", GUILayout.Width(30)) || GUILayout.RepeatButton(">>", GUILayout.Width(30)))
+					{
+						position.y += float.Parse(increment);
+						shouldUpdateSelection = true;
+					}
+				GUILayout.EndHorizontal();
+
+				GUILayout.BeginHorizontal();
+					GUILayout.Label("Z:");
+					GUILayout.FlexibleSpace();
+					zPos = GUILayout.TextField(zPos, 25, GUILayout.Width(70));
+					if (GUILayout.RepeatButton("<<", GUILayout.Width(30)) || GUILayout.Button("<", GUILayout.Width(30)))
+					{
+						position.z -= float.Parse(increment);
+						shouldUpdateSelection = true;
+					}
+					if (GUILayout.Button(">", GUILayout.Width(30)) || GUILayout.RepeatButton(">>", GUILayout.Width(30)))
+					{
+						position.z += float.Parse(increment);
+						shouldUpdateSelection = true;
+					}
+				GUILayout.EndHorizontal();
+
+				GUILayout.BeginHorizontal();
+					GUILayout.Label("Alt.");
+					GUILayout.FlexibleSpace();
+					altitude = GUILayout.TextField(altitude, 25, GUILayout.Width(70));
+					// 
+					if (GUILayout.RepeatButton("<<", GUILayout.Width(30)) || GUILayout.Button("<", GUILayout.Width(30)))
+					{
+						alt -= float.Parse(increment);
+						shouldUpdateSelection = true;
+					}
+					if (GUILayout.Button(">", GUILayout.Width(30)) || GUILayout.RepeatButton(">>", GUILayout.Width(30)))
+					{
+						alt += float.Parse(increment);
+						shouldUpdateSelection = true;
+					}
+				GUILayout.EndHorizontal();
+
+				GUILayout.BeginHorizontal();
+					//GUILayout.Label("Orientation");
+					//disable anything beneath the dropdown to prevent clicking through
+					// GUI.enabled = !orientationMenu.isClickedComboButton;
+					GUILayout.Label("Rot.");
+					GUILayout.FlexibleSpace();
+					rotation = GUILayout.TextField(rotation, 4, GUILayout.Width(70));
+					GUI.enabled = false;
+					if (GUILayout.RepeatButton("<<", GUILayout.Width(30)) || GUILayout.Button("<", GUILayout.Width(30)))
+					{
+					}
+					if (GUILayout.Button(">", GUILayout.Width(30)) || GUILayout.RepeatButton(">>", GUILayout.Width(30)))
+					{
+					}
+					GUI.enabled = true;
+				GUILayout.EndHorizontal();
+
+				GUILayout.BeginHorizontal();
+					if (GUILayout.Button("Deselect", GUILayout.Width(130)))
+					{
+						KerbalKonstructs.instance.deselectObject();
+					}
+					GUILayout.FlexibleSpace();
+					if (GUILayout.Button("Delete", GUILayout.Width(130)))
+					{
+						KerbalKonstructs.instance.deleteObject(selectedObject);
+					}
+				GUILayout.EndHorizontal();
+
+				GUILayout.BeginHorizontal();
+					if (GUILayout.Button("Snap to Surface", GUILayout.Width(130)))
+					{
+						var pqsc = ((CelestialBody)selectedObject.getSetting("CelestialBody")).pqsController;
+						alt = (float)(pqsc.GetSurfaceHeight((Vector3)selectedObject.getSetting("RadialPosition")) - pqsc.radius - (float)selectedObject.getSetting("RadiusOffset"));
+						shouldUpdateSelection = true;
+					}
+					GUILayout.FlexibleSpace();
+					GUI.enabled = !editingSite;
+					if (GUILayout.Button(((selectedObject.settings.ContainsKey("LaunchSiteName")) ? "Edit" : "Make") + " Launchsite", GUILayout.Width(130)))
+					{
+						siteName = (string)selectedObject.getSetting("LaunchSiteName");
+						siteTrans = (selectedObject.settings.ContainsKey("LaunchPadTransform")) ? (string)selectedObject.getSetting("LaunchPadTransform") : (string)selectedObject.model.getSetting("DefaultLaunchPadTransform");
+						siteDesc = (string)selectedObject.getSetting("LaunchSiteDescription");
+						siteType = (SiteType) selectedObject.getSetting("LaunchSiteType");
+						siteTypeMenu.SelectedItemIndex = (int)siteType;
+						siteLogo = ((string) selectedObject.getSetting("LaunchSiteLogo"));//.Replace(selectedObject.model.path + "/", "");
+						siteAuthor = (selectedObject.settings.ContainsKey("author")) ? (string)selectedObject.getSetting("author") : (string)selectedObject.model.getSetting("author");
+						editingSite = true;
+					}				
+					GUI.enabled = true;
+				GUILayout.EndHorizontal();
+
+				if (Event.current.keyCode == KeyCode.Return)
 				{
-					position += (Vector3)selectedObject.getSetting("RadialPosition");
-					alt += (float)selectedObject.getSetting("RadiusOffset");
-					newRot += (float)selectedObject.getSetting("RotationAngle");
+					manuallySet = true;
+					position.x = float.Parse(xPos);
+					position.y = float.Parse(yPos);
+					position.z = float.Parse(zPos);
+					alt = float.Parse(altitude);
+					float rot = float.Parse(rotation);
+					while (rot > 360 || rot < 0)
+					{
+						if (rot > 360)
+						{
+							rot -= 360;
+						}
+						else if (rot < 0)
+						{
+							rot += 360;
+						}
+					}
+					newRot = rot;
+					rotation = rot.ToString();
+					shouldUpdateSelection = true;
 				}
 
-				selectedObject.setSetting("RadialPosition", position);
-				selectedObject.setSetting("RadiusOffset", alt);
-				selectedObject.setSetting("RotationAngle", newRot);
-				updateSelection(selectedObject);
-			}
+				if (shouldUpdateSelection)
+				{
+					if (!manuallySet)
+					{
+						position += (Vector3)selectedObject.getSetting("RadialPosition");
+						alt += (float)selectedObject.getSetting("RadiusOffset");
+						newRot += (float)selectedObject.getSetting("RotationAngle");
+					}
 
-			//Draw last so it properly overlaps
-			orientationMenu.Show(new Rect(235, 50, 80, 25));
+					selectedObject.setSetting("RadialPosition", position);
+					selectedObject.setSetting("RadiusOffset", alt);
+					selectedObject.setSetting("RotationAngle", newRot);
+					updateSelection(selectedObject);
+				}
+
+				//Draw last so it properly overlaps
+				//orientationMenu.Show(new Rect(235, 50, 80, 25));
+
+			GUILayout.EndArea();
+
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
 
