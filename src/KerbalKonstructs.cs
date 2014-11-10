@@ -99,11 +99,17 @@ namespace KerbalKonstructs
 		{
 			if (ApplicationLauncher.Ready)
 			{
-				//Just keep adding the button whenever the ApplicationLauncher is added to prevent it from disappearing, this is ineffecient but I don't care enough to come up with a better method.
+				//Just keep adding the button whenever the ApplicationLauncher is added to prevent it from disappearing, this is ineffecient but I don't care enough to come up with a better method.			
 				if (siteSelector != null)
 					ApplicationLauncher.Instance.RemoveModApplication(siteSelector);
-				siteSelector = ApplicationLauncher.Instance.AddModApplication(onSiteSelectorOn, onSiteSelectorOff, doNothing, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/SiteToolbarIcon", false));
+				siteSelector = ApplicationLauncher.Instance.AddModApplication(onSiteSelectorOn, onSiteSelectorOff, onSiteSelectorOnHover, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/SiteToolbarIcon", false));
 			}
+		}
+
+		void onSiteSelectorOnHover()
+		{
+			string hovermessage = "Selected launchsite is " + EditorLogic.fetch.launchSiteName;
+			ScreenMessages.PostScreenMessage(hovermessage, 10, 0);
 		}
 
 		// ASH 01112014 Lots of debug
