@@ -58,6 +58,7 @@ namespace KerbalKonstructs.UI
 									};
 		ComboBox orientationMenu;
 
+		// ASH 10112014 Removed orientation feature no-one will want or use
 		void drawToolWindow(int windowID)
 		{
 			Vector3 position = Vector3.zero;
@@ -66,18 +67,18 @@ namespace KerbalKonstructs.UI
 			bool shouldUpdateSelection = false;
 			bool manuallySet = false;
 
-			GUILayout.BeginArea(new Rect(10, 25, 275, 300));
+			GUILayout.BeginArea(new Rect(10, 25, 275, 310));
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Position");
 					GUILayout.FlexibleSpace();
 					GUILayout.Label("Increment");
-					increment = GUILayout.TextField(increment, 4, GUILayout.Width(50));
+					increment = GUILayout.TextField(increment, 5, GUILayout.Width(50));
 				GUILayout.EndHorizontal();
 
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("X:");
 					GUILayout.FlexibleSpace();
-					xPos = GUILayout.TextField(xPos, 25, GUILayout.Width(70));
+					xPos = GUILayout.TextField(xPos, 25, GUILayout.Width(80));
 					if (GUILayout.RepeatButton("<<", GUILayout.Width(30)) || GUILayout.Button("<", GUILayout.Width(30)))
 					{
 						position.x -= float.Parse(increment);
@@ -93,7 +94,7 @@ namespace KerbalKonstructs.UI
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Y:");
 					GUILayout.FlexibleSpace();
-					yPos = GUILayout.TextField(yPos, 25, GUILayout.Width(70));
+					yPos = GUILayout.TextField(yPos, 25, GUILayout.Width(80));
 					if (GUILayout.RepeatButton("<<", GUILayout.Width(30)) || GUILayout.Button("<", GUILayout.Width(30)))
 					{
 						position.y -= float.Parse(increment);
@@ -109,7 +110,7 @@ namespace KerbalKonstructs.UI
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Z:");
 					GUILayout.FlexibleSpace();
-					zPos = GUILayout.TextField(zPos, 25, GUILayout.Width(70));
+					zPos = GUILayout.TextField(zPos, 25, GUILayout.Width(80));
 					if (GUILayout.RepeatButton("<<", GUILayout.Width(30)) || GUILayout.Button("<", GUILayout.Width(30)))
 					{
 						position.z -= float.Parse(increment);
@@ -125,7 +126,7 @@ namespace KerbalKonstructs.UI
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Alt.");
 					GUILayout.FlexibleSpace();
-					altitude = GUILayout.TextField(altitude, 25, GUILayout.Width(70));
+					altitude = GUILayout.TextField(altitude, 25, GUILayout.Width(80));
 					// 
 					if (GUILayout.RepeatButton("<<", GUILayout.Width(30)) || GUILayout.Button("<", GUILayout.Width(30)))
 					{
@@ -140,31 +141,30 @@ namespace KerbalKonstructs.UI
 				GUILayout.EndHorizontal();
 
 				GUILayout.BeginHorizontal();
-					//GUILayout.Label("Orientation");
-					//disable anything beneath the dropdown to prevent clicking through
-					// GUI.enabled = !orientationMenu.isClickedComboButton;
 					GUILayout.Label("Rot.");
 					GUILayout.FlexibleSpace();
-					rotation = GUILayout.TextField(rotation, 4, GUILayout.Width(70));
-					GUI.enabled = false;
-					if (GUILayout.RepeatButton("<<", GUILayout.Width(30)) || GUILayout.Button("<", GUILayout.Width(30)))
-					{
-					}
-					if (GUILayout.Button(">", GUILayout.Width(30)) || GUILayout.RepeatButton(">>", GUILayout.Width(30)))
-					{
-					}
-					GUI.enabled = true;
-				GUILayout.EndHorizontal();
+					rotation = GUILayout.TextField(rotation, 4, GUILayout.Width(80));
 
-				GUILayout.BeginHorizontal();
-					if (GUILayout.Button("Deselect", GUILayout.Width(130)))
+					// ASH New very handy rotation buttons
+					if (GUILayout.RepeatButton("<<", GUILayout.Width(30)))
 					{
-						KerbalKonstructs.instance.deselectObject();
+						newRot -= 1.0f;
+						shouldUpdateSelection = true;
 					}
-					GUILayout.FlexibleSpace();
-					if (GUILayout.Button("Delete", GUILayout.Width(130)))
+					if (GUILayout.Button("<", GUILayout.Width(30)))
 					{
-						KerbalKonstructs.instance.deleteObject(selectedObject);
+						newRot -= float.Parse(increment) / 10f;
+						shouldUpdateSelection = true;
+					}
+					if (GUILayout.Button(">", GUILayout.Width(30)))
+					{
+						newRot += float.Parse(increment) / 10f;
+						shouldUpdateSelection = true;
+					}
+					if (GUILayout.RepeatButton(">>", GUILayout.Width(30)))
+					{
+						newRot += 1.0f;
+						shouldUpdateSelection = true;
 					}
 				GUILayout.EndHorizontal();
 
@@ -189,6 +189,26 @@ namespace KerbalKonstructs.UI
 						editingSite = true;
 					}				
 					GUI.enabled = true;
+				GUILayout.EndHorizontal();
+
+				GUILayout.BeginHorizontal();
+					if (GUILayout.Button("Save", GUILayout.Width(130)))
+						KerbalKonstructs.instance.saveObjects();
+					GUILayout.FlexibleSpace();
+					if (GUILayout.Button("Deselect", GUILayout.Width(130)))
+					{
+						// ASH Auto-save on deselect
+						KerbalKonstructs.instance.saveObjects();
+						KerbalKonstructs.instance.deselectObject();
+					}
+				GUILayout.EndHorizontal();
+
+				GUILayout.BeginHorizontal();
+					GUILayout.FlexibleSpace();
+					if (GUILayout.Button("Delete", GUILayout.Width(80)))
+					{
+						KerbalKonstructs.instance.deleteObject(selectedObject);
+					}
 				GUILayout.EndHorizontal();
 
 				if (Event.current.keyCode == KeyCode.Return)
@@ -222,6 +242,19 @@ namespace KerbalKonstructs.UI
 						position += (Vector3)selectedObject.getSetting("RadialPosition");
 						alt += (float)selectedObject.getSetting("RadiusOffset");
 						newRot += (float)selectedObject.getSetting("RotationAngle");
+
+						// 10112014 ASH Handle new rotation button limits
+						while (newRot > 360 || newRot < 0)
+						{ 
+							if (newRot > 360)
+							{
+								newRot -= 360;
+							}
+							else if (newRot < 0)
+							{
+								newRot += 360;
+							}
+						}
 					}
 
 					selectedObject.setSetting("RadialPosition", position);
@@ -229,9 +262,6 @@ namespace KerbalKonstructs.UI
 					selectedObject.setSetting("RotationAngle", newRot);
 					updateSelection(selectedObject);
 				}
-
-				//Draw last so it properly overlaps
-				//orientationMenu.Show(new Rect(235, 50, 80, 25));
 
 			GUILayout.EndArea();
 
