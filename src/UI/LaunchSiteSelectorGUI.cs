@@ -10,11 +10,24 @@ namespace KerbalKonstructs.UI
 		LaunchSite selectedSite;
 		private SiteType editorType = SiteType.Any;
 
+		private Boolean isCareer = false;
+		private Boolean isOpen = false;
+
 		// ASH 28102014 - Needs to be bigger for filter
 		Rect windowRect = new Rect(((Screen.width - Camera.main.rect.x) / 2) + Camera.main.rect.x - 125, (Screen.height / 2 - 250), 700, 580);
 
 		public void drawSelector()
 		{
+			if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+			{
+				// disableCareerStrategyLayer is configurable in KerbalKonstructs.cfg
+				if (!KerbalKonstructs.instance.disableCareerStrategyLayer)
+				{
+					// ASH 11112014 Career strategy layer 
+					// DISABLE career strategy layer by simply commenting out the next line
+					// isCareer = true;
+				}
+			}
 			if (Camera.main != null)//Camera.main is null when first loading a scene
 			{
 				GUI.Window(0xB00B1E6, windowRect, drawSelectorWindow, "Launch Site Selector");
@@ -97,7 +110,9 @@ namespace KerbalKonstructs.UI
 					if (GUILayout.Button(site.name, GUILayout.Height(30)))
 					{
 						selectedSite = site;
-						LaunchSiteManager.setLaunchSite(site);
+						// ASH Career Mode Unlocking
+						if (!isCareer)
+							LaunchSiteManager.setLaunchSite(site);
 					}
 				}
 				GUILayout.EndScrollView();
@@ -115,7 +130,9 @@ namespace KerbalKonstructs.UI
 				if (LaunchSiteManager.getLaunchSites().Count > 0)
 				{
 					selectedSite = LaunchSiteManager.getLaunchSites(editorType)[0];
-					LaunchSiteManager.setLaunchSite(selectedSite);
+					// ASH Career Mode Unlocking
+					if (!isCareer)
+						LaunchSiteManager.setLaunchSite(selectedSite);
 
 					// ASH 05112014 Might fix the selector centering issue on the right panel
 					drawRightSelectorWindow();
@@ -131,11 +148,58 @@ namespace KerbalKonstructs.UI
 		private void drawRightSelectorWindow()
 		{
 			GUILayout.BeginArea(new Rect(385, 25, 310, 550));
-			GUILayout.Label(selectedSite.logo, GUILayout.Height(280));
-			GUILayout.Label(selectedSite.name + " By " + selectedSite.author);
-			descriptionScrollPosition = GUILayout.BeginScrollView(descriptionScrollPosition);
-			GUILayout.Label(selectedSite.description);
-			GUILayout.EndScrollView();
+				GUILayout.Label(selectedSite.logo, GUILayout.Height(280));
+				GUILayout.Label(selectedSite.name + " By " + selectedSite.author);
+				descriptionScrollPosition = GUILayout.BeginScrollView(descriptionScrollPosition);
+				GUILayout.Label(selectedSite.description);
+				GUILayout.EndScrollView();
+
+				int iFundsOpen = 1000;
+				int iFundsClose = 1000;
+				
+				if (isCareer)
+				{	
+					// Determine funds to open and close from instance cfg
+
+					// Determine if a site is open or closed
+					// If persistence says the site is open then isOpen = true;
+					// If persistence file says nothing or site is closed then isOpen = false;
+
+					// Testing
+					// GUI.enabled = !isOpen;
+					if (GUILayout.Button("Open Site for " + iFundsOpen + " Funds"))
+					{
+						// What if there isn't enough funds?
+
+						// Open the site - save to persistence
+
+						// Charge some funds
+						Funding.Instance.AddFunds(-iFundsOpen, TransactionReasons.Cheating);
+
+					}
+					GUI.enabled = true;
+					
+					// Testing
+					// GUI.enabled = isOpen;
+					if (GUILayout.Button("Close Site for " + iFundsClose + " Funds"))
+					{
+						// Close the site - save to persistence
+						// Pay back some funds
+
+						Funding.Instance.AddFunds(iFundsClose, TransactionReasons.Cheating);
+					}
+					GUI.enabled = true;
+
+					// Testing
+					// GUI.enabled = isOpen;
+					GUI.enabled = !(selectedSite.name == EditorLogic.fetch.launchSiteName);
+					
+					if (GUILayout.Button("Set as Launchsite"))
+					{
+						LaunchSiteManager.setLaunchSite(selectedSite);
+					}
+					GUI.enabled = true;
+				}
 			GUILayout.EndArea();
 		}
 
@@ -148,7 +212,9 @@ namespace KerbalKonstructs.UI
 				{
 					selectedSite = LaunchSiteManager.getLaunchSites(editorType)[0];
 				}
-				LaunchSiteManager.setLaunchSite(selectedSite);
+				// ASH Career Mode Unlocking
+				if (!isCareer)
+					LaunchSiteManager.setLaunchSite(selectedSite);
 			}
 		}
 		

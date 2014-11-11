@@ -37,6 +37,9 @@ namespace KerbalKonstructs
 		[KSPField]
 		public Boolean launchFromAnySite = false;
 
+		// ASH Configurable toggle for career strategy layer
+		public Boolean disableCareerStrategyLayer = false;
+
 		void Awake()
 		{
 			instance = this;
@@ -85,14 +88,14 @@ namespace KerbalKonstructs
 			loadObjects();
 			// ASH 01112014 Toggle on and off for the flight scene only
 			//InvokeRepeating("updateCache", 0, 1);
-			//SpaceCenterManager.setKSC();
+			SpaceCenterManager.setKSC();
 		}
 
 		void OnVesselRecoveryRequested(Vessel data)
 		{
 			Debug.Log("KK: event onVesselRecoveryRequested");
-			//SpaceCenter csc = SpaceCenterManager.getClosestSpaceCenter(data.gameObject.transform.position);
-			//SpaceCenter.Instance = csc;
+			SpaceCenter csc = SpaceCenterManager.getClosestSpaceCenter(data.gameObject.transform.position);
+			SpaceCenter.Instance = csc;
 		}
 
 		void OnGUIAppLauncherReady()
@@ -124,7 +127,6 @@ namespace KerbalKonstructs
 			{
 				Debug.Log("KK: Deselecting an object.");
 				deselectObject(false);
-				// ASH 04112014 Why?
 				camControl.active = false;
 			}
 
@@ -133,56 +135,55 @@ namespace KerbalKonstructs
 			// ASH 01112014 Toggle on and off for the flight scene only
 			if (data.Equals(GameScenes.FLIGHT))
 			{
-				Debug.Log("KK: onLevelWasLoaded is FLIGHT");
+				// Debug.Log("KK: onLevelWasLoaded is FLIGHT");
 				// ASH 03112014 Fix recovery issue and remove redundant code.
+				// IT WASN'T THIS
 				// Debug.Log("KK: onLevelWasLoaded calling onBodyChanged with " + currentBody.bodyName);
 				// staticDB.onBodyChanged(currentBody);
 				updateCache();
-				Debug.Log("KK: Invoking updateCache");
+				// Debug.Log("KK: Invoking updateCache");
 				InvokeRepeating("updateCache", 0, 1);
 				something = false;
 			}
 			else
 			{
-				Debug.Log("KK: Revoking updateCache");
+				// Debug.Log("KK: Revoking updateCache");
 				CancelInvoke("updateCache");
 			}
 
 			if (data.Equals(GameScenes.SPACECENTER))
 			{
-				Debug.Log("KK: onLevelWasLoaded is SPACECENTER");
-				//Assume that the Space Center is on Kerbin
-				
-				// ASH This is wrong IS IT?
+				// Debug.Log("KK: onLevelWasLoaded is SPACECENTER");
+				// Assume that the Space Center is on Kerbin
 				currentBody = KKAPI.getCelestialBody("Kerbin");
 				// staticDB.onBodyChanged(currentBody);
-				Debug.Log("KK: onLevelWasLoaded calling onBodyChanged with Kerbin");
+				// Debug.Log("KK: onLevelWasLoaded calling onBodyChanged with Kerbin");
 
 				// ASH This is right
 				staticDB.onBodyChanged(KKAPI.getCelestialBody("Kerbin"));
-				Debug.Log("KK: onLevelWasLoaded calling updateCache");
+				// Debug.Log("KK: onLevelWasLoaded calling updateCache");
 				updateCache();
 				something = false;
 			}
 			
 			if (data.Equals(GameScenes.EDITOR) || data.Equals(GameScenes.SPH))
 			{
-				Debug.Log("KK: onLevelWasLoaded is EDITOR or SPH");
+				// Debug.Log("KK: onLevelWasLoaded is EDITOR or SPH");
 				// ASH and Ravencrow 28102014
 				// Prevent abuse if selector left open when switching to from VAB and SPH
 				selector.Close();
 				switch (data)
 				{
 					case GameScenes.SPH:
-						Debug.Log("KK: onLevelWasLoaded is SPH");
+						// Debug.Log("KK: onLevelWasLoaded is SPH");
 						selector.setEditorType(SiteType.SPH);
 						break;
 					case GameScenes.EDITOR:
-						Debug.Log("KK: onLevelWasLoaded is VAB");
+						// Debug.Log("KK: onLevelWasLoaded is VAB");
 						selector.setEditorType(SiteType.VAB);
 						break;
 					default:
-						Debug.Log("KK: onLevelWasLoaded is DEFAULT.");
+						// Debug.Log("KK: onLevelWasLoaded is DEFAULT.");
 						selector.setEditorType(SiteType.Any);
 						break;
 				}
@@ -190,8 +191,8 @@ namespace KerbalKonstructs
 
 			if (something)
 			{
-				Debug.Log("KK: onLevelWasLoaded is SOMEOTHERSCENE");
-				Debug.Log("KK: onLevelWasLoaded calling onBodyChanged with NULL");
+				// Debug.Log("KK: onLevelWasLoaded is SOMEOTHERSCENE");
+				// Debug.Log("KK: onLevelWasLoaded calling onBodyChanged with NULL");
 				staticDB.onBodyChanged(null);
 			}
 		}
@@ -199,7 +200,7 @@ namespace KerbalKonstructs
 		void onDominantBodyChange(GameEvents.FromToAction<CelestialBody, CelestialBody> data)
 		{
 			currentBody = data.to;
-			Debug.Log("KK: event onDominantBodyChange to " + data.to.bodyName);
+			// Debug.Log("KK: event onDominantBodyChange to " + data.to.bodyName);
 			staticDB.onBodyChanged(data.to);
 		}
 
