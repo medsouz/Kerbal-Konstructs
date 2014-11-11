@@ -346,6 +346,8 @@ namespace KerbalKonstructs.UI
 									var dist = Vector3.Distance(FlightGlobals.ActiveVessel.GetTransform().position, obj.gameObject.transform.position);
 									isLocal = dist < 10000f;
 								}
+								else
+									isLocal = false;
 							}
 							
 							if (isLocal)
