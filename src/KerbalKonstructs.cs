@@ -38,6 +38,7 @@ namespace KerbalKonstructs
 		public Boolean launchFromAnySite = false;
 
 		// ASH Configurable toggle for career strategy layer
+		[KSPField]
 		public Boolean disableCareerStrategyLayer = false;
 
 		void Awake()
@@ -77,6 +78,14 @@ namespace KerbalKonstructs
 			ConfigGenericString category = new ConfigGenericString();
 			category.setDefaultValue("Other");
 			KKAPI.addInstanceSetting("Category", category);
+
+			// ASH Career Strategy
+			ConfigFloat openCost = new ConfigFloat();
+			openCost.setDefaultValue(0f);
+			KKAPI.addInstanceSetting("OpenCost", openCost);
+			ConfigFloat closeValue = new ConfigFloat();
+			closeValue.setDefaultValue(0f);
+			KKAPI.addInstanceSetting("CloseValue", closeValue);
 
 			loadConfig();
 			saveConfig();

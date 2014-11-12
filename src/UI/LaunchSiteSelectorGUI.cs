@@ -25,7 +25,7 @@ namespace KerbalKonstructs.UI
 				{
 					// ASH 11112014 Career strategy layer 
 					// DISABLE career strategy layer by simply commenting out the next line
-					// isCareer = true;
+					isCareer = true;
 				}
 			}
 			if (Camera.main != null)//Camera.main is null when first loading a scene
@@ -154,8 +154,21 @@ namespace KerbalKonstructs.UI
 				GUILayout.Label(selectedSite.description);
 				GUILayout.EndScrollView();
 
-				int iFundsOpen = 1000;
-				int iFundsClose = 1000;
+				float iFundsOpen = 0;
+				float iFundsClose = 0;
+				iFundsOpen = selectedSite.opencost;
+				iFundsClose = selectedSite.closevalue;
+
+				bool isAlwaysOpen = false;
+				bool cannotBeClosed = false;
+
+				// If it is 0 to open it is always open
+				if (iFundsOpen == 0)
+					isAlwaysOpen = true;
+
+				if (iFundsClose == 0)
+					cannotBeClosed = true;
+				// If it is 0 to close you cannot close it
 				
 				if (isCareer)
 				{	
@@ -166,32 +179,40 @@ namespace KerbalKonstructs.UI
 					// If persistence file says nothing or site is closed then isOpen = false;
 
 					// Testing
-					// GUI.enabled = !isOpen;
-					if (GUILayout.Button("Open Site for " + iFundsOpen + " Funds"))
+					GUI.enabled = !isAlwaysOpen;
+					GUI.enabled = !isOpen;
+					if (!isAlwaysOpen)
 					{
-						// What if there isn't enough funds?
+						if (GUILayout.Button("Open Site for " + iFundsOpen + " Funds"))
+						{
+							// What if there isn't enough funds?
 
-						// Open the site - save to persistence
+							// Open the site - save to persistence
 
-						// Charge some funds
-						Funding.Instance.AddFunds(-iFundsOpen, TransactionReasons.Cheating);
-
+							// Charge some funds
+							Funding.Instance.AddFunds(-iFundsOpen, TransactionReasons.Cheating);
+						}
 					}
 					GUI.enabled = true;
 					
 					// Testing
-					// GUI.enabled = isOpen;
-					if (GUILayout.Button("Close Site for " + iFundsClose + " Funds"))
+					GUI.enabled = isOpen;
+					GUI.enabled = !cannotBeClosed;
+					if (!cannotBeClosed)
 					{
-						// Close the site - save to persistence
-						// Pay back some funds
+						if (GUILayout.Button("Close Site for " + iFundsClose + " Funds"))
+						{
+							// Close the site - save to persistence
+							// Pay back some funds
 
-						Funding.Instance.AddFunds(iFundsClose, TransactionReasons.Cheating);
+							Funding.Instance.AddFunds(iFundsClose, TransactionReasons.Cheating);
+						}
 					}
 					GUI.enabled = true;
 
 					// Testing
-					// GUI.enabled = isOpen;
+					GUI.enabled = isOpen;
+					GUI.enabled = isAlwaysOpen;
 					GUI.enabled = !(selectedSite.name == EditorLogic.fetch.launchSiteName);
 					
 					if (GUILayout.Button("Set as Launchsite"))

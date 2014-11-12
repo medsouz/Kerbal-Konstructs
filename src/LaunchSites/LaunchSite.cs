@@ -14,8 +14,11 @@ namespace KerbalKonstructs.LaunchSites
 
 		// ASH 28102014 - Added category
 		public string category;
+		// ASH Added career strategy
+		public float opencost;
+		public float closevalue;
 
-		public LaunchSite(string sName, string sAuthor, SiteType sType, Texture sLogo, Texture sIcon, string sDescription, string sDevice = "Other")
+		public LaunchSite(string sName, string sAuthor, SiteType sType, Texture sLogo, Texture sIcon, string sDescription, string sDevice = "Other", float fOpenCost = 0, float fCloseValue = 0)
 		{
 			name = sName;
 			author = sAuthor;
@@ -25,6 +28,9 @@ namespace KerbalKonstructs.LaunchSites
 			description = sDescription;
 			// ASH 28102014 - Added category
 			category = sDevice;
+			// ASH Added career strategy
+			opencost = fOpenCost;
+			closevalue = fCloseValue;
 		}
 	}
 
