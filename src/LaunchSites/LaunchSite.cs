@@ -17,8 +17,9 @@ namespace KerbalKonstructs.LaunchSites
 		// ASH Added career strategy
 		public float opencost;
 		public float closevalue;
+		public string openclosestate;
 
-		public LaunchSite(string sName, string sAuthor, SiteType sType, Texture sLogo, Texture sIcon, string sDescription, string sDevice = "Other", float fOpenCost = 0, float fCloseValue = 0)
+		public LaunchSite(string sName, string sAuthor, SiteType sType, Texture sLogo, Texture sIcon, string sDescription, string sDevice = "Other", float fOpenCost = 0, float fCloseValue = 0, string sOpenCloseState = "Closed")
 		{
 			name = sName;
 			author = sAuthor;
@@ -31,6 +32,7 @@ namespace KerbalKonstructs.LaunchSites
 			// ASH Added career strategy
 			opencost = fOpenCost;
 			closevalue = fCloseValue;
+			openclosestate = sOpenCloseState;
 		}
 	}
 

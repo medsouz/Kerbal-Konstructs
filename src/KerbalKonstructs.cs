@@ -86,6 +86,9 @@ namespace KerbalKonstructs
 			ConfigFloat closeValue = new ConfigFloat();
 			closeValue.setDefaultValue(0f);
 			KKAPI.addInstanceSetting("CloseValue", closeValue);
+			ConfigGenericString opencloseState = new ConfigGenericString();
+			opencloseState.setDefaultValue("Closed");
+			KKAPI.addInstanceSetting("OpenCloseState", opencloseState);
 
 			loadConfig();
 			saveConfig();
@@ -93,11 +96,18 @@ namespace KerbalKonstructs
 			GameEvents.onLevelWasLoaded.Add(onLevelWasLoaded);
 			GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
 			GameEvents.OnVesselRecoveryRequested.Add(OnVesselRecoveryRequested);
+			GameEvents.OnFundsChanged.Add(OnDoshChanged);
 			DontDestroyOnLoad(this);
 			loadObjects();
 			// ASH 01112014 Toggle on and off for the flight scene only
 			//InvokeRepeating("updateCache", 0, 1);
 			SpaceCenterManager.setKSC();
+		}
+
+		void OnDoshChanged(double amount, TransactionReasons reason)
+		{
+			//if (reason == )
+			Debug.Log("KK: Funds changed - " + amount + " because " + reason);
 		}
 
 		void OnVesselRecoveryRequested(Vessel data)
@@ -574,6 +584,12 @@ namespace KerbalKonstructs
 		void onSiteSelectorOn()
 		{
 			showSelector = true;
+
+			// ASH
+			// Load career mode site open close states here
+
+			// Loop through KK save file
+			// 
 		}
 
 		void onSiteSelectorOff()

@@ -7,11 +7,15 @@ namespace KerbalKonstructs.UI
 {
 	public class LaunchSiteSelectorGUI
 	{
+		public Texture tIconClosed = GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/siteclosed", false);
+		public Texture tIconOpen = GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/siteopen", false);
+
 		LaunchSite selectedSite;
 		private SiteType editorType = SiteType.Any;
 
 		private Boolean isCareer = false;
 		private Boolean isOpen = false;
+		private float iFundsOpen = 0;
 
 		// ASH 28102014 - Needs to be bigger for filter
 		Rect windowRect = new Rect(((Screen.width - Camera.main.rect.x) / 2) + Camera.main.rect.x - 125, (Screen.height / 2 - 250), 700, 580);
@@ -106,6 +110,9 @@ namespace KerbalKonstructs.UI
 
 			foreach (LaunchSite site in sites)
 				{
+					if (isCareer)
+						GUILayout.BeginHorizontal();
+					
 					GUI.enabled = !(selectedSite == site);
 					if (GUILayout.Button(site.name, GUILayout.Height(30)))
 					{
@@ -113,6 +120,22 @@ namespace KerbalKonstructs.UI
 						// ASH Career Mode Unlocking
 						if (!isCareer)
 							LaunchSiteManager.setLaunchSite(site);
+					}
+					GUI.enabled = true;
+					if (isCareer)
+					{
+						// if site is closed show red light
+						// if site is open show green light
+
+						if (site.openclosestate == "Open" || site.opencost == 0)
+						{
+							GUILayout.Label(tIconOpen, GUILayout.Height(30), GUILayout.Width(30));
+						}
+						else
+						{
+							GUILayout.Label(tIconClosed, GUILayout.Height(30), GUILayout.Width(30));
+						}
+						GUILayout.EndHorizontal();
 					}
 				}
 				GUILayout.EndScrollView();
@@ -154,7 +177,6 @@ namespace KerbalKonstructs.UI
 				GUILayout.Label(selectedSite.description);
 				GUILayout.EndScrollView();
 
-				float iFundsOpen = 0;
 				float iFundsClose = 0;
 				iFundsOpen = selectedSite.opencost;
 				iFundsClose = selectedSite.closevalue;
@@ -178,16 +200,24 @@ namespace KerbalKonstructs.UI
 					// If persistence says the site is open then isOpen = true;
 					// If persistence file says nothing or site is closed then isOpen = false;
 
+					isOpen = (selectedSite.openclosestate == "Open");
+
+					//i = true;
+					// i = false;
+
 					// Testing
-					GUI.enabled = !isAlwaysOpen;
+					// GUI.enabled = !isAlwaysOpen;
 					GUI.enabled = !isOpen;
+					
 					if (!isAlwaysOpen)
 					{
 						if (GUILayout.Button("Open Site for " + iFundsOpen + " Funds"))
 						{
 							// What if there isn't enough funds?
 
-							// Open the site - save to persistence
+							// Open the site - save to instance - save to persistence
+							selectedSite.openclosestate = "Open";
+							
 
 							// Charge some funds
 							Funding.Instance.AddFunds(-iFundsOpen, TransactionReasons.Cheating);
@@ -197,7 +227,7 @@ namespace KerbalKonstructs.UI
 					
 					// Testing
 					GUI.enabled = isOpen;
-					GUI.enabled = !cannotBeClosed;
+					// GUI.enabled = !cannotBeClosed;
 					if (!cannotBeClosed)
 					{
 						if (GUILayout.Button("Close Site for " + iFundsClose + " Funds"))
@@ -206,15 +236,12 @@ namespace KerbalKonstructs.UI
 							// Pay back some funds
 
 							Funding.Instance.AddFunds(iFundsClose, TransactionReasons.Cheating);
+							selectedSite.openclosestate = "Closed";
 						}
 					}
 					GUI.enabled = true;
 
-					// Testing
-					GUI.enabled = isOpen;
-					GUI.enabled = isAlwaysOpen;
-					GUI.enabled = !(selectedSite.name == EditorLogic.fetch.launchSiteName);
-					
+					GUI.enabled = (isOpen || isAlwaysOpen) && !(selectedSite.name == EditorLogic.fetch.launchSiteName);					
 					if (GUILayout.Button("Set as Launchsite"))
 					{
 						LaunchSiteManager.setLaunchSite(selectedSite);
