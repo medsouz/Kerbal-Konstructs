@@ -33,7 +33,7 @@ namespace KerbalKonstructs
 		private MapIconManager mapIconManager = new MapIconManager();
 		private ApplicationLauncherButton siteSelector;
 
-		//Configurable variables
+		// Configurable variables
 		[KSPField]
 		public Boolean launchFromAnySite = false;
 
@@ -44,7 +44,7 @@ namespace KerbalKonstructs
 		void Awake()
 		{
 			instance = this;
-			//Setup configuration
+			// Setup configuration
 			KKAPI.addModelSetting("mesh", new ConfigFile());
 			ConfigGenericString authorConfig = new ConfigGenericString();
 			authorConfig.setDefaultValue("Unknown");
@@ -79,7 +79,7 @@ namespace KerbalKonstructs
 			category.setDefaultValue("Other");
 			KKAPI.addInstanceSetting("Category", category);
 
-			// ASH Career Strategy
+			// ASH Career Strategy additions to API
 			ConfigFloat openCost = new ConfigFloat();
 			openCost.setDefaultValue(0f);
 			KKAPI.addInstanceSetting("OpenCost", openCost);
@@ -100,13 +100,12 @@ namespace KerbalKonstructs
 			DontDestroyOnLoad(this);
 			loadObjects();
 			// ASH 01112014 Toggle on and off for the flight scene only
-			//InvokeRepeating("updateCache", 0, 1);
+			// InvokeRepeating("updateCache", 0, 1);
 			SpaceCenterManager.setKSC();
 		}
 
 		void OnDoshChanged(double amount, TransactionReasons reason)
 		{
-			//if (reason == )
 			Debug.Log("KK: Funds changed - " + amount + " because " + reason);
 		}
 
@@ -121,7 +120,7 @@ namespace KerbalKonstructs
 		{
 			if (ApplicationLauncher.Ready)
 			{
-				//Just keep adding the button whenever the ApplicationLauncher is added to prevent it from disappearing, this is ineffecient but I don't care enough to come up with a better method.			
+				// Just keep adding the button whenever the ApplicationLauncher is added to prevent it from disappearing, this is ineffecient but I don't care enough to come up with a better method.			
 				if (siteSelector != null)
 					ApplicationLauncher.Instance.RemoveModApplication(siteSelector);
 				siteSelector = ApplicationLauncher.Instance.AddModApplication(onSiteSelectorOn, onSiteSelectorOff, onSiteSelectorOnHover, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/SiteToolbarIcon", false));
@@ -237,9 +236,9 @@ namespace KerbalKonstructs
 				{
 					playerPos = FlightGlobals.ActiveVessel.transform.position;
 				}
-				else if (Camera.main != null)//Camera.main goes null when switching scenes
+				else if (Camera.main != null) // Camera.main goes null when switching scenes
 				{
-					//HACKY: if there is no vessel use the camera, this could cause some issues
+					// HACKY: if there is no vessel use the camera, this could cause some issues
 					playerPos = Camera.main.transform.position;
 				}
 				// Debug.Log("KK: playerPos is" + playerPos);
@@ -354,7 +353,8 @@ namespace KerbalKonstructs
 
 		public void spawnObject(StaticObject obj, Boolean editing)
 		{
-			obj.gameObject.SetActive(editing);//Objects spawned at runtime should be active
+			// Objects spawned at runtime should be active
+			obj.gameObject.SetActive(editing);
 			Transform[] gameObjectList = obj.gameObject.GetComponentsInChildren<Transform>();
 			List<GameObject> rendererList = (from t in gameObjectList where t.gameObject.renderer != null select t.gameObject).ToList();
 
@@ -434,7 +434,8 @@ namespace KerbalKonstructs
 			InputLockManager.RemoveControlLock("KKEVALock");
 			InputLockManager.RemoveControlLock("KKCamControls");
 			InputLockManager.RemoveControlLock("KKCamModes");
-			if(disableCam)//if you disable the camera when switching scenes shit will go down
+			// if you disable the camera when switching scenes shit will go down
+			if(disableCam)
 				camControl.disable();
 		}
 
@@ -492,7 +493,7 @@ namespace KerbalKonstructs
 				}
 				if (changed)
 				{
-					//This should probably be changed...
+					// This should probably be changed...
 					pos += (Vector3) selectedObject.getSetting("RadialPosition");
 					alt += (float) selectedObject.getSetting("RadiusOffset");
 					selectedObject.setSetting("RadialPosition", pos);
@@ -512,7 +513,7 @@ namespace KerbalKonstructs
 
 		void OnGUI()
 		{
-			//Use KSP's GUI skin
+			// Use KSP's GUI skin
 			GUI.skin = HighLogic.Skin;
 
 			if (showSelector && (HighLogic.LoadedScene.Equals(GameScenes.EDITOR) || HighLogic.LoadedScene.Equals(GameScenes.SPH)))//Disable scene selector when not in the editor
@@ -522,7 +523,7 @@ namespace KerbalKonstructs
 			{
 				if (showEditor)
 				{
-					//Editor Window
+					// Editor Window
 					editor.drawEditor(selectedObject);
 				}
 			}
@@ -585,23 +586,23 @@ namespace KerbalKonstructs
 		{
 			showSelector = true;
 
-			// ASH
+			// STUB
 			// Load career mode site open close states here
-
-			// Loop through KK save file
-			// 
+			// Loop through appropriate career game save KK cfg (or initialise/create it if there isn't one)
+			// Set each launchsite's openclosestate property
+			//
 		}
 
 		void onSiteSelectorOff()
 		{
 			showSelector = false;
-			//Make sure the editor doesn't think you're still mousing over the site selector
+			// Make sure the editor doesn't think you're still mousing over the site selector
 			InputLockManager.RemoveControlLock("KKEditorLock");
 		}
 
 		void doNothing()
 		{
-			//wow so robust
+			// wow so robust
 		}
 
 		public StaticDatabase getStaticDB()

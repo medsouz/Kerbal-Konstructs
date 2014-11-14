@@ -3,6 +3,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// R and T Log
+// ASH 14112014
+
 namespace KerbalKonstructs.UI
 {
 	public class LaunchSiteSelectorGUI
@@ -32,7 +35,8 @@ namespace KerbalKonstructs.UI
 					isCareer = true;
 				}
 			}
-			if (Camera.main != null)//Camera.main is null when first loading a scene
+			//Camera.main is null when first loading a scene
+			if (Camera.main != null)
 			{
 				GUI.Window(0xB00B1E6, windowRect, drawSelectorWindow, "Launch Site Selector");
 			}
@@ -103,21 +107,24 @@ namespace KerbalKonstructs.UI
 			GUILayout.Space(10);
 
 			sitesScrollPosition = GUILayout.BeginScrollView(sitesScrollPosition);
-			// ASH 28102014 Category filter handling added
-			//List<LaunchSite> sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType);
 
+			// ASH 28102014 Category filter handling added
 			if (sites == null) sites = (editorType == SiteType.Any) ? LaunchSiteManager.getLaunchSites() : LaunchSiteManager.getLaunchSites(editorType, true, "ALL");
 
 			foreach (LaunchSite site in sites)
 				{
 					if (isCareer)
 						GUILayout.BeginHorizontal();
+					// Light icons in the launchsite list only shown in career so only need horizontal for two elements for that mode
 					
 					GUI.enabled = !(selectedSite == site);
 					if (GUILayout.Button(site.name, GUILayout.Height(30)))
 					{
 						selectedSite = site;
+						
 						// ASH Career Mode Unlocking
+						// In career the launchsite is not set by the launchsite list but rather in the launchsite description
+						// panel on the right
 						if (!isCareer)
 							LaunchSiteManager.setLaunchSite(site);
 					}
@@ -127,6 +134,7 @@ namespace KerbalKonstructs.UI
 						// if site is closed show red light
 						// if site is open show green light
 
+						// If a site has an open cost of 0 it's always open
 						if (site.openclosestate == "Open" || site.opencost == 0)
 						{
 							GUILayout.Label(tIconOpen, GUILayout.Height(30), GUILayout.Width(30));
@@ -135,13 +143,13 @@ namespace KerbalKonstructs.UI
 						{
 							GUILayout.Label(tIconClosed, GUILayout.Height(30), GUILayout.Width(30));
 						}
+						// Light icons in the launchsite list only shown in career
 						GUILayout.EndHorizontal();
 					}
 				}
 				GUILayout.EndScrollView();
 			GUILayout.EndArea();
 
-			//Fixes when the last item is selected and it leaves the GUI disabled
 			GUI.enabled = true;
 
 			if (selectedSite != null)
@@ -154,10 +162,12 @@ namespace KerbalKonstructs.UI
 				{
 					selectedSite = LaunchSiteManager.getLaunchSites(editorType)[0];
 					// ASH Career Mode Unlocking
+					// In career the launchsite is not set by the launchsite list but rather in the launchsite description
+					// panel on the right
 					if (!isCareer)
 						LaunchSiteManager.setLaunchSite(selectedSite);
 
-					// ASH 05112014 Might fix the selector centering issue on the right panel
+					// ASH 05112014 Fixes the selector centering issue on the right panel... probably
 					drawRightSelectorWindow();
 				}
 				else
@@ -167,7 +177,7 @@ namespace KerbalKonstructs.UI
 			}
 		}
 
-		// ASH 05112014 Might fix the selector centering issue on the right panel
+		// ASH 05112014 Having the right panel always drawn might fix the selector centering issue on the right panel
 		private void drawRightSelectorWindow()
 		{
 			GUILayout.BeginArea(new Rect(385, 25, 310, 550));
@@ -178,69 +188,70 @@ namespace KerbalKonstructs.UI
 				GUILayout.EndScrollView();
 
 				float iFundsClose = 0;
+				// Career mode - get cost to open and value of opening from launchsite (defined in the cfg)
 				iFundsOpen = selectedSite.opencost;
 				iFundsClose = selectedSite.closevalue;
 
 				bool isAlwaysOpen = false;
 				bool cannotBeClosed = false;
 
-				// If it is 0 to open it is always open
+				// Career mode
+				// If a launchsite is 0 to open it is always open
 				if (iFundsOpen == 0)
 					isAlwaysOpen = true;
 
+				// If it is 0 to close you cannot close it
 				if (iFundsClose == 0)
 					cannotBeClosed = true;
-				// If it is 0 to close you cannot close it
 				
 				if (isCareer)
 				{	
-					// Determine funds to open and close from instance cfg
-
 					// Determine if a site is open or closed
 					// If persistence says the site is open then isOpen = true;
 					// If persistence file says nothing or site is closed then isOpen = false;
+					// STUB IN KerbalKonstructs OnSiteSelectorOn()
+					// Easier to just load the openclosestate of all launchsites on to the from so its ready when we get here
 
 					isOpen = (selectedSite.openclosestate == "Open");
 
-					//i = true;
-					// i = false;
-
-					// Testing
-					// GUI.enabled = !isAlwaysOpen;
 					GUI.enabled = !isOpen;
 					
 					if (!isAlwaysOpen)
 					{
 						if (GUILayout.Button("Open Site for " + iFundsOpen + " Funds"))
 						{
-							// What if there isn't enough funds?
-
-							// Open the site - save to instance - save to persistence
+							// TODO What if there isn't enough funds?
+							// Open the site - save to instance
 							selectedSite.openclosestate = "Open";
-							
 
 							// Charge some funds
 							Funding.Instance.AddFunds(-iFundsOpen, TransactionReasons.Cheating);
+
+							// STUB Save new state to persistence
+							//
+							
 						}
 					}
 					GUI.enabled = true;
 					
-					// Testing
 					GUI.enabled = isOpen;
-					// GUI.enabled = !cannotBeClosed;
 					if (!cannotBeClosed)
 					{
 						if (GUILayout.Button("Close Site for " + iFundsClose + " Funds"))
 						{
-							// Close the site - save to persistence
+							// Close the site - save to instance
 							// Pay back some funds
-
 							Funding.Instance.AddFunds(iFundsClose, TransactionReasons.Cheating);
 							selectedSite.openclosestate = "Closed";
+
+							// STUB Save new state to persistence
+							//
 						}
 					}
 					GUI.enabled = true;
 
+					// If the site is open and it isn't the selected launchsite, enable the set as launchsite button
+					// in the right pane
 					GUI.enabled = (isOpen || isAlwaysOpen) && !(selectedSite.name == EditorLogic.fetch.launchSiteName);					
 					if (GUILayout.Button("Set as Launchsite"))
 					{
@@ -261,6 +272,8 @@ namespace KerbalKonstructs.UI
 					selectedSite = LaunchSiteManager.getLaunchSites(editorType)[0];
 				}
 				// ASH Career Mode Unlocking
+				// In career the launchsite is not set by the launchsite list but rather in the launchsite description
+				// panel on the right
 				if (!isCareer)
 					LaunchSiteManager.setLaunchSite(selectedSite);
 			}
