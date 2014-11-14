@@ -4,6 +4,9 @@ using System;
 using LibNoise.Unity.Operator;
 using UnityEngine;
 
+// R and T LOG
+// 14112014 ASH
+
 namespace KerbalKonstructs.UI
 {
 	class EditorGUI
@@ -23,7 +26,8 @@ namespace KerbalKonstructs.UI
 			listStyle.padding.top =
 			listStyle.padding.bottom = 4;
 
-			orientationMenu = new ComboBox(orientationOptions[0], orientationOptions, "button", "box", setOrientation, listStyle);
+			// ASH 14112014 Removed orientation feature
+			// orientationMenu = new ComboBox(orientationOptions[0], orientationOptions, "button", "box", setOrientation, listStyle);
 			siteTypeMenu = new ComboBox(siteTypeOptions[0], siteTypeOptions, "button", "box", null, listStyle);
 		}
 
@@ -34,7 +38,7 @@ namespace KerbalKonstructs.UI
 				if (selectedObject != obj)
 					updateSelection(obj);
 
-				//It wanted a unique ID number ¯\_(ツ)_/¯
+				// GUI.Window needs a unique ID
 				toolRect = GUI.Window(0xB00B1E5, toolRect, drawToolWindow, "KK Instance Editor");
 
 				if(editingSite)
@@ -48,7 +52,9 @@ namespace KerbalKonstructs.UI
 		Rect siteEditorRect = new Rect(400, 50, 330, 350);
 
 		private GUIStyle listStyle = new GUIStyle();
-		private GUIContent[] orientationOptions = {
+
+		// ASH 10112014 Removed orientation feature
+		/* private GUIContent[] orientationOptions = {
 										new GUIContent("Up"),
 										new GUIContent("Down"),
 										new GUIContent("Left"),
@@ -56,9 +62,8 @@ namespace KerbalKonstructs.UI
 										new GUIContent("Forward"),
 										new GUIContent("Back")
 									};
-		ComboBox orientationMenu;
+		ComboBox orientationMenu; */
 
-		// ASH 10112014 Removed orientation feature no-one will want or use
 		void drawToolWindow(int windowID)
 		{
 			Vector3 position = Vector3.zero;
@@ -127,7 +132,6 @@ namespace KerbalKonstructs.UI
 					GUILayout.Label("Alt.");
 					GUILayout.FlexibleSpace();
 					altitude = GUILayout.TextField(altitude, 25, GUILayout.Width(80));
-					// 
 					if (GUILayout.RepeatButton("<<", GUILayout.Width(30)) || GUILayout.Button("<", GUILayout.Width(30)))
 					{
 						alt -= float.Parse(increment);
@@ -145,7 +149,7 @@ namespace KerbalKonstructs.UI
 					GUILayout.FlexibleSpace();
 					rotation = GUILayout.TextField(rotation, 4, GUILayout.Width(80));
 
-					// ASH New very handy rotation buttons
+					// ASH Added very handy rotation buttons
 					if (GUILayout.RepeatButton("<<", GUILayout.Width(30)))
 					{
 						newRot -= 1.0f;
@@ -184,7 +188,7 @@ namespace KerbalKonstructs.UI
 						siteDesc = (string)selectedObject.getSetting("LaunchSiteDescription");
 						siteType = (SiteType) selectedObject.getSetting("LaunchSiteType");
 						siteTypeMenu.SelectedItemIndex = (int)siteType;
-						siteLogo = ((string) selectedObject.getSetting("LaunchSiteLogo"));//.Replace(selectedObject.model.path + "/", "");
+						siteLogo = ((string) selectedObject.getSetting("LaunchSiteLogo"));
 						siteAuthor = (selectedObject.settings.ContainsKey("author")) ? (string)selectedObject.getSetting("author") : (string)selectedObject.model.getSetting("author");
 						editingSite = true;
 					}				
@@ -303,20 +307,14 @@ namespace KerbalKonstructs.UI
 					if (GUILayout.Button("Save Objects", GUILayout.Width(115)))
 						KerbalKonstructs.instance.saveObjects();
 				GUILayout.EndHorizontal();
-				//GUILayout.EndArea();
-				//GUILayout.BeginArea(new Rect(135, 25, 540, 365));
 			
 				scrollPos = GUILayout.BeginScrollView(scrollPos);
 					if (creating)
 					{
 						foreach (StaticModel model in KerbalKonstructs.instance.getStaticDB().getModels())
 						{
-							// ASH 07112014 Removed redundant info from the path.
-							// String[] modelpaths = model.path.Split('/');
-							// String firstpath = modelpaths.Length > 0 ? modelpaths[0] : model.path;
-
+							// ASH 07112014 Removed redundant info
 							if (GUILayout.Button(model.getSetting("title") + " : " + model.getSetting("mesh")))
-							// if (GUILayout.Button(model.getSetting("mesh") + " [" + firstpath + "]"))
 							{						
 								StaticObject obj = new StaticObject();
 								obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.getSetting("mesh"));
@@ -348,19 +346,17 @@ namespace KerbalKonstructs.UI
 								}
 								else
 									isLocal = false;
+									// ASH Ooopsie. Bug fix where off-Kerbin instances were always considered local.
 							}
 							
 							if (isLocal)
 							{
-								// ASH 07112014 Removed redundant info from the path. Only need to know the content mod really
-								// String[] modelpaths = obj.model.path.Split('/');
-								// String firstpath = modelpaths.Length > 0 ? modelpaths[0] : obj.model.path;
-
-								// ASH 08112014 No point in disabling the button
+								// ASH 07112014 Removed redundant info
+								// ASH 08112014 No point in disabling the button								
 								// GUI.enabled = obj != selectedObject;
 								if (GUILayout.Button("[" + obj.getSetting("Group") + "] " + (obj.settings.ContainsKey("LaunchSiteName") ? obj.getSetting("LaunchSiteName") + " : " + obj.model.getSetting("title") : obj.model.getSetting("title"))))
 								{
-									//TODO: Move PQS target to object position
+									// TODO Move PQS target to object position
 									KerbalKonstructs.instance.selectObject(obj);
 								}
 							}
@@ -369,6 +365,7 @@ namespace KerbalKonstructs.UI
 					}
 				GUILayout.EndScrollView();
 				
+				// Set locals to group function
 				GUILayout.BeginHorizontal();
 					GUILayout.FlexibleSpace();
 					GUILayout.Label("Group:");
@@ -390,11 +387,13 @@ namespace KerbalKonstructs.UI
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
 
+		// Set locals to group function
 		void setLocalsGroup(string sGroup)
 		{
 			if (sGroup == "")
 				return;
 
+			// TODO ASH Did you forget about those off-Kerbin instances again?
 			foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
 			{
 				var dist = Vector3.Distance(FlightGlobals.ActiveVessel.GetTransform().position, obj.gameObject.transform.position);
@@ -422,28 +421,34 @@ namespace KerbalKonstructs.UI
 				GUILayout.Label("Site Name: ");
 				siteName = GUILayout.TextField(siteName);
 			GUILayout.EndHorizontal();
+
 			GUILayout.BeginHorizontal();
 				GUILayout.Label("Pad Transform: ");
 				siteTrans = GUILayout.TextField(siteTrans);
 			GUILayout.EndHorizontal();
+
 			GUILayout.BeginHorizontal();
 				GUILayout.Label("Site Type:");
 				GUILayout.FlexibleSpace();
 				Rect rect = GUILayoutUtility.GetRect(siteTypeOptions[0], "button", GUILayout.Width(50));
 			GUILayout.EndHorizontal();
+
 			GUI.enabled = !siteTypeMenu.isClickedComboButton;
 			GUILayout.BeginHorizontal();
 				GUILayout.Label("Author: ");
 				siteAuthor = GUILayout.TextField(siteAuthor);
 			GUILayout.EndHorizontal();
+
 			GUILayout.BeginHorizontal();
 				GUILayout.Label("Logo: ");
 				siteLogo = GUILayout.TextField(siteLogo);
 			GUILayout.EndHorizontal();
+
 			GUILayout.Label("Site Description: ");
 			descScroll = GUILayout.BeginScrollView(descScroll);
 				siteDesc = GUILayout.TextArea(siteDesc, GUILayout.ExpandHeight(true));
 			GUILayout.EndScrollView();
+
 			GUI.enabled = true;
 			GUILayout.BeginHorizontal();
 				if (GUILayout.Button("Save", GUILayout.Width(115)))
@@ -469,7 +474,9 @@ namespace KerbalKonstructs.UI
 					editingSite = false;
 				}
 			GUILayout.EndHorizontal();
+
 			siteTypeMenu.Show(rect);
+
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
 
@@ -481,15 +488,17 @@ namespace KerbalKonstructs.UI
 			zPos = ((Vector3)obj.getSetting("RadialPosition")).z.ToString();
 			altitude = ((float)obj.getSetting("RadiusOffset")).ToString();
 			rotation = ((float)obj.getSetting("RotationAngle")).ToString();
-			orientationMenu.SelectedItemIndex = getOrientation((Vector3)obj.getSetting("Orientation"));
+			// ASH 14112014 Removed orientation feature
+			// orientationMenu.SelectedItemIndex = getOrientation((Vector3)obj.getSetting("Orientation"));
 			selectedObject.update();
 		}
 
-		public void setOrientation(int selection)
+		// ASH 14112014 Removed orientation feature
+		/* public void setOrientation(int selection)
 		{
 			if (selectedObject != null)
 			{
-				//TODO: do this with an array
+				// TODO Do this with an array
 				switch (selection)
 				{
 					case 0:
@@ -543,7 +552,7 @@ namespace KerbalKonstructs.UI
 			}
 			//If the static has a custom orientation then just display "up", I will add support for custom orientations in the future
 			return 0;
-		}
+		} */
 
 		public float getIncrement()
 		{
@@ -561,7 +570,7 @@ namespace KerbalKonstructs.UI
 				default:
 					return SiteType.Any;
 			}
-
 		}
+
 	}
 }
