@@ -1,7 +1,8 @@
-﻿using KerbalKonstructs.LaunchSites;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using KerbalKonstructs.API;
+using KerbalKonstructs.LaunchSites;
 
 // R and T Log
 // ASH 14112014
@@ -227,9 +228,8 @@ namespace KerbalKonstructs.UI
 							// Charge some funds
 							Funding.Instance.AddFunds(-iFundsOpen, TransactionReasons.Cheating);
 
-							// STUB Save new state to persistence
-							//
-							
+							// Save new state to persistence
+							PersistenceFile<LaunchSite>.SaveList(sites, "LAUNCHSITES", "KK");
 						}
 					}
 					GUI.enabled = true;
@@ -244,8 +244,8 @@ namespace KerbalKonstructs.UI
 							Funding.Instance.AddFunds(iFundsClose, TransactionReasons.Cheating);
 							selectedSite.openclosestate = "Closed";
 
-							// STUB Save new state to persistence
-							//
+							// Save new state to persistence
+							PersistenceFile<LaunchSite>.SaveList(sites, "LAUNCHSITES", "KK");
 						}
 					}
 					GUI.enabled = true;

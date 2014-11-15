@@ -1,10 +1,12 @@
 ﻿using System;
 using UnityEngine;
+using KerbalKonstructs.API;
 
 namespace KerbalKonstructs.LaunchSites
 {
 	public class LaunchSite
 	{
+		[PersistentKey]
 		public string name;
 		public string author;
 		public SiteType type;
@@ -17,6 +19,7 @@ namespace KerbalKonstructs.LaunchSites
 		// ASH Added career strategy
 		public float opencost;
 		public float closevalue;
+		[PersistentField]
 		public string openclosestate;
 
 		public LaunchSite(string sName, string sAuthor, SiteType sType, Texture sLogo, Texture sIcon, string sDescription, string sDevice = "Other", float fOpenCost = 0, float fCloseValue = 0, string sOpenCloseState = "Closed")

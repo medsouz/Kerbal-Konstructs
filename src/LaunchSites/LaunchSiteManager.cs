@@ -141,5 +141,7 @@ namespace KerbalKonstructs.LaunchSites
 		{
 			EditorLogic.fetch.launchSiteName = site.name;
 		}
+
+		public static List<LaunchSite> AllLaunchSites { get { return launchSites; } }
 	}
 }
