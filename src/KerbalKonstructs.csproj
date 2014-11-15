@@ -59,6 +59,7 @@
     <Compile Include="API\Config\ConfigVector3.cs" />
     <Compile Include="API\Config\IConfigItem.cs" />
     <Compile Include="API\KKAPI.cs" />
+    <Compile Include="API\PersistenceFile.cs" />
     <Compile Include="LaunchSites\LaunchSite.cs" />
     <Compile Include="Modules\AnimateOnClick.cs" />
     <Compile Include="Modules\Compat\AnimateOnClick.cs" />
