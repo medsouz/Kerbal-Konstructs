@@ -585,12 +585,7 @@ namespace KerbalKonstructs
 		void onSiteSelectorOn()
 		{
 			showSelector = true;
-
-			// STUB
-			// Load career mode site open close states here
-			// Loop through appropriate career game save KK cfg (or initialise/create it if there isn't one)
-			// Set each launchsite's openclosestate property
-			//
+			PersistenceFile<LaunchSite>.LoadList(LaunchSiteManager.AllLaunchSites, "LAUNCHSITES", "KK");
 		}
 
 		void onSiteSelectorOff()
