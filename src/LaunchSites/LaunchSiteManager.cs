@@ -137,6 +137,20 @@ namespace KerbalKonstructs.LaunchSites
 			return sites;
 		}
 
+		public static string getSiteOpenCloseState(string sSiteName)
+		{
+			string sOpenCloseState = "Closed";
+			List<LaunchSite> sites = new List<LaunchSite>();
+			foreach (LaunchSite site in launchSites)
+			{
+				if (site.name == sSiteName)
+				{
+					sOpenCloseState = site.openclosestate;
+				}
+			}
+			return sOpenCloseState;
+		}
+
 		public static void setLaunchSite(LaunchSite site)
 		{
 			EditorLogic.fetch.launchSiteName = site.name;

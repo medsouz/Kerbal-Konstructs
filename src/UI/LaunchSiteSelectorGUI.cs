@@ -222,14 +222,24 @@ namespace KerbalKonstructs.UI
 						if (GUILayout.Button("Open Site for " + iFundsOpen + " Funds"))
 						{
 							// TODO What if there isn't enough funds?
-							// Open the site - save to instance
-							selectedSite.openclosestate = "Open";
 
-							// Charge some funds
-							Funding.Instance.AddFunds(-iFundsOpen, TransactionReasons.Cheating);
+							double currentfunds = Funding.Instance.Funds;
 
-							// Save new state to persistence
-							PersistenceFile<LaunchSite>.SaveList(sites, "LAUNCHSITES", "KK");
+							if (iFundsOpen > currentfunds)
+							{
+								ScreenMessages.PostScreenMessage("Insufficient funds to open this site!", 10, 0);
+							}
+							else
+							{
+								// Open the site - save to instance
+								selectedSite.openclosestate = "Open";
+
+								// Charge some funds
+								Funding.Instance.AddFunds(-iFundsOpen, TransactionReasons.Cheating);
+
+								// Save new state to persistence
+								PersistenceFile<LaunchSite>.SaveList(sites, "LAUNCHSITES", "KK");
+							}
 						}
 					}
 					GUI.enabled = true;

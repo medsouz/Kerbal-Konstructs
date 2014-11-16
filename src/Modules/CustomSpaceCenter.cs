@@ -2,6 +2,7 @@
 using KerbalKonstructs.StaticObjects;
 using System.Reflection;
 using UnityEngine;
+using KerbalKonstructs.LaunchSites;
 
 namespace KerbalKonstructs
 {
@@ -11,6 +12,7 @@ namespace KerbalKonstructs
 
 		private SpaceCenter spaceCenter;
 		private StaticObject staticObject;
+		private CustomSpaceCenter launchcentre;
 
 		void Start()
 		{
@@ -37,6 +39,23 @@ namespace KerbalKonstructs
 				Debug.LogError("No StaticObject exists in CustomSpaceCenterObject. This should never happen!");
 			}
 			
+		}
+
+		public void AddLaunchsiteAsSC(LaunchSite goLaunchsite, CelestialBody cbBody)
+		{
+			// ASH I am royally stuck. Come back when brain is working.
+			// spaceCenter = gameObject.AddComponent<SpaceCenter>();
+			// launchcentre.cb = cbBody;
+			FieldInfo lat = spaceCenter.GetType().GetField("\u0002", BindingFlags.NonPublic | BindingFlags.Instance);
+			lat.SetValue(spaceCenter, spaceCenter.cb.GetLatitude(gameObject.transform.position));
+			FieldInfo lon = spaceCenter.GetType().GetField("\u0003", BindingFlags.NonPublic | BindingFlags.Instance);
+			lon.SetValue(spaceCenter, spaceCenter.cb.GetLongitude(gameObject.transform.position));
+			FieldInfo srfVector = spaceCenter.GetType().GetField("\u0004", BindingFlags.NonPublic | BindingFlags.Instance);
+			srfVector.SetValue(spaceCenter, spaceCenter.cb.GetRelSurfaceNVector(spaceCenter.Latitude, spaceCenter.Longitude));
+			
+			Debug.Log("Added Space Center " + goLaunchsite.name);
+			launchcentre.name = goLaunchsite.name;
+			SpaceCenterManager.addSpaceCenter(launchcentre);
 		}
 
 		public SpaceCenter getSpaceCenter()

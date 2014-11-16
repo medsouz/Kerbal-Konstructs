@@ -114,6 +114,7 @@ namespace KerbalKonstructs
 			Debug.Log("KK: event onVesselRecoveryRequested");
 			SpaceCenter csc = SpaceCenterManager.getClosestSpaceCenter(data.gameObject.transform.position);
 			SpaceCenter.Instance = csc;
+			Debug.Log("KK: Nearest spacecenter is " + csc.name);
 		}
 
 		void OnGUIAppLauncherReady()
