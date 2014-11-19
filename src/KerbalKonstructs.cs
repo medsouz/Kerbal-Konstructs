@@ -27,11 +27,17 @@ namespace KerbalKonstructs
 
 		private CameraController camControl = new CameraController();
 		private EditorGUI editor = new EditorGUI();
+		private EditorGUI manager = new EditorGUI();
 		private Boolean showEditor = false;
 		private LaunchSiteSelectorGUI selector = new LaunchSiteSelectorGUI();
 		private Boolean showSelector = false;
+		private Boolean showBaseManager = false;
 		private MapIconManager mapIconManager = new MapIconManager();
 		private ApplicationLauncherButton siteSelector;
+		public Boolean doOnce = false;
+
+		// ASH Base Manager
+		private ApplicationLauncherButton baseManager;
 
 		// Configurable variables
 		[KSPField]
@@ -52,6 +58,9 @@ namespace KerbalKonstructs
 			KKAPI.addModelSetting("DefaultLaunchPadTransform", new ConfigGenericString());
 			// ASH Need the title
 			KKAPI.addModelSetting("title", new ConfigGenericString());
+			// Need Category and Cost
+			KKAPI.addModelSetting("category", new ConfigGenericString());
+			KKAPI.addModelSetting("cost", new ConfigFloat());
 
 			KKAPI.addInstanceSetting("CelestialBody", new ConfigCelestialBody());
 			KKAPI.addInstanceSetting("RadialPosition", new ConfigVector3());
@@ -125,6 +134,11 @@ namespace KerbalKonstructs
 				if (siteSelector != null)
 					ApplicationLauncher.Instance.RemoveModApplication(siteSelector);
 				siteSelector = ApplicationLauncher.Instance.AddModApplication(onSiteSelectorOn, onSiteSelectorOff, onSiteSelectorOnHover, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/SiteToolbarIcon", false));
+			
+				// ASH Base Manager
+				if (baseManager != null)
+					ApplicationLauncher.Instance.RemoveModApplication(baseManager);
+				baseManager = ApplicationLauncher.Instance.AddModApplication(onBaseManagerOn, onBaseManagerOff, doNothing, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.FLIGHT, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/BaseManagerIcon", false));
 			}
 		}
 
@@ -509,6 +523,7 @@ namespace KerbalKonstructs
 					deselectObject();
 
 				showEditor = !showEditor;
+				doOnce = false;
 			}
 		}
 
@@ -526,6 +541,10 @@ namespace KerbalKonstructs
 				{
 					// Editor Window
 					editor.drawEditor(selectedObject);
+				}
+				if (showBaseManager)
+				{
+					manager.drawManager(selectedObject);
 				}
 			}
 
@@ -589,11 +608,21 @@ namespace KerbalKonstructs
 			PersistenceFile<LaunchSite>.LoadList(LaunchSiteManager.AllLaunchSites, "LAUNCHSITES", "KK");
 		}
 
+		void onBaseManagerOn()
+		{
+			showBaseManager = true;
+		}
+
 		void onSiteSelectorOff()
 		{
 			showSelector = false;
 			// Make sure the editor doesn't think you're still mousing over the site selector
 			InputLockManager.RemoveControlLock("KKEditorLock");
+		}
+
+		void onBaseManagerOff()
+		{
+			showBaseManager = false;
 		}
 
 		void doNothing()

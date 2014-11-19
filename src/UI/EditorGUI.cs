@@ -16,6 +16,11 @@ namespace KerbalKonstructs.UI
 		private String xPos, yPos, zPos, altitude, rotation, customgroup = "";
 		private String increment = "1";
 
+		// ASH Base Founding
+		private Boolean isCareer = false;
+		private float iFundsFound = 0;
+		private Boolean doOnce = false;
+
 		public EditorGUI()
 		{
 			listStyle.normal.textColor = Color.white;
@@ -31,25 +36,52 @@ namespace KerbalKonstructs.UI
 			siteTypeMenu = new ComboBox(siteTypeOptions[0], siteTypeOptions, "button", "box", null, listStyle);
 		}
 
+		public void drawManager(StaticObject obj)
+		{
+			managerRect = GUI.Window(110066, managerRect, drawBaseManagerWindow, "KK Base Manager");
+		}
+
 		public void drawEditor(StaticObject obj)
 		{
+			if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+			{
+				// ASH Base Founding
+				// disableCareerStrategyLayer is configurable in KerbalKonstructs.cfg
+				if (!KerbalKonstructs.instance.disableCareerStrategyLayer)
+				{
+					isCareer = true;
+				}
+			}
+
 			if (obj != null)
 			{
 				if (selectedObject != obj)
 					updateSelection(obj);
 
 				// GUI.Window needs a unique ID
-				toolRect = GUI.Window(0xB00B1E5, toolRect, drawToolWindow, "KK Instance Editor");
+				if (!isCareer)
+					toolRect = GUI.Window(0xB00B1E5, toolRect, drawToolWindow, "KK Instance Editor");
+				else
+					toolRect = GUI.Window(0xB00B1E5, toolRect, drawToolWindow, "Place Launch Site");
 
-				if(editingSite)
-					siteEditorRect = GUI.Window(0xB00B1E8, siteEditorRect, drawSiteEditorWindow, "KK Launchsite Editor");
+				if (editingSite)
+				{
+					if (!isCareer)
+						siteEditorRect = GUI.Window(0xB00B1E8, siteEditorRect, drawSiteEditorWindow, "KK Launchsite Editor");
+					else
+						siteEditorRect = GUI.Window(0xB00B1E8, siteEditorRect, drawSiteEditorWindow, "Setup Launch Site");
+				}
 			}
-			editorRect = GUI.Window(0xB00B1E7, editorRect, drawEditorWindow, "Kerbal Konstructs Statics Editor");
+			if (!isCareer)
+				editorRect = GUI.Window(0xB00B1E7, editorRect, drawEditorWindow, "Kerbal Konstructs Statics Editor");
+			else
+				editorRect = GUI.Window(0xB00B1E7, editorRect, drawEditorWindow, "Select Type of Launch Site");
 		}
 
 		Rect toolRect = new Rect(150, 25, 300, 325);
 		Rect editorRect = new Rect(10, 25, 520, 520);
 		Rect siteEditorRect = new Rect(400, 50, 330, 350);
+		Rect managerRect = new Rect(10, 25, 800, 600);
 
 		private GUIStyle listStyle = new GUIStyle();
 
@@ -64,6 +96,121 @@ namespace KerbalKonstructs.UI
 									};
 		ComboBox orientationMenu; */
 
+		bool showFoundations = false;
+		bool showConstruction = false;
+		bool showOperational = false;
+
+		void drawBaseManagerWindow(int windowID)
+		{
+			GUILayout.BeginArea(new Rect(10, 25, 380, 570));
+				GUILayout.Label("Base");
+				GUILayout.BeginHorizontal();
+					GUI.enabled = !showFoundations;
+					if (GUILayout.Button("Foundations", GUILayout.Width(115)))
+					{
+						showFoundations = true;
+						showConstruction = false;
+						showOperational = false;
+					}
+					GUI.enabled = true;
+					GUILayout.FlexibleSpace();
+					GUI.enabled = !showConstruction;
+					if (GUILayout.Button("Construction", GUILayout.Width(115)))
+					{
+						showFoundations = false;
+						showConstruction = true;
+						showOperational = false;
+					}
+					GUI.enabled = true;
+					GUILayout.FlexibleSpace();
+					GUI.enabled = !showOperational;
+					if (GUILayout.Button("Operational", GUILayout.Width(115)))
+					{
+						showFoundations = false;
+						showConstruction = false;
+						showOperational = true;
+					}
+					GUI.enabled = true;
+				GUILayout.EndHorizontal();
+
+				scrollPos = GUILayout.BeginScrollView(scrollPos);
+					GUILayout.Label("Foundations is " + showFoundations);
+					GUILayout.Label("Construction is " + showConstruction);
+					GUILayout.Label("Operational is " + showOperational);
+				GUILayout.EndScrollView();			
+			GUILayout.EndArea();
+
+			string sFoundationSize = "Small";
+
+			GUILayout.BeginArea(new Rect(415, 25, 375, 570));
+				if (showFoundations)
+				{
+					GUILayout.Box(sFoundationSize + " Foundation");
+					GUILayout.Box("Select a facility to construct from the list below.");
+				}
+				if (showConstruction)
+				{
+					GUILayout.Box("Selected Facility Under Construction");
+					GUILayout.Label("Details of facility being constructed");
+					if (GUILayout.Button("Rush Completion"))
+					{
+					}
+					if (GUILayout.Button("Abort Construction"))
+					{
+					}
+				}
+				if (showOperational)
+				{
+					GUILayout.Box("Selected Operational Facility");
+					GUILayout.Label("Details of operational facility");
+					if (GUILayout.Button("Manage Staff"))
+					{
+					}
+					GUILayout.BeginHorizontal();
+					if (GUILayout.Button("Upgrade Facility", GUILayout.Width(160)))
+					{
+					}
+					GUILayout.FlexibleSpace();
+					if (GUILayout.Button("Convert Facility", GUILayout.Width(160)))
+					{
+					}
+					GUILayout.EndHorizontal();
+					if (GUILayout.Button("Demolish Facility"))
+					{
+					}
+				}
+			
+				if (showFoundations)
+				{
+					scrollPos = GUILayout.BeginScrollView(scrollPos);
+						GUILayout.Label("ScrollView - list of facilities that can be constructed");
+					GUILayout.EndScrollView();
+				}
+				/*if (showConstruction)
+				{
+					GUILayout.Label("ScrollView");
+				}*/
+				if (showOperational)
+				{
+					scrollPos = GUILayout.BeginScrollView(scrollPos);
+						GUILayout.Label("ScrollView - list of staff? - list of upgrades? - list of facilities to convert to?");
+					GUILayout.EndScrollView();
+				}
+
+
+				if (showFoundations)
+				{
+					GUILayout.Label("Details of facility to construct");
+					if (GUILayout.Button("Construct Facility"))
+					{
+					}
+				}		
+
+			GUILayout.EndArea();
+
+			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
+		}
+
 		void drawToolWindow(int windowID)
 		{
 			Vector3 position = Vector3.zero;
@@ -75,9 +222,12 @@ namespace KerbalKonstructs.UI
 			GUILayout.BeginArea(new Rect(10, 25, 275, 310));
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Position");
-					GUILayout.FlexibleSpace();
-					GUILayout.Label("Increment");
-					increment = GUILayout.TextField(increment, 5, GUILayout.Width(50));
+					if (!isCareer)
+					{
+						GUILayout.FlexibleSpace();
+						GUILayout.Label("Increment");
+						increment = GUILayout.TextField(increment, 5, GUILayout.Width(50));
+					}
 				GUILayout.EndHorizontal();
 
 				GUILayout.BeginHorizontal();
@@ -128,7 +278,9 @@ namespace KerbalKonstructs.UI
 					}
 				GUILayout.EndHorizontal();
 
-				GUILayout.BeginHorizontal();
+				if (!isCareer)
+				{
+					GUILayout.BeginHorizontal();
 					GUILayout.Label("Alt.");
 					GUILayout.FlexibleSpace();
 					altitude = GUILayout.TextField(altitude, 25, GUILayout.Width(80));
@@ -142,7 +294,8 @@ namespace KerbalKonstructs.UI
 						alt += float.Parse(increment);
 						shouldUpdateSelection = true;
 					}
-				GUILayout.EndHorizontal();
+					GUILayout.EndHorizontal();
+				}
 
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Rot.");
@@ -172,48 +325,89 @@ namespace KerbalKonstructs.UI
 					}
 				GUILayout.EndHorizontal();
 
+				// var pqsc = ((CelestialBody)selectedObject.getSetting("CelestialBody")).pqsController;
+
 				GUILayout.BeginHorizontal();
-					if (GUILayout.Button("Snap to Surface", GUILayout.Width(130)))
-					{
-						var pqsc = ((CelestialBody)selectedObject.getSetting("CelestialBody")).pqsController;
-						alt = (float)(pqsc.GetSurfaceHeight((Vector3)selectedObject.getSetting("RadialPosition")) - pqsc.radius - (float)selectedObject.getSetting("RadiusOffset"));
-						shouldUpdateSelection = true;
-					}
-					GUILayout.FlexibleSpace();
+					// if (!isCareer)
+					// {
+						if (GUILayout.Button("Snap to Surface", GUILayout.Width(130)))
+						{
+							var pqsc = ((CelestialBody)selectedObject.getSetting("CelestialBody")).pqsController;
+							alt = 1.0f + ((float)(pqsc.GetSurfaceHeight((Vector3)selectedObject.getSetting("RadialPosition")) - pqsc.radius - (float)selectedObject.getSetting("RadiusOffset")));
+							shouldUpdateSelection = true;
+						}
+						GUILayout.FlexibleSpace();
+					// }
+
 					GUI.enabled = !editingSite;
-					if (GUILayout.Button(((selectedObject.settings.ContainsKey("LaunchSiteName")) ? "Edit" : "Make") + " Launchsite", GUILayout.Width(130)))
+
+					if (!isCareer)
 					{
-						siteName = (string)selectedObject.getSetting("LaunchSiteName");
-						siteTrans = (selectedObject.settings.ContainsKey("LaunchPadTransform")) ? (string)selectedObject.getSetting("LaunchPadTransform") : (string)selectedObject.model.getSetting("DefaultLaunchPadTransform");
-						siteDesc = (string)selectedObject.getSetting("LaunchSiteDescription");
-						siteType = (SiteType) selectedObject.getSetting("LaunchSiteType");
-						siteTypeMenu.SelectedItemIndex = (int)siteType;
-						siteLogo = ((string) selectedObject.getSetting("LaunchSiteLogo"));
-						siteAuthor = (selectedObject.settings.ContainsKey("author")) ? (string)selectedObject.getSetting("author") : (string)selectedObject.model.getSetting("author");
-						editingSite = true;
-					}				
+						if (GUILayout.Button(((selectedObject.settings.ContainsKey("LaunchSiteName")) ? "Edit" : "Make") + " Launchsite", GUILayout.Width(130)))
+						{
+							siteName = (string)selectedObject.getSetting("LaunchSiteName");
+							siteTrans = (selectedObject.settings.ContainsKey("LaunchPadTransform")) ? (string)selectedObject.getSetting("LaunchPadTransform") : (string)selectedObject.model.getSetting("DefaultLaunchPadTransform");
+							siteDesc = (string)selectedObject.getSetting("LaunchSiteDescription");
+							siteType = (SiteType)selectedObject.getSetting("LaunchSiteType");
+							siteTypeMenu.SelectedItemIndex = (int)siteType;
+							siteLogo = ((string)selectedObject.getSetting("LaunchSiteLogo"));
+							siteAuthor = (selectedObject.settings.ContainsKey("author")) ? (string)selectedObject.getSetting("author") : (string)selectedObject.model.getSetting("author");
+							editingSite = true;
+						}
+					}
+					else
+					{
+						if (GUILayout.Button(((selectedObject.settings.ContainsKey("LaunchSiteName")) ? "Edit" : "Setup") + " Launch Site", GUILayout.Width(150)))
+						{
+							siteName = (string)selectedObject.getSetting("LaunchSiteName");
+							siteTrans = (selectedObject.settings.ContainsKey("LaunchPadTransform")) ? (string)selectedObject.getSetting("LaunchPadTransform") : (string)selectedObject.model.getSetting("DefaultLaunchPadTransform");
+							siteDesc = (string)selectedObject.getSetting("LaunchSiteDescription");
+							siteType = (SiteType)selectedObject.getSetting("LaunchSiteType");
+							siteTypeMenu.SelectedItemIndex = (int)siteType;
+							siteLogo = ((string)selectedObject.getSetting("LaunchSiteLogo"));
+							siteAuthor = (selectedObject.settings.ContainsKey("author")) ? (string)selectedObject.getSetting("author") : (string)selectedObject.model.getSetting("author");
+							editingSite = true;
+						}
+					}
+					
 					GUI.enabled = true;
 				GUILayout.EndHorizontal();
 
-				GUILayout.BeginHorizontal();
-					if (GUILayout.Button("Save", GUILayout.Width(130)))
-						KerbalKonstructs.instance.saveObjects();
-					GUILayout.FlexibleSpace();
-					if (GUILayout.Button("Deselect", GUILayout.Width(130)))
-					{
-						// ASH Auto-save on deselect
-						KerbalKonstructs.instance.saveObjects();
-						KerbalKonstructs.instance.deselectObject();
-					}
-				GUILayout.EndHorizontal();
+				if (!isCareer)
+				{
+					GUILayout.BeginHorizontal();
+						if (GUILayout.Button("Save", GUILayout.Width(130)))
+							KerbalKonstructs.instance.saveObjects();
+						GUILayout.FlexibleSpace();
+						if (GUILayout.Button("Deselect", GUILayout.Width(130)))
+						{
+							// ASH Auto-save on deselect
+							KerbalKonstructs.instance.saveObjects();
+							KerbalKonstructs.instance.deselectObject();
+						}
+					GUILayout.EndHorizontal();
+				}
 
-				GUILayout.BeginHorizontal();
+				if (!isCareer)
+				{
+					GUILayout.BeginHorizontal();
+						GUILayout.FlexibleSpace();
+						if (GUILayout.Button("Delete", GUILayout.Width(80)))
+						{
+							KerbalKonstructs.instance.deleteObject(selectedObject);
+						}
+					GUILayout.EndHorizontal();
+				}
+				else
+				{
+					GUILayout.BeginHorizontal();
 					GUILayout.FlexibleSpace();
-					if (GUILayout.Button("Delete", GUILayout.Width(80)))
+					if (GUILayout.Button("Cancel Construction", GUILayout.Width(200)))
 					{
 						KerbalKonstructs.instance.deleteObject(selectedObject);
 					}
-				GUILayout.EndHorizontal();
+					GUILayout.EndHorizontal();
+				}
 
 				if (Event.current.keyCode == KeyCode.Return)
 				{
@@ -244,7 +438,20 @@ namespace KerbalKonstructs.UI
 					if (!manuallySet)
 					{
 						position += (Vector3)selectedObject.getSetting("RadialPosition");
-						alt += (float)selectedObject.getSetting("RadiusOffset");
+						
+						if (!isCareer)
+						{
+							alt += (float)selectedObject.getSetting("RadiusOffset");
+						}
+						else
+						{
+							// Snap to surface should be automatic
+							// Content devs need to make sure their model's origin and foundations allow for maximum terrain integration
+							// and embedding
+							// pqsc = ((CelestialBody)selectedObject.getSetting("CelestialBody")).pqsController;
+							// alt = 0.5f + (float)(pqsc.GetSurfaceHeight((Vector3)selectedObject.getSetting("RadialPosition")) - pqsc.radius - (float)selectedObject.getSetting("RadiusOffset"));
+						}
+
 						newRot += (float)selectedObject.getSetting("RotationAngle");
 
 						// 10112014 ASH Handle new rotation button limits
@@ -275,50 +482,66 @@ namespace KerbalKonstructs.UI
 		Vector2 scrollPos;
 		Boolean creating = false;
 		Boolean showLocal = false;
+		Boolean foundingBase = false;
 
 		void drawEditorWindow(int id)
 		{
 			// ASH 07112014 Layout changes
 			GUILayout.BeginArea(new Rect(10, 25, 500, 485));
+			if (!isCareer)
+			{
 				GUILayout.BeginHorizontal();
-					GUI.enabled = !creating;
-					if (GUILayout.Button("Spawn New", GUILayout.Width(115)))
-					{
-						creating = true;
-						showLocal = false;
-					}
-					GUILayout.Space(10);
-					GUI.enabled = creating || showLocal;
-					if (GUILayout.Button("All Instances", GUILayout.Width(108)))
-					{
-						creating = false;
-						showLocal = false;
-					}
-					GUI.enabled = true;
-					GUILayout.Space(2);
-					GUI.enabled = creating || !showLocal;
-					if (GUILayout.Button("Local Instances", GUILayout.Width(108)))
-					{
-						creating = false;
-						showLocal = true;
-					}
-					GUI.enabled = true;
-					GUILayout.FlexibleSpace();
-					if (GUILayout.Button("Save Objects", GUILayout.Width(115)))
-						KerbalKonstructs.instance.saveObjects();
+				GUI.enabled = !creating;
+				if (GUILayout.Button("Spawn New", GUILayout.Width(115)))
+				{
+					creating = true;
+					showLocal = false;
+				}
+				GUILayout.Space(10);
+				GUI.enabled = creating || showLocal;
+				if (GUILayout.Button("All Instances", GUILayout.Width(108)))
+				{
+					creating = false;
+					showLocal = false;
+				}
+				GUI.enabled = true;
+				GUILayout.Space(2);
+				GUI.enabled = creating || !showLocal;
+				if (GUILayout.Button("Local Instances", GUILayout.Width(108)))
+				{
+					creating = false;
+					showLocal = true;
+				}
+				GUI.enabled = true;
+				GUILayout.FlexibleSpace();
+				if (GUILayout.Button("Save Objects", GUILayout.Width(115)))
+					KerbalKonstructs.instance.saveObjects();
 				GUILayout.EndHorizontal();
-			
-				scrollPos = GUILayout.BeginScrollView(scrollPos);
-					if (creating)
+			}
+			else
+			{
+				creating = true;
+				showLocal = false;
+				foundingBase = true;
+			}
+
+			string sBaseCategory = "";
+			float fBaseCost = 0;
+
+			scrollPos = GUILayout.BeginScrollView(scrollPos);
+				if (creating)
+				{
+					if (!foundingBase)
 					{
 						foreach (StaticModel model in KerbalKonstructs.instance.getStaticDB().getModels())
 						{
 							// ASH 07112014 Removed redundant info
+
 							if (GUILayout.Button(model.getSetting("title") + " : " + model.getSetting("mesh")))
-							{						
+							{
 								StaticObject obj = new StaticObject();
 								obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.getSetting("mesh"));
-								obj.setSetting("RadiusOffset", (float) FlightGlobals.ActiveVessel.altitude);
+								obj.setSetting("RadiusOffset", (float)FlightGlobals.ActiveVessel.altitude);
 								obj.setSetting("CelestialBody", KerbalKonstructs.instance.getCurrentBody());
 								obj.setSetting("Group", "Ungrouped");
 								obj.setSetting("RadialPosition", KerbalKonstructs.instance.getCurrentBody().transform.InverseTransformPoint(FlightGlobals.ActiveVessel.transform.position));
@@ -332,55 +555,94 @@ namespace KerbalKonstructs.UI
 							}
 						}
 					}
-					else
+				
+					if (foundingBase)
 					{
-						foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
+						// doOnce = true;
+						foreach (StaticModel model in KerbalKonstructs.instance.getStaticDB().getModels())
 						{
-							bool isLocal = true;
-							if (showLocal)
+							// We only want to list statics that can be used to found bases
+							// That's launchsites with an appropriate Category and a Cost > 0
+							sBaseCategory = (string)model.getSetting("category");
+							fBaseCost = (float)model.getSetting("cost");
+
+							// Debug.Log("KK: BaseCategory is " + sBaseCategory);
+							// Debug.Log("KK: BaseCost is " + fBaseCost);
+
+							if ((fBaseCost > 0) && (sBaseCategory == "Runway" || sBaseCategory == "RocketPad" || sBaseCategory == "Helipad" || sBaseCategory == "Other" || sBaseCategory == "MultiLaunch"))
 							{
-								if (obj.pqsCity.sphere == FlightGlobals.currentMainBody.pqsController)
+								// Debug.Log("KK: Base candidate is " + model.getSetting("title"));
+								if (GUILayout.Button(model.getSetting("title") + " for " + model.getSetting("cost") + " Funds"))
 								{
-									var dist = Vector3.Distance(FlightGlobals.ActiveVessel.GetTransform().position, obj.gameObject.transform.position);
-									isLocal = dist < 10000f;
-								}
-								else
-									isLocal = false;
-									// ASH Ooopsie. Bug fix where off-Kerbin instances were always considered local.
-							}
-							
-							if (isLocal)
-							{
-								// ASH 07112014 Removed redundant info
-								// ASH 08112014 No point in disabling the button								
-								// GUI.enabled = obj != selectedObject;
-								if (GUILayout.Button("[" + obj.getSetting("Group") + "] " + (obj.settings.ContainsKey("LaunchSiteName") ? obj.getSetting("LaunchSiteName") + " : " + obj.model.getSetting("title") : obj.model.getSetting("title"))))
-								{
-									// TODO Move PQS target to object position
-									KerbalKonstructs.instance.selectObject(obj);
+									StaticObject obj = new StaticObject();
+									obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.getSetting("mesh"));
+									obj.setSetting("RadiusOffset", (float)FlightGlobals.ActiveVessel.altitude);
+									obj.setSetting("CelestialBody", KerbalKonstructs.instance.getCurrentBody());
+									obj.setSetting("Group", "Ungrouped");
+									obj.setSetting("RadialPosition", KerbalKonstructs.instance.getCurrentBody().transform.InverseTransformPoint(FlightGlobals.ActiveVessel.transform.position));
+									obj.setSetting("RotationAngle", 0f);
+									obj.setSetting("Orientation", Vector3.up);
+									obj.setSetting("VisibilityRange", 25000f);
+									obj.model = model;
+
+									KerbalKonstructs.instance.getStaticDB().addStatic(obj);
+									KerbalKonstructs.instance.spawnObject(obj, true);
 								}
 							}
 						}
-						GUI.enabled = true;
 					}
-				GUILayout.EndScrollView();
-				
-				// Set locals to group function
-				GUILayout.BeginHorizontal();
-					GUILayout.FlexibleSpace();
-					GUILayout.Label("Group:");
-					GUILayout.Space(5);
-					GUI.enabled = showLocal;
-					customgroup = GUILayout.TextField(customgroup, 25, GUILayout.Width(150));
-					GUI.enabled = true;
-					GUILayout.Space(5);
-					GUI.enabled = showLocal;
-					if (GUILayout.Button("Set as Group", GUILayout.Width(115)))
+				}
+
+				if (!creating)
+				{
+					foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
 					{
-						setLocalsGroup(customgroup);
+						bool isLocal = true;
+
+						if (showLocal)
+						{
+							if (obj.pqsCity.sphere == FlightGlobals.currentMainBody.pqsController)
+							{
+								var dist = Vector3.Distance(FlightGlobals.ActiveVessel.GetTransform().position, obj.gameObject.transform.position);
+								isLocal = dist < 10000f;
+							}
+							else
+								isLocal = false;
+								// ASH Ooopsie. Bug fix where off-Kerbin instances were always considered local.
+						}
+							
+						if (isLocal)
+						{
+							// ASH 07112014 Removed redundant info
+							// ASH 08112014 No point in disabling the button								
+							// GUI.enabled = obj != selectedObject;
+							if (GUILayout.Button("[" + obj.getSetting("Group") + "] " + (obj.settings.ContainsKey("LaunchSiteName") ? obj.getSetting("LaunchSiteName") + " : " + obj.model.getSetting("title") : obj.model.getSetting("title"))))
+							{
+								// TODO Move PQS target to object position
+								KerbalKonstructs.instance.selectObject(obj);
+							}
+						}
 					}
-					GUI.enabled = true;
-				GUILayout.EndHorizontal();
+				}
+			GUILayout.EndScrollView();
+			GUI.enabled = true;
+				
+			// Set locals to group function
+			GUILayout.BeginHorizontal();
+				GUILayout.FlexibleSpace();
+				GUILayout.Label("Group:");
+				GUILayout.Space(5);
+				GUI.enabled = showLocal;
+				customgroup = GUILayout.TextField(customgroup, 25, GUILayout.Width(150));
+				GUI.enabled = true;
+				GUILayout.Space(5);
+				GUI.enabled = showLocal;
+				if (GUILayout.Button("Set as Group", GUILayout.Width(115)))
+				{
+					setLocalsGroup(customgroup);
+				}
+				GUI.enabled = true;
+			GUILayout.EndHorizontal();
 
 			GUILayout.EndArea();
 
