@@ -19,10 +19,15 @@ namespace KerbalKonstructs.LaunchSites
 		// ASH Added career strategy
 		public float opencost;
 		public float closevalue;
+
+		//public Vector3 radialposition;
+
 		[PersistentField]
 		public string openclosestate;
 
-		public LaunchSite(string sName, string sAuthor, SiteType sType, Texture sLogo, Texture sIcon, string sDescription, string sDevice = "Other", float fOpenCost = 0, float fCloseValue = 0, string sOpenCloseState = "Closed")
+		public GameObject GameObject;
+
+		public LaunchSite(string sName, string sAuthor, SiteType sType, Texture sLogo, Texture sIcon, string sDescription, string sDevice, float fOpenCost, float fCloseValue, string sOpenCloseState, /*Vector3 vRadial = default(Vector3)*/GameObject gameObject)
 		{
 			name = sName;
 			author = sAuthor;
@@ -36,6 +41,8 @@ namespace KerbalKonstructs.LaunchSites
 			opencost = fOpenCost;
 			closevalue = fCloseValue;
 			openclosestate = sOpenCloseState;
+			//radialposition = vRadial;
+			GameObject = gameObject;
 		}
 	}
 

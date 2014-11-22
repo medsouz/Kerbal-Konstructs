@@ -47,6 +47,9 @@ namespace KerbalKonstructs
 		[KSPField]
 		public Boolean disableCareerStrategyLayer = false;
 
+		[KSPField]
+		public float newBaseProximityLimit = 25000;
+
 		void Awake()
 		{
 			instance = this;
@@ -99,6 +102,8 @@ namespace KerbalKonstructs
 			opencloseState.setDefaultValue("Closed");
 			KKAPI.addInstanceSetting("OpenCloseState", opencloseState);
 
+			SpaceCenterManager.setKSC();
+
 			loadConfig();
 			saveConfig();
 			GameEvents.onDominantBodyChange.Add(onDominantBodyChange);
@@ -106,11 +111,11 @@ namespace KerbalKonstructs
 			GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
 			GameEvents.OnVesselRecoveryRequested.Add(OnVesselRecoveryRequested);
 			GameEvents.OnFundsChanged.Add(OnDoshChanged);
+			GameEvents.onVesselRecovered.Add(OnVesselRecovered);
 			DontDestroyOnLoad(this);
 			loadObjects();
 			// ASH 01112014 Toggle on and off for the flight scene only
 			// InvokeRepeating("updateCache", 0, 1);
-			SpaceCenterManager.setKSC();
 		}
 
 		void OnDoshChanged(double amount, TransactionReasons reason)
@@ -123,7 +128,13 @@ namespace KerbalKonstructs
 			Debug.Log("KK: event onVesselRecoveryRequested");
 			SpaceCenter csc = SpaceCenterManager.getClosestSpaceCenter(data.gameObject.transform.position);
 			SpaceCenter.Instance = csc;
+			SpaceCenter.Instance.name = csc.name;
 			Debug.Log("KK: Nearest spacecenter is " + csc.name);
+		}
+
+		void OnVesselRecovered(ProtoVessel vessel)
+		{
+			SpaceCenter.Instance = SpaceCenterManager.KSC;
 		}
 
 		void OnGUIAppLauncherReady()
@@ -611,6 +622,7 @@ namespace KerbalKonstructs
 		void onBaseManagerOn()
 		{
 			showBaseManager = true;
+			PersistenceFile<LaunchSite>.LoadList(LaunchSiteManager.AllLaunchSites, "LAUNCHSITES", "KK");
 		}
 
 		void onSiteSelectorOff()
@@ -618,6 +630,7 @@ namespace KerbalKonstructs
 			showSelector = false;
 			// Make sure the editor doesn't think you're still mousing over the site selector
 			InputLockManager.RemoveControlLock("KKEditorLock");
+			PersistenceFile<LaunchSite>.SaveList(LaunchSiteManager.AllLaunchSites, "LAUNCHSITES", "KK");
 		}
 
 		void onBaseManagerOff()

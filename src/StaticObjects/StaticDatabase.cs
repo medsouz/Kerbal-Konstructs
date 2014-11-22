@@ -50,12 +50,12 @@ namespace KerbalKonstructs.StaticObjects
 		public void cacheAll()
 		{
 			// ASH 01112014 Need to handle this.
-			Debug.Log("KK: cacheAll() activeBodyname is " + activeBodyName);
+			// Debug.Log("KK: cacheAll() activeBodyname is " + activeBodyName);
 			if (activeBodyName == "")
 				return;
 
 			var body = KerbalKonstructs.instance.getCurrentBody();
-			Debug.Log("KK: getCurrentBody()" + (body == null ? " = NULL" : (".bodyName = " + body.bodyName)));
+			// Debug.Log("KK: getCurrentBody()" + (body == null ? " = NULL" : (".bodyName = " + body.bodyName)));
 
 			if (groupList.ContainsKey(activeBodyName))
 			{
@@ -66,15 +66,15 @@ namespace KerbalKonstructs.StaticObjects
 				foreach (StaticGroup group in groupList[activeBodyName].Values)
 				{
 					group.cacheAll();
-					Debug.Log("KK: cacheAll for " + activeBodyName + " " + group.getGroupName());
+					// Debug.Log("KK: cacheAll for " + activeBodyName + " " + group.getGroupName());
 					if (!group.alwaysActive)
 					{
 						group.active = false;
-						Debug.Log("KK: group alwaysActive is FALSE. Group is deactivated.");
+						// Debug.Log("KK: group alwaysActive is FALSE. Group is deactivated.");
 					}
 					else
 					{
-						Debug.Log("KK: group alwaysActive is TRUE. Group stays active.");
+						// Debug.Log("KK: group alwaysActive is TRUE. Group stays active.");
 					}
 				}
 			}
@@ -83,7 +83,7 @@ namespace KerbalKonstructs.StaticObjects
 		public void loadObjectsForBody(String bodyName)
 		{
 			activeBodyName = bodyName;
-			Debug.Log("KK: loadObjectsForBody() bodyName is " + bodyName);
+			// Debug.Log("KK: loadObjectsForBody() bodyName is " + bodyName);
 			if (groupList.ContainsKey(bodyName))
 			{
 				foreach (KeyValuePair<String, StaticGroup> bodyGroups in groupList[bodyName])
@@ -93,7 +93,7 @@ namespace KerbalKonstructs.StaticObjects
 			}
 			else
 			{
-				Debug.Log("No statics exist for " + bodyName);
+				Debug.Log("KK: No statics exist for " + bodyName);
 			}
 		}
 
@@ -101,18 +101,18 @@ namespace KerbalKonstructs.StaticObjects
 		{
 			if (body != null)
 			{
-				Debug.Log("KK: onBodyChanged() body.bodyName is " + body.bodyName);
-				Debug.Log("KK: onBodyChanged() activebodyName is " + activeBodyName);
+				// Debug.Log("KK: onBodyChanged() body.bodyName is " + body.bodyName);
+				// Debug.Log("KK: onBodyChanged() activebodyName is " + activeBodyName);
 				if (body.bodyName != activeBodyName)
 				{
-					Debug.Log("KK: onBodyChanged() calls cacheAll() then loadObjectsForBody()");
+					// Debug.Log("KK: onBodyChanged() calls cacheAll() then loadObjectsForBody()");
 					cacheAll();
 					loadObjectsForBody(body.bodyName);
 				}
 			}
 			else
 			{
-				Debug.Log("KK: onBodyChanged() calls cacheAll() THEN sets activeBodyName blank");
+				// Debug.Log("KK: onBodyChanged() calls cacheAll() THEN sets activeBodyName blank");
 				cacheAll();
 				activeBodyName = "";
 			}
@@ -120,7 +120,7 @@ namespace KerbalKonstructs.StaticObjects
 
 		public void updateCache(Vector3 playerPos)
 		{
-			Debug.Log("KK: StaticDatabase.updateCache() - " + activeBodyName);
+			// Debug.Log("KK: StaticDatabase.updateCache() - " + activeBodyName);
 			if (groupList.ContainsKey(activeBodyName))
 			{
 				foreach (StaticGroup group in groupList[activeBodyName].Values)
@@ -131,7 +131,7 @@ namespace KerbalKonstructs.StaticObjects
 						Boolean active = dist < group.getVisibilityRange();
 						if (active != group.active && active == false)
 						{
-							Debug.Log("KK: Caching group " + group.getGroupName());
+							// Debug.Log("KK: Caching group " + group.getGroupName());
 							group.cacheAll();
 						}
 						group.active = active;

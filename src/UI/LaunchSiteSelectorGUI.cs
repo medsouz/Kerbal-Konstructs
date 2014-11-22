@@ -138,6 +138,7 @@ namespace KerbalKonstructs.UI
 						// If a site has an open cost of 0 it's always open
 						if (site.openclosestate == "Open" || site.opencost == 0)
 						{
+							site.openclosestate = "Open";
 							GUILayout.Label(tIconOpen, GUILayout.Height(30), GUILayout.Width(30));
 						}
 						else

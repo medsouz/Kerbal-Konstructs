@@ -9,8 +9,8 @@ namespace KerbalKonstructs.SpaceCenters
 {
 	public class SpaceCenterManager
 	{
-		private static List<CustomSpaceCenter> spaceCenters = new List<CustomSpaceCenter>();
-		private static SpaceCenter KSC;
+		public static List<CustomSpaceCenter> spaceCenters = new List<CustomSpaceCenter>();
+		public static SpaceCenter KSC;
 
 		public static void setKSC()
 		{
@@ -24,8 +24,10 @@ namespace KerbalKonstructs.SpaceCenters
 
 		public static SpaceCenter getClosestSpaceCenter(Vector3 position)
 		{
-			SpaceCenter closest = KSC;
+			//SpaceCenter closest = KSC;
+			CustomSpaceCenter closest = null;
 			float smallestDist = Vector3.Distance(KSC.gameObject.transform.position, position);
+			Debug.Log("Distance to KSC: " + smallestDist);
 
 			// ASH Career mode strategy
 			// Only open sites can do recoveries
@@ -49,20 +51,34 @@ namespace KerbalKonstructs.SpaceCenters
 					sOpenCloseState = LaunchSiteManager.getSiteOpenCloseState(csc.SpaceCenterName);
 				}
 
-				Debug.Log(csc.SpaceCenterName);
 				float dist = Vector3.Distance(position, csc.getStaticObject().gameObject.transform.position);
-				if (dist < smallestDist)
+				Debug.Log(csc.SpaceCenterName + " " + dist + " " + sOpenCloseState);
+				//if (csc.getSpaceCenter() != null)
 				{
-					if (isCareer && sOpenCloseState == "Closed")
-					{ }
-					else
+					if (dist < smallestDist)
 					{
-						closest = csc.getSpaceCenter();
-						smallestDist = dist;
+						if (isCareer && sOpenCloseState == "Closed")
+						{ }
+						else
+						{
+							closest = csc;//.getSpaceCenter();
+							smallestDist = dist;
+							Debug.Log("closest updated to " + closest + " distance " + smallestDist);
+						}
 					}
 				}
 			}
-			return closest;
+			SpaceCenter sc;
+			if (closest == null) 
+				sc = KSC;
+			else
+			{
+				Debug.Log("closest=" + closest);
+				sc = closest.getSpaceCenter() ?? KSC;
+			}
+			Debug.Log("smallestDist=" + smallestDist);
+			Debug.Log("returning closest space centre: " + sc);
+			return sc;
 		}
 	}
 }
