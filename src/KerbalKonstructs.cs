@@ -34,9 +34,8 @@ namespace KerbalKonstructs
 		private Boolean showBaseManager = false;
 		private MapIconManager mapIconManager = new MapIconManager();
 		private ApplicationLauncherButton siteSelector;
-		public Boolean doOnce = false;
 
-		// ASH Base Manager
+		// ASH Base Boss
 		private ApplicationLauncherButton baseManager;
 
 		// Configurable variables
@@ -47,18 +46,23 @@ namespace KerbalKonstructs
 		[KSPField]
 		public Boolean disableCareerStrategyLayer = false;
 
-		[KSPField]
-		public float newBaseProximityLimit = 25000;
-
 		void Awake()
 		{
 			instance = this;
-			// Setup configuration
+
+			GameEvents.onDominantBodyChange.Add(onDominantBodyChange);
+			GameEvents.onLevelWasLoaded.Add(onLevelWasLoaded);
+			GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
+			GameEvents.OnVesselRecoveryRequested.Add(OnVesselRecoveryRequested);
+			GameEvents.OnFundsChanged.Add(OnDoshChanged);
+			GameEvents.onVesselRecovered.Add(OnVesselRecovered);
+
 			KKAPI.addModelSetting("mesh", new ConfigFile());
 			ConfigGenericString authorConfig = new ConfigGenericString();
 			authorConfig.setDefaultValue("Unknown");
 			KKAPI.addModelSetting("author", authorConfig);
 			KKAPI.addModelSetting("DefaultLaunchPadTransform", new ConfigGenericString());
+			
 			// ASH Need the title
 			KKAPI.addModelSetting("title", new ConfigGenericString());
 			// Need Category and Cost
@@ -106,16 +110,22 @@ namespace KerbalKonstructs
 
 			loadConfig();
 			saveConfig();
-			GameEvents.onDominantBodyChange.Add(onDominantBodyChange);
-			GameEvents.onLevelWasLoaded.Add(onLevelWasLoaded);
-			GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
-			GameEvents.OnVesselRecoveryRequested.Add(OnVesselRecoveryRequested);
-			GameEvents.OnFundsChanged.Add(OnDoshChanged);
-			GameEvents.onVesselRecovered.Add(OnVesselRecovered);
+			
 			DontDestroyOnLoad(this);
 			loadObjects();
-			// ASH 01112014 Toggle on and off for the flight scene only
-			// InvokeRepeating("updateCache", 0, 1);
+		}
+
+		public Boolean CareerStrategyEnabled(Game gGame)
+		{
+			if (gGame.Mode == Game.Modes.CAREER)
+			{
+				if (!KerbalKonstructs.instance.disableCareerStrategyLayer)
+					return true;
+				else
+					return false;
+			}
+			else
+				return false;
 		}
 
 		void OnDoshChanged(double amount, TransactionReasons reason)
@@ -125,16 +135,26 @@ namespace KerbalKonstructs
 
 		void OnVesselRecoveryRequested(Vessel data)
 		{
-			Debug.Log("KK: event onVesselRecoveryRequested");
-			SpaceCenter csc = SpaceCenterManager.getClosestSpaceCenter(data.gameObject.transform.position);
-			SpaceCenter.Instance = csc;
-			SpaceCenter.Instance.name = csc.name;
-			Debug.Log("KK: Nearest spacecenter is " + csc.name);
+			if (CareerStrategyEnabled(HighLogic.CurrentGame))
+			{
+				// Change the Space Centre to the nearest open base
+				SpaceCenter csc = SpaceCenterManager.getClosestSpaceCenter(data.gameObject.transform.position);
+				SpaceCenter.Instance = csc;
+				Debug.Log("KK: event onVesselRecoveryRequested");
+				Debug.Log("KK: Nearest SpaceCenter is " + SpaceCenter.Instance.name + " " + csc.name);
+			}
 		}
 
 		void OnVesselRecovered(ProtoVessel vessel)
 		{
-			SpaceCenter.Instance = SpaceCenterManager.KSC;
+			if (vessel == null)
+				Debug.Log("KK: onVesselRecovered vessel was null but we don't care.");
+
+			if (CareerStrategyEnabled(HighLogic.CurrentGame))
+			{
+				// Put the KSC back as the Space Centre
+				SpaceCenter.Instance = SpaceCenterManager.KSC;
+			}
 		}
 
 		void OnGUIAppLauncherReady()
@@ -159,12 +179,9 @@ namespace KerbalKonstructs
 			ScreenMessages.PostScreenMessage(hovermessage, 10, 0);
 		}
 
-		// ASH 01112014 Lots of debug
 		void onLevelWasLoaded(GameScenes data)
 		{
 			// ASH 04112014 Likely responsible for camera locks in the flight and space centre scenes
-			// For some reason the lock is not reliably dropped... I think.
-			Debug.Log("KK: event onLevelWasLoaded. Drop selector input lock.");
 			InputLockManager.RemoveControlLock("KKEditorLock");
 			
 			if (selectedObject != null)
@@ -179,55 +196,37 @@ namespace KerbalKonstructs
 			// ASH 01112014 Toggle on and off for the flight scene only
 			if (data.Equals(GameScenes.FLIGHT))
 			{
-				// Debug.Log("KK: onLevelWasLoaded is FLIGHT");
-				// ASH 03112014 Fix recovery issue and remove redundant code.
-				// IT WASN'T THIS
-				// Debug.Log("KK: onLevelWasLoaded calling onBodyChanged with " + currentBody.bodyName);
-				// staticDB.onBodyChanged(currentBody);
 				updateCache();
-				// Debug.Log("KK: Invoking updateCache");
 				InvokeRepeating("updateCache", 0, 1);
 				something = false;
 			}
 			else
 			{
-				// Debug.Log("KK: Revoking updateCache");
 				CancelInvoke("updateCache");
 			}
 
 			if (data.Equals(GameScenes.SPACECENTER))
 			{
-				// Debug.Log("KK: onLevelWasLoaded is SPACECENTER");
-				// Assume that the Space Center is on Kerbin
 				currentBody = KKAPI.getCelestialBody("Kerbin");
-				// staticDB.onBodyChanged(currentBody);
-				// Debug.Log("KK: onLevelWasLoaded calling onBodyChanged with Kerbin");
-
-				// ASH This is right
 				staticDB.onBodyChanged(KKAPI.getCelestialBody("Kerbin"));
-				// Debug.Log("KK: onLevelWasLoaded calling updateCache");
 				updateCache();
 				something = false;
 			}
 			
 			if (data.Equals(GameScenes.EDITOR) || data.Equals(GameScenes.SPH))
 			{
-				// Debug.Log("KK: onLevelWasLoaded is EDITOR or SPH");
-				// ASH and Ravencrow 28102014
 				// Prevent abuse if selector left open when switching to from VAB and SPH
 				selector.Close();
+
 				switch (data)
 				{
 					case GameScenes.SPH:
-						// Debug.Log("KK: onLevelWasLoaded is SPH");
 						selector.setEditorType(SiteType.SPH);
 						break;
 					case GameScenes.EDITOR:
-						// Debug.Log("KK: onLevelWasLoaded is VAB");
 						selector.setEditorType(SiteType.VAB);
 						break;
 					default:
-						// Debug.Log("KK: onLevelWasLoaded is DEFAULT.");
 						selector.setEditorType(SiteType.Any);
 						break;
 				}
@@ -235,8 +234,6 @@ namespace KerbalKonstructs
 
 			if (something)
 			{
-				// Debug.Log("KK: onLevelWasLoaded is SOMEOTHERSCENE");
-				// Debug.Log("KK: onLevelWasLoaded calling onBodyChanged with NULL");
 				staticDB.onBodyChanged(null);
 			}
 		}
@@ -244,13 +241,11 @@ namespace KerbalKonstructs
 		void onDominantBodyChange(GameEvents.FromToAction<CelestialBody, CelestialBody> data)
 		{
 			currentBody = data.to;
-			// Debug.Log("KK: event onDominantBodyChange to " + data.to.bodyName);
 			staticDB.onBodyChanged(data.to);
 		}
 
 		public void updateCache()
 		{
-			// Debug.Log("KK: updateCache()");
 			if (HighLogic.LoadedSceneIsGame)
 			{
 				Vector3 playerPos = Vector3.zero;
@@ -267,7 +262,7 @@ namespace KerbalKonstructs
 					// HACKY: if there is no vessel use the camera, this could cause some issues
 					playerPos = Camera.main.transform.position;
 				}
-				// Debug.Log("KK: playerPos is" + playerPos);
+
 				staticDB.updateCache(playerPos);
 			}
 		}
@@ -275,6 +270,7 @@ namespace KerbalKonstructs
 		public void loadObjects()
 		{
 			UrlDir.UrlConfig[] configs = GameDatabase.Instance.GetConfigs("STATIC");
+			
 			foreach(UrlDir.UrlConfig conf in configs)
 			{
 				StaticModel model = new StaticModel();
@@ -285,7 +281,7 @@ namespace KerbalKonstructs
 
 				foreach (ConfigNode ins in conf.config.GetNodes("MODULE"))
 				{
-					Debug.Log("Found module: "+ins.name+" in "+conf.name);
+					Debug.Log("KK: Found module: "+ins.name+" in "+conf.name);
 					StaticModule module = new StaticModule();
 					foreach (ConfigNode.Value value in ins.values)
 					{
@@ -303,17 +299,22 @@ namespace KerbalKonstructs
 						}
 					}
 					model.modules.Add(module);
+					Debug.Log("KK: Adding module");
 				}
+
 				foreach (ConfigNode ins in conf.config.GetNodes("Instances"))
 				{
+					Debug.Log("KK: Loading models");
 					StaticObject obj = new StaticObject();
 					obj.model = model;
 					obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.getSetting("mesh"));
+					Debug.Log("KK: mesh is " + (string)model.getSetting("mesh"));
 
 					obj.settings = KKAPI.loadConfig(ins, KKAPI.getInstanceSettings());
 
 					if (!obj.settings.ContainsKey("LaunchPadTransform") && obj.settings.ContainsKey("LaunchSiteName"))
 					{
+						
 						if (model.settings.Keys.Contains("DefaultLaunchPadTransform"))
 						{
 							obj.settings.Add("LaunchPadTransform", model.getSetting("DefaultLaunchPadTransform"));
@@ -321,6 +322,7 @@ namespace KerbalKonstructs
 						else
 						{
 							Debug.Log("Launch site is missing a transform. Defaulting to " + obj.getSetting("LaunchSiteName") + "_spawn...");
+							
 							if (obj.gameObject.transform.Find(obj.getSetting("LaunchSiteName") + "_spawn") != null)
 							{
 								obj.settings.Add("LaunchPadTransform", obj.getSetting("LaunchSiteName") + "_spawn");
@@ -329,6 +331,7 @@ namespace KerbalKonstructs
 							{
 								Debug.Log("FAILED: " + obj.getSetting("LaunchSiteName") + "_spawn does not exist! Attempting to use any transform with _spawn in the name.");
 								Transform lastResort = obj.gameObject.transform.Cast<Transform>().FirstOrDefault(trans => trans.name.EndsWith("_spawn"));
+								
 								if (lastResort != null)
 								{
 									Debug.Log("Using " + lastResort.name + " as launchpad transform");
@@ -349,6 +352,7 @@ namespace KerbalKonstructs
 						LaunchSiteManager.createLaunchSite(obj);
 					}
 				}
+				
 				staticDB.registerModel(model);
 			}
 		}
@@ -357,9 +361,9 @@ namespace KerbalKonstructs
 		{
 			foreach (StaticModel model in staticDB.getModels())
 			{
-				Debug.Log("Saving "+model.config);
 				ConfigNode staticNode = new ConfigNode("STATIC");
 				ConfigNode modelConfig = GameDatabase.Instance.GetConfigNode(model.config);
+							
 				modelConfig.RemoveNodes("Instances");
 
 				foreach (StaticObject obj in staticDB.getObjectsFromModel(model))
@@ -449,17 +453,22 @@ namespace KerbalKonstructs
 		public void deselectObject(Boolean disableCam = true)
 		{
 			selectedObject.editing = false;
+
 			Transform[] gameObjectList = selectedObject.gameObject.GetComponentsInChildren<Transform>();
 			List<GameObject> colliderList = (from t in gameObjectList where t.gameObject.collider != null select t.gameObject).ToList();
+			
 			foreach (GameObject collider in colliderList)
 			{
 				collider.collider.enabled = true;
 			}
+			
 			selectedObject = null;
+
 			InputLockManager.RemoveControlLock("KKShipLock");
 			InputLockManager.RemoveControlLock("KKEVALock");
 			InputLockManager.RemoveControlLock("KKCamControls");
 			InputLockManager.RemoveControlLock("KKCamModes");
+			
 			// if you disable the camera when switching scenes shit will go down
 			if(disableCam)
 				camControl.disable();
@@ -471,6 +480,7 @@ namespace KerbalKonstructs
 			{
 				camControl.updateCamera();
 			}
+
 			if (selectedObject != null)
 			{
 				Vector3 pos = Vector3.zero;
@@ -517,9 +527,9 @@ namespace KerbalKonstructs
 					alt -= editor.getIncrement();
 					changed = true;
 				}
+				
 				if (changed)
 				{
-					// This should probably be changed...
 					pos += (Vector3) selectedObject.getSetting("RadialPosition");
 					alt += (float) selectedObject.getSetting("RadiusOffset");
 					selectedObject.setSetting("RadialPosition", pos);
@@ -534,8 +544,8 @@ namespace KerbalKonstructs
 					deselectObject();
 
 				showEditor = !showEditor;
-				doOnce = false;
 			}
+
 		}
 
 		void OnGUI()
@@ -553,6 +563,7 @@ namespace KerbalKonstructs
 					// Editor Window
 					editor.drawEditor(selectedObject);
 				}
+
 				if (showBaseManager)
 				{
 					manager.drawManager(selectedObject);
@@ -571,6 +582,7 @@ namespace KerbalKonstructs
 			{
 				deselectObject();
 			}
+
 			staticDB.deleteObject(obj);
 		}
 
@@ -580,18 +592,23 @@ namespace KerbalKonstructs
 			InputLockManager.SetControlLock(ControlTypes.EVA_INPUT, "KKEVALock");
 			InputLockManager.SetControlLock(ControlTypes.CAMERACONTROLS, "KKCamControls");
 			InputLockManager.SetControlLock(ControlTypes.CAMERAMODES, "KKCamModes");
+			
 			if (selectedObject != null)
 				deselectObject();
+			
 			selectedObject = obj;
 			selectedObject.editing = true;
 			Transform[] gameObjectList = selectedObject.gameObject.GetComponentsInChildren<Transform>();
 			List<GameObject> colliderList = (from t in gameObjectList where t.gameObject.collider != null select t.gameObject).ToList();
+			
 			foreach (GameObject collider in colliderList)
 			{
 				collider.collider.enabled = false;
 			}
+			
 			if(camControl.active)
 				camControl.disable();
+			
 			camControl.enable(obj.gameObject);
 		}
 
@@ -662,13 +679,16 @@ namespace KerbalKonstructs
 					}
 				}
 				return true;
+
 			}
 			return false;
+
 		}
 
 		public void saveConfig()
 		{
 			ConfigNode cfg = new ConfigNode();
+
 			foreach (FieldInfo f in GetType().GetFields())
 			{
 				if (Attribute.IsDefined(f, typeof(KSPField)))
@@ -676,6 +696,7 @@ namespace KerbalKonstructs
 					cfg.AddValue(f.Name, f.GetValue(this));
 				}
 			}
+
 			Directory.CreateDirectory(installDir);
 			cfg.Save(installDir + "/KerbalKonstructs.cfg", "Kerbal Konstructs - https://github.com/medsouz/Kerbal-Konstructs");
 		}

@@ -11,6 +11,7 @@ namespace KerbalKonstructs.StaticObjects
 		public PQSCity pqsCity;
 		public StaticModel model;
 
+		[KSPField]
 		public Dictionary<string, object> settings = new Dictionary<string, object>();
 
 		public Boolean editing;
