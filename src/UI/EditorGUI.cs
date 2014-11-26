@@ -56,81 +56,46 @@ namespace KerbalKonstructs.UI
 		Rect toolRect = new Rect(150, 25, 300, 325);
 		Rect editorRect = new Rect(10, 25, 520, 520);
 		Rect siteEditorRect = new Rect(400, 50, 330, 350);
-		Rect managerRect = new Rect(10, 25, 400, 120);
+		Rect managerRect = new Rect(10, 25, 400, 135);
 
 		private GUIStyle listStyle = new GUIStyle();
 
-		private float fRange = 0f;
-
-		private string nearestBase(Vector3 position, string sOpenClose = "Meh")
-		{
-			SpaceCenter KSC = SpaceCenter.Instance;
-			var smallestDist = Vector3.Distance(KSC.gameObject.transform.position, position);
-			string sNearestBase = "";
-			string sOpenCloseState = "";
-
-			List<LaunchSite> basesites = LaunchSiteManager.getLaunchSites();
-			
-			foreach (LaunchSite site in basesites)
-			{
-				sOpenCloseState = site.openclosestate;
-
-				if (sOpenCloseState == "Open" || sOpenClose == "Either")
-				{
-					if (site.GameObject == null) continue;
-
-					var radialposition = site.GameObject.transform.position;
-					var dist = Vector3.Distance(position, radialposition);
-
-					if (site.name == "Runway" || site.name == "LaunchPad")
-					{}
-					else
-					{
-						if ((float)dist < (float)smallestDist)
-						{
-							{
-								sNearestBase = site.name;
-								smallestDist = dist;
-							}
-						}
-					}
-
-				}
-			}
-			
-			if (sNearestBase == "")
-				sNearestBase = "KSC";
-
-			fRange = (float)smallestDist;
-
-			return sNearestBase;
-		}
-
 		void drawBaseManagerWindow(int windowID)
 		{
-			GUILayout.BeginArea(new Rect(10, 30, 380, 105));
+			string Base;
+			float Range;
+
+			GUILayout.BeginArea(new Rect(10, 30, 380, 120));
 				GUILayout.Space(3);
 				
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Nearest Open Base: ", GUILayout.Width(125));
 					//GUILayout.FlexibleSpace();
-					GUILayout.Label(nearestBase(FlightGlobals.ActiveVessel.GetTransform().position, "Open") + " at ", GUILayout.Width(140));
+					LaunchSiteManager.getNearestBase(FlightGlobals.ActiveVessel.GetTransform().position, out Base, out Range, "Open");
+					GUILayout.Label(Base + " at ", GUILayout.Width(140));
 					GUI.enabled = false;
-					GUILayout.TextField(" " + fRange + " ", GUILayout.Width(80));
+					GUILayout.TextField(" " + Range + " ", GUILayout.Width(80));
 					GUI.enabled = true;
 					GUILayout.Label("m");
 				GUILayout.EndHorizontal();
 
-				GUILayout.Space(3);
+				GUILayout.Space(2);
 
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Nearest Base: ", GUILayout.Width(125));
 					//GUILayout.FlexibleSpace();
-					GUILayout.Label(nearestBase(FlightGlobals.ActiveVessel.GetTransform().position, "Either") + " at ", GUILayout.Width(140));
+					LaunchSiteManager.getNearestBase(FlightGlobals.ActiveVessel.GetTransform().position, out Base, out Range, "Either");
+					GUILayout.Label(Base + " at ", GUILayout.Width(140));
 					GUI.enabled = false;
-					GUILayout.TextField(" " + fRange + " ", GUILayout.Width(80));
+					GUILayout.TextField(" " + Range + " ", GUILayout.Width(80));
 					GUI.enabled = true;
 					GUILayout.Label("m");
+				GUILayout.EndHorizontal();
+
+				GUILayout.Space(2);
+
+				GUILayout.BeginHorizontal();
+					KerbalKonstructs.instance.enableATC = GUILayout.Toggle(KerbalKonstructs.instance.enableATC, "Enable ATC");
 				GUILayout.EndHorizontal();
 			GUILayout.EndArea();
 

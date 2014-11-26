@@ -13,6 +13,8 @@ namespace KerbalKonstructs.LaunchSites
 	{
 		private static List<LaunchSite> launchSites = new List<LaunchSite>();
 		public static Texture defaultLaunchSiteLogo = GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/DefaultSiteLogo", false);
+		public static float fRange = 0f;
+		public static string sNearestOpenBase = "";
 
 		static LaunchSiteManager()
 		{
@@ -152,6 +154,93 @@ namespace KerbalKonstructs.LaunchSites
 				}
 			}
 			return sOpenCloseState;
+		}
+
+		public static void getNearestBase(Vector3 position, out string sBase, out float flRange, string sOpenClose = "Meh")
+		{
+			SpaceCenter KSC = SpaceCenter.Instance;
+			var smallestDist = Vector3.Distance(KSC.gameObject.transform.position, position);
+			string sNearestBase = "";
+			string sOpenCloseState = "";
+			string rOpenClose = "";
+
+			List<LaunchSite> basesites = LaunchSiteManager.getLaunchSites();
+
+			foreach (LaunchSite site in basesites)
+			{
+				sOpenCloseState = site.openclosestate;
+
+				if (sOpenCloseState == "Open" || sOpenClose == "Either")
+				{
+					if (site.GameObject == null) continue;
+
+					var radialposition = site.GameObject.transform.position;
+					var dist = Vector3.Distance(position, radialposition);
+
+					if (site.name == "Runway" || site.name == "LaunchPad")
+					{ }
+					else
+					{
+						if ((float)dist < (float)smallestDist)
+						{
+							{
+								sNearestBase = site.name;
+								smallestDist = dist;
+								rOpenClose = site.openclosestate;
+							}
+						}
+					}
+
+				}
+			}
+
+			if (sNearestBase == "")
+			{
+				sNearestBase = "KSC";
+				rOpenClose = "Open";
+			}
+
+			fRange = (float)smallestDist;
+
+			if (KerbalKonstructs.instance.enableATC)
+			{
+				if (sNearestBase != sNearestOpenBase)
+				{
+					if (fRange < 50000)
+					{
+						sNearestOpenBase = sNearestBase;
+						if (rOpenClose == "Open")
+						{
+							// you have entered ...
+							MessageSystemButton.MessageButtonColor color = MessageSystemButton.MessageButtonColor.BLUE;
+							MessageSystem.Message m = new MessageSystem.Message("KK ATC", "You have entered the airspace of " + sNearestBase + " ATC. Please keep this channel open and obey all signal lights. Thank you. " + sNearestBase + " Air Traffic Control out.", color, MessageSystemButton.ButtonIcons.MESSAGE);
+							MessageSystem.Instance.AddMessage(m);
+						}
+						else
+						{
+							MessageSystemButton.MessageButtonColor color = MessageSystemButton.MessageButtonColor.RED;
+							MessageSystem.Message m = new MessageSystem.Message("KK ATC", "This is a recorded transmission. You have entered the airspace of " + sNearestBase + " ATC. This base is currently closed and may only be used for emergencies. " + sNearestBase + " Air Traffic Control out.", color, MessageSystemButton.ButtonIcons.MESSAGE);
+							MessageSystem.Instance.AddMessage(m);
+						}
+					}
+					else
+						if (sNearestOpenBase != "")
+						{
+							if (rOpenClose == "Open")
+							{
+								// you have left ...
+								MessageSystemButton.MessageButtonColor color = MessageSystemButton.MessageButtonColor.GREEN;
+								MessageSystem.Message m = new MessageSystem.Message("KK ATC", "You are now leaving the airspace of " + sNearestBase + ". Safe journey. " + sNearestBase + " Air Traffic Control out.", color, MessageSystemButton.ButtonIcons.MESSAGE);
+								MessageSystem.Instance.AddMessage(m);
+							}
+
+							sNearestOpenBase = "";
+						}
+				}
+			}
+
+			sBase = sNearestBase;
+			flRange = fRange;
 		}
 
 		public static void setLaunchSite(LaunchSite site)

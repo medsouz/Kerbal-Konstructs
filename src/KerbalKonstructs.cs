@@ -46,6 +46,9 @@ namespace KerbalKonstructs
 		[KSPField]
 		public Boolean disableCareerStrategyLayer = false;
 
+		[KSPField]
+		public Boolean enableATC = true;
+
 		void Awake()
 		{
 			instance = this;
