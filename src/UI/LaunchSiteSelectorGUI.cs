@@ -17,25 +17,30 @@ namespace KerbalKonstructs.UI
 		LaunchSite selectedSite;
 		private SiteType editorType = SiteType.Any;
 
-		private Boolean isCareer = false;
 		private Boolean isOpen = false;
 		private float iFundsOpen = 0;
 
 		// ASH 28102014 - Needs to be bigger for filter
 		Rect windowRect = new Rect(((Screen.width - Camera.main.rect.x) / 2) + Camera.main.rect.x - 125, (Screen.height / 2 - 250), 700, 580);
 
-		public void drawSelector()
+		public Boolean isCareerGame()
 		{
 			if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
 			{
 				// disableCareerStrategyLayer is configurable in KerbalKonstructs.cfg
 				if (!KerbalKonstructs.instance.disableCareerStrategyLayer)
 				{
-					// ASH 11112014 Career strategy layer 
-					// DISABLE career strategy layer by simply commenting out the next line
-					isCareer = true;
+					return true;
 				}
+				else
+					return false;
 			}
+			else
+				return false;
+		}
+
+		public void drawSelector()
+		{
 			//Camera.main is null when first loading a scene
 			if (Camera.main != null)
 			{
@@ -114,7 +119,7 @@ namespace KerbalKonstructs.UI
 
 			foreach (LaunchSite site in sites)
 				{
-					if (isCareer)
+					if (isCareerGame())
 						GUILayout.BeginHorizontal();
 					// Light icons in the launchsite list only shown in career so only need horizontal for two elements for that mode
 					
@@ -126,11 +131,11 @@ namespace KerbalKonstructs.UI
 						// ASH Career Mode Unlocking
 						// In career the launchsite is not set by the launchsite list but rather in the launchsite description
 						// panel on the right
-						if (!isCareer)
+						if (!isCareerGame())
 							LaunchSiteManager.setLaunchSite(site);
 					}
 					GUI.enabled = true;
-					if (isCareer)
+					if (isCareerGame())
 					{
 						// if site is closed show red light
 						// if site is open show green light
@@ -166,7 +171,7 @@ namespace KerbalKonstructs.UI
 					// ASH Career Mode Unlocking
 					// In career the launchsite is not set by the launchsite list but rather in the launchsite description
 					// panel on the right
-					if (!isCareer)
+					if (!isCareerGame())
 						LaunchSiteManager.setLaunchSite(selectedSite);
 
 					// ASH 05112014 Fixes the selector centering issue on the right panel... probably
@@ -206,7 +211,7 @@ namespace KerbalKonstructs.UI
 				if (iFundsClose == 0)
 					cannotBeClosed = true;
 				
-				if (isCareer)
+				if (isCareerGame())
 				{	
 					// Determine if a site is open or closed
 					// If persistence says the site is open then isOpen = true;
@@ -285,7 +290,7 @@ namespace KerbalKonstructs.UI
 				// ASH Career Mode Unlocking
 				// In career the launchsite is not set by the launchsite list but rather in the launchsite description
 				// panel on the right
-				if (!isCareer)
+				if (!isCareerGame())
 					LaunchSiteManager.setLaunchSite(selectedSite);
 			}
 		}

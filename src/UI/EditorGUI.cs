@@ -18,9 +18,6 @@ namespace KerbalKonstructs.UI
 		private String xPos, yPos, zPos, altitude, rotation, customgroup = "";
 		private String increment = "1";
 
-		// ASH Base Founding
-		private Boolean isCareer = false;
-
 		public EditorGUI()
 		{
 			listStyle.normal.textColor = Color.white;
@@ -35,7 +32,6 @@ namespace KerbalKonstructs.UI
 
 		public void drawManager(StaticObject obj)
 		{
-			isCareer = true;
 			managerRect = GUI.Window(0xB00B1E6, managerRect, drawBaseManagerWindow, "Base Boss");
 		}
 
@@ -60,13 +56,9 @@ namespace KerbalKonstructs.UI
 		Rect toolRect = new Rect(150, 25, 300, 325);
 		Rect editorRect = new Rect(10, 25, 520, 520);
 		Rect siteEditorRect = new Rect(400, 50, 330, 350);
-		Rect managerRect = new Rect(10, 25, 800, 600);
+		Rect managerRect = new Rect(10, 25, 400, 120);
 
 		private GUIStyle listStyle = new GUIStyle();
-
-		bool showFoundations = false;
-		bool showConstruction = false;
-		bool showOperational = false;
 
 		private float fRange = 0f;
 
@@ -116,27 +108,29 @@ namespace KerbalKonstructs.UI
 
 		void drawBaseManagerWindow(int windowID)
 		{
-			GUILayout.BeginArea(new Rect(10, 30, 380, 570));
+			GUILayout.BeginArea(new Rect(10, 30, 380, 105));
+				GUILayout.Space(3);
+				
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Nearest Open Base: ", GUILayout.Width(125));
-					GUILayout.FlexibleSpace();
+					//GUILayout.FlexibleSpace();
+					GUILayout.Label(nearestBase(FlightGlobals.ActiveVessel.GetTransform().position, "Open") + " at ", GUILayout.Width(140));
 					GUI.enabled = false;
-					GUILayout.TextField(nearestBase(FlightGlobals.ActiveVessel.GetTransform().position, "Open"), GUILayout.Width(140));
-					GUILayout.Label(" at ");
-					GUILayout.TextField(fRange + "m");
+					GUILayout.TextField(" " + fRange + " ", GUILayout.Width(80));
 					GUI.enabled = true;
+					GUILayout.Label("m");
 				GUILayout.EndHorizontal();
 
 				GUILayout.Space(3);
 
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Nearest Base: ", GUILayout.Width(125));
-					GUILayout.FlexibleSpace();
+					//GUILayout.FlexibleSpace();
+					GUILayout.Label(nearestBase(FlightGlobals.ActiveVessel.GetTransform().position, "Either") + " at ", GUILayout.Width(140));
 					GUI.enabled = false;
-					GUILayout.TextField(nearestBase(FlightGlobals.ActiveVessel.GetTransform().position, "Either"), GUILayout.Width(140));
-					GUILayout.Label(" at ");
-					GUILayout.TextField(fRange + "m");
+					GUILayout.TextField(" " + fRange + " ", GUILayout.Width(80));
 					GUI.enabled = true;
+					GUILayout.Label("m");
 				GUILayout.EndHorizontal();
 			GUILayout.EndArea();
 
@@ -366,7 +360,6 @@ namespace KerbalKonstructs.UI
 		Vector2 scrollPos;
 		Boolean creating = false;
 		Boolean showLocal = false;
-		Boolean foundingBase = false;
 
 		void drawEditorWindow(int id)
 		{
