@@ -56,7 +56,7 @@ namespace KerbalKonstructs.UI
 		Rect toolRect = new Rect(150, 25, 300, 325);
 		Rect editorRect = new Rect(10, 25, 520, 520);
 		Rect siteEditorRect = new Rect(400, 50, 330, 350);
-		Rect managerRect = new Rect(10, 25, 400, 135);
+		Rect managerRect = new Rect(10, 25, 400, 375);
 
 		private GUIStyle listStyle = new GUIStyle();
 
@@ -65,13 +65,13 @@ namespace KerbalKonstructs.UI
 			string Base;
 			float Range;
 
-			GUILayout.BeginArea(new Rect(10, 30, 380, 120));
+			GUILayout.BeginArea(new Rect(10, 30, 380, 350));
 				GUILayout.Space(3);
 				
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Nearest Open Base: ", GUILayout.Width(125));
 					//GUILayout.FlexibleSpace();
-					LaunchSiteManager.getNearestBase(FlightGlobals.ActiveVessel.GetTransform().position, out Base, out Range, "Open");
+					LaunchSiteManager.getNearestOpenBase(FlightGlobals.ActiveVessel.GetTransform().position, out Base, out Range);
 					GUILayout.Label(Base + " at ", GUILayout.Width(140));
 					GUI.enabled = false;
 					GUILayout.TextField(" " + Range + " ", GUILayout.Width(80));
@@ -84,13 +84,76 @@ namespace KerbalKonstructs.UI
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Nearest Base: ", GUILayout.Width(125));
 					//GUILayout.FlexibleSpace();
-					LaunchSiteManager.getNearestBase(FlightGlobals.ActiveVessel.GetTransform().position, out Base, out Range, "Either");
+					LaunchSiteManager.getNearestBase(FlightGlobals.ActiveVessel.GetTransform().position, out Base, out Range);
 					GUILayout.Label(Base + " at ", GUILayout.Width(140));
 					GUI.enabled = false;
 					GUILayout.TextField(" " + Range + " ", GUILayout.Width(80));
 					GUI.enabled = true;
 					GUILayout.Label("m");
 				GUILayout.EndHorizontal();
+
+
+				if (Range < 2000)
+				{
+					string sClosed;
+					float fOpenCost;
+					bool bLanded = (FlightGlobals.ActiveVessel.Landed);
+					LaunchSiteManager.getSiteOpenCloseState(Base, out sClosed, out fOpenCost);
+					fOpenCost = fOpenCost / 2f;
+
+					if (bLanded && sClosed == "Closed")
+					{
+						if (GUILayout.Button("Open Base for " + fOpenCost + " Funds"))
+						{
+							double currentfunds = Funding.Instance.Funds;
+
+							if (fOpenCost > currentfunds)
+							{
+								ScreenMessages.PostScreenMessage("Insufficient funds to open this site!", 10, 0);
+							}
+							else
+							{
+								// Charge some funds
+								Funding.Instance.AddFunds(-fOpenCost, TransactionReasons.Cheating);
+
+								// Open the site - save to instance
+								LaunchSiteManager.setSiteOpenCloseState(Base, "Open");
+							}
+						}
+					}
+
+					if (bLanded && sClosed == "Open")
+					{
+						GUI.enabled = false;
+						GUILayout.Button("Base is Open");
+						GUI.enabled = true;
+					}
+
+					GUILayout.Space(2);
+					GUILayout.Box("Facilities");
+
+					scrollPos = GUILayout.BeginScrollView(scrollPos);
+						foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
+						{
+							bool isLocal = true;
+							if (obj.pqsCity.sphere == FlightGlobals.currentMainBody.pqsController)
+							{
+								var dist = Vector3.Distance(FlightGlobals.ActiveVessel.GetTransform().position, obj.gameObject.transform.position);
+								isLocal = dist < 2000f;
+							}
+							else
+								isLocal = false;
+
+							if (isLocal)
+							{
+								if (GUILayout.Button((string)obj.model.getSetting("title")))
+								{
+									// KerbalKonstructs.instance.selectObject(obj);
+								}
+							}
+						}
+					}
+				GUILayout.EndScrollView();
 
 				GUILayout.Space(2);
 

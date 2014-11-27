@@ -1,4 +1,5 @@
 ﻿using KerbalKonstructs.StaticObjects;
+using KerbalKonstructs.API;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -13,8 +14,6 @@ namespace KerbalKonstructs.LaunchSites
 	{
 		private static List<LaunchSite> launchSites = new List<LaunchSite>();
 		public static Texture defaultLaunchSiteLogo = GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/DefaultSiteLogo", false);
-		public static float fRange = 0f;
-		public static string sNearestOpenBase = "";
 
 		static LaunchSiteManager()
 		{
@@ -113,9 +112,6 @@ namespace KerbalKonstructs.LaunchSites
 				}
 			}
 			return sites;
-			
-			// ASH 28102014 Return sites, not launchSites
-			// return launchSites;
 		}
 
 		// ASH 28102014 Added handling for Category filter
@@ -142,27 +138,49 @@ namespace KerbalKonstructs.LaunchSites
 			return sites;
 		}
 
-		public static string getSiteOpenCloseState(string sSiteName)
+		// Open and close a launchsite
+		public static void setSiteOpenCloseState(string sSiteName, string sState)
 		{
-			string sOpenCloseState = "Closed";
-			List<LaunchSite> sites = new List<LaunchSite>();
-			foreach (LaunchSite site in launchSites)
+			List<LaunchSite> sites = LaunchSiteManager.getLaunchSites();
+			foreach (LaunchSite site in sites)
+			{
+				if (site.name == sSiteName)
+				{
+					site.openclosestate = sState;
+					PersistenceFile<LaunchSite>.SaveList(sites, "LAUNCHSITES", "KK");
+					return;
+				}
+			}
+		}
+
+		// Find out if a launchsite is open or closed
+		public static void getSiteOpenCloseState(string sSiteName, out string sOpenCloseState, out float fOpenCost)
+		{
+			List<LaunchSite> sites = LaunchSiteManager.getLaunchSites();
+			foreach (LaunchSite site in sites)
 			{
 				if (site.name == sSiteName)
 				{
 					sOpenCloseState = site.openclosestate;
+					fOpenCost = site.opencost;
+					return;
 				}
 			}
-			return sOpenCloseState;
+
+			sOpenCloseState = "Open";
+			fOpenCost = 0;
 		}
 
-		public static void getNearestBase(Vector3 position, out string sBase, out float flRange, string sOpenClose = "Meh")
+		public static float RangeNearestOpenBase = 0f;
+		public static string NearestOpenBase = "";
+
+		// Get the nearest open base and range to it
+		public static void getNearestOpenBase(Vector3 position, out string sBase, out float flRange)
 		{
 			SpaceCenter KSC = SpaceCenter.Instance;
 			var smallestDist = Vector3.Distance(KSC.gameObject.transform.position, position);
 			string sNearestBase = "";
 			string sOpenCloseState = "";
-			string rOpenClose = "";
 
 			List<LaunchSite> basesites = LaunchSiteManager.getLaunchSites();
 
@@ -170,10 +188,9 @@ namespace KerbalKonstructs.LaunchSites
 			{
 				sOpenCloseState = site.openclosestate;
 
-				if (sOpenCloseState == "Open" || sOpenClose == "Either")
+				if (sOpenCloseState == "Open")
 				{
 					if (site.GameObject == null) continue;
-
 					var radialposition = site.GameObject.transform.position;
 					var dist = Vector3.Distance(position, radialposition);
 
@@ -186,61 +203,89 @@ namespace KerbalKonstructs.LaunchSites
 							{
 								sNearestBase = site.name;
 								smallestDist = dist;
-								rOpenClose = site.openclosestate;
 							}
 						}
 					}
-
 				}
 			}
 
 			if (sNearestBase == "")
 			{
 				sNearestBase = "KSC";
-				rOpenClose = "Open";
 			}
 
-			fRange = (float)smallestDist;
+			RangeNearestOpenBase = (float)smallestDist;
 
+			// Air traffic control messaging
 			if (KerbalKonstructs.instance.enableATC)
 			{
-				if (sNearestBase != sNearestOpenBase)
+				if (sNearestBase != NearestOpenBase)
 				{
-					if (fRange < 50000)
+					if (RangeNearestOpenBase < 25000)
 					{
-						sNearestOpenBase = sNearestBase;
-						if (rOpenClose == "Open")
-						{
-							// you have entered ...
-							MessageSystemButton.MessageButtonColor color = MessageSystemButton.MessageButtonColor.BLUE;
-							MessageSystem.Message m = new MessageSystem.Message("KK ATC", "You have entered the airspace of " + sNearestBase + " ATC. Please keep this channel open and obey all signal lights. Thank you. " + sNearestBase + " Air Traffic Control out.", color, MessageSystemButton.ButtonIcons.MESSAGE);
-							MessageSystem.Instance.AddMessage(m);
-						}
-						else
-						{
-							MessageSystemButton.MessageButtonColor color = MessageSystemButton.MessageButtonColor.RED;
-							MessageSystem.Message m = new MessageSystem.Message("KK ATC", "This is a recorded transmission. You have entered the airspace of " + sNearestBase + " ATC. This base is currently closed and may only be used for emergencies. " + sNearestBase + " Air Traffic Control out.", color, MessageSystemButton.ButtonIcons.MESSAGE);
-							MessageSystem.Instance.AddMessage(m);
-						}
+						NearestOpenBase = sNearestBase;
+						MessageSystemButton.MessageButtonColor color = MessageSystemButton.MessageButtonColor.BLUE;
+						MessageSystem.Message m = new MessageSystem.Message("KK ATC", "You have entered the airspace of " + sNearestBase + " ATC. Please keep this channel open and obey all signal lights. Thank you. " + sNearestBase + " Air Traffic Control out.", color, MessageSystemButton.ButtonIcons.MESSAGE);
+						MessageSystem.Instance.AddMessage(m);
 					}
 					else
-						if (sNearestOpenBase != "")
+						if (NearestOpenBase != "")
 						{
-							if (rOpenClose == "Open")
-							{
-								// you have left ...
-								MessageSystemButton.MessageButtonColor color = MessageSystemButton.MessageButtonColor.GREEN;
-								MessageSystem.Message m = new MessageSystem.Message("KK ATC", "You are now leaving the airspace of " + sNearestBase + ". Safe journey. " + sNearestBase + " Air Traffic Control out.", color, MessageSystemButton.ButtonIcons.MESSAGE);
-								MessageSystem.Instance.AddMessage(m);
-							}
-
-							sNearestOpenBase = "";
+							// you have left ...
+							MessageSystemButton.MessageButtonColor color = MessageSystemButton.MessageButtonColor.GREEN;
+							MessageSystem.Message m = new MessageSystem.Message("KK ATC", "You are now leaving the airspace of " + sNearestBase + ". Safe journey. " + sNearestBase + " Air Traffic Control out.", color, MessageSystemButton.ButtonIcons.MESSAGE);
+							MessageSystem.Instance.AddMessage(m);
+							NearestOpenBase = "";
 						}
 				}
 			}
 
 			sBase = sNearestBase;
-			flRange = fRange;
+			flRange = RangeNearestOpenBase;
+		}
+
+		public static float RangeNearestBase = 0f;
+		public static string NearestBase = "";
+
+		// Get nearest base, either open or closed, and the range to it
+		public static void getNearestBase(Vector3 position, out string sBase, out float flRange)
+		{
+			SpaceCenter KSC = SpaceCenter.Instance;
+			var smallestDist = Vector3.Distance(KSC.gameObject.transform.position, position);
+			string sNearestBase = "";
+
+			List<LaunchSite> basesites = LaunchSiteManager.getLaunchSites();
+
+			foreach (LaunchSite site in basesites)
+			{
+				if (site.GameObject == null) continue;
+
+				var radialposition = site.GameObject.transform.position;
+				var dist = Vector3.Distance(position, radialposition);
+
+				if (site.name == "Runway" || site.name == "LaunchPad")
+				{ }
+				else
+				{
+					if ((float)dist < (float)smallestDist)
+					{
+						{
+							sNearestBase = site.name;
+							smallestDist = dist;
+						}
+					}
+				}
+			}
+
+			if (sNearestBase == "")
+			{
+				sNearestBase = "KSC";
+			}
+
+			RangeNearestBase = (float)smallestDist;
+
+			sBase = sNearestBase;
+			flRange = RangeNearestBase;
 		}
 
 		public static void setLaunchSite(LaunchSite site)

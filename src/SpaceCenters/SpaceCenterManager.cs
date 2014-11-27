@@ -46,8 +46,11 @@ namespace KerbalKonstructs.SpaceCenters
 			{
 				if (isCareer)
 				{
+					string OpenCloseState;
+					float OpenCost;
 					// ASH Get openclosestate of launchsite with same name as space centre
-					sOpenCloseState = LaunchSiteManager.getSiteOpenCloseState(csc.SpaceCenterName);
+					LaunchSiteManager.getSiteOpenCloseState(csc.SpaceCenterName, out OpenCloseState, out OpenCost);
+					sOpenCloseState = OpenCloseState;
 				}
 
 				float dist = Vector3.Distance(position, csc.getStaticObject().gameObject.transform.position);
