@@ -42,10 +42,10 @@ namespace KerbalKonstructs.UI
 		public void drawSelector()
 		{
 			//Camera.main is null when first loading a scene
-			if (Camera.main != null)
-			{
-				GUI.Window(0xB00B1E6, windowRect, drawSelectorWindow, "Launch Site Selector");
-			}
+			//if (Camera.main != null)
+			//{
+			windowRect = GUI.Window(0xB00B1E3, windowRect, drawSelectorWindow, "Launch Site Selector");
+			//}
 
 			if (windowRect.Contains(Event.current.mousePosition))
 			{
@@ -276,6 +276,7 @@ namespace KerbalKonstructs.UI
 					GUI.enabled = true;
 				}
 			GUILayout.EndArea();
+			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
 
 		public void setEditorType(SiteType type)

@@ -32,11 +32,14 @@ namespace KerbalKonstructs
 		private LaunchSiteSelectorGUI selector = new LaunchSiteSelectorGUI();
 		private Boolean showSelector = false;
 		private Boolean showBaseManager = false;
+		private Boolean showMapManager = false;
 		private MapIconManager mapIconManager = new MapIconManager();
+		// private MapIconManager mapSettingsManager = new MapIconManager();
 		private ApplicationLauncherButton siteSelector;
 
 		// ASH Base Boss
 		private ApplicationLauncherButton baseManager;
+		private ApplicationLauncherButton mapManager;
 
 		// Configurable variables
 		[KSPField]
@@ -173,6 +176,10 @@ namespace KerbalKonstructs
 				if (baseManager != null)
 					ApplicationLauncher.Instance.RemoveModApplication(baseManager);
 				baseManager = ApplicationLauncher.Instance.AddModApplication(onBaseManagerOn, onBaseManagerOff, doNothing, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.FLIGHT, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/BaseManagerIcon", false));
+			
+				if (mapManager != null)
+					ApplicationLauncher.Instance.RemoveModApplication(mapManager);
+				mapManager = ApplicationLauncher.Instance.AddModApplication(onMapManagerOn, onMapManagerOff, doNothing, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.MAPVIEW, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/BaseManagerIcon", false));
 			}
 		}
 
@@ -575,6 +582,9 @@ namespace KerbalKonstructs
 
 			if (MapView.MapIsEnabled)
 			{
+				if (showMapManager)
+					mapIconManager.drawManager();
+
 				mapIconManager.drawIcons();
 			}
 		}
@@ -645,6 +655,12 @@ namespace KerbalKonstructs
 			PersistenceFile<LaunchSite>.LoadList(LaunchSiteManager.AllLaunchSites, "LAUNCHSITES", "KK");
 		}
 
+		void onMapManagerOn()
+		{
+			PersistenceFile<LaunchSite>.LoadList(LaunchSiteManager.AllLaunchSites, "LAUNCHSITES", "KK");
+			showMapManager = true;
+		}
+
 		void onSiteSelectorOff()
 		{
 			showSelector = false;
@@ -656,6 +672,11 @@ namespace KerbalKonstructs
 		void onBaseManagerOff()
 		{
 			showBaseManager = false;
+		}
+
+		void onMapManagerOff()
+		{
+			showMapManager = false;
 		}
 
 		void doNothing()

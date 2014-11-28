@@ -174,6 +174,22 @@ namespace KerbalKonstructs.LaunchSites
 		public static float RangeNearestOpenBase = 0f;
 		public static string NearestOpenBase = "";
 
+		public static Boolean isCareerGame()
+		{
+			if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+			{
+				// disableCareerStrategyLayer is configurable in KerbalKonstructs.cfg
+				if (!KerbalKonstructs.instance.disableCareerStrategyLayer)
+				{
+					return true;
+				}
+				else
+					return false;
+			}
+			else
+				return false;
+		}
+
 		// Get the nearest open base and range to it
 		public static void getNearestOpenBase(Vector3 position, out string sBase, out float flRange)
 		{
@@ -187,6 +203,9 @@ namespace KerbalKonstructs.LaunchSites
 			foreach (LaunchSite site in basesites)
 			{
 				sOpenCloseState = site.openclosestate;
+
+				if (!isCareerGame())
+					sOpenCloseState = "Open";
 
 				if (sOpenCloseState == "Open")
 				{

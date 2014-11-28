@@ -18,6 +18,28 @@ namespace KerbalKonstructs.UI
 		private String xPos, yPos, zPos, altitude, rotation, customgroup = "";
 		private String increment = "1";
 
+		Vector2 scrollPos;
+		Boolean creating = false;
+		Boolean showLocal = false;
+
+		Rect toolRect = new Rect(150, 25, 300, 325);
+		Rect editorRect = new Rect(10, 25, 520, 520);
+		Rect siteEditorRect = new Rect(400, 50, 330, 350);
+		Rect managerRect = new Rect(10, 25, 400, 375);
+
+		private GUIStyle listStyle = new GUIStyle();
+
+		string siteName, siteTrans, siteDesc, siteAuthor, siteLogo;
+		SiteType siteType;
+		Vector2 descScroll;
+
+		private GUIContent[] siteTypeOptions = {
+										new GUIContent("VAB"),
+										new GUIContent("SPH"),
+										new GUIContent("ANY")
+									};
+		ComboBox siteTypeMenu;
+
 		public EditorGUI()
 		{
 			listStyle.normal.textColor = Color.white;
@@ -32,7 +54,7 @@ namespace KerbalKonstructs.UI
 
 		public void drawManager(StaticObject obj)
 		{
-			managerRect = GUI.Window(0xB00B1E6, managerRect, drawBaseManagerWindow, "Base Boss");
+			managerRect = GUI.Window(0xB00B1E2, managerRect, drawBaseManagerWindow, "Base Boss");
 		}
 
 		public void drawEditor(StaticObject obj)
@@ -53,12 +75,21 @@ namespace KerbalKonstructs.UI
 			editorRect = GUI.Window(0xB00B1E7, editorRect, drawEditorWindow, "Kerbal Konstructs Statics Editor");
 		}
 
-		Rect toolRect = new Rect(150, 25, 300, 325);
-		Rect editorRect = new Rect(10, 25, 520, 520);
-		Rect siteEditorRect = new Rect(400, 50, 330, 350);
-		Rect managerRect = new Rect(10, 25, 400, 375);
-
-		private GUIStyle listStyle = new GUIStyle();
+		public Boolean isCareerGame()
+		{
+			if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+			{
+				// disableCareerStrategyLayer is configurable in KerbalKonstructs.cfg
+				if (!KerbalKonstructs.instance.disableCareerStrategyLayer)
+				{
+					return true;
+				}
+				else
+					return false;
+			}
+			else
+				return false;
+		}
 
 		void drawBaseManagerWindow(int windowID)
 		{
@@ -67,23 +98,24 @@ namespace KerbalKonstructs.UI
 
 			GUILayout.BeginArea(new Rect(10, 30, 380, 350));
 				GUILayout.Space(3);
-				
-				GUILayout.BeginHorizontal();
-					GUILayout.Label("Nearest Open Base: ", GUILayout.Width(125));
-					//GUILayout.FlexibleSpace();
-					LaunchSiteManager.getNearestOpenBase(FlightGlobals.ActiveVessel.GetTransform().position, out Base, out Range);
-					GUILayout.Label(Base + " at ", GUILayout.Width(140));
-					GUI.enabled = false;
-					GUILayout.TextField(" " + Range + " ", GUILayout.Width(80));
-					GUI.enabled = true;
-					GUILayout.Label("m");
-				GUILayout.EndHorizontal();
 
-				GUILayout.Space(2);
+				if (isCareerGame())
+				{
+					GUILayout.BeginHorizontal();
+						GUILayout.Label("Nearest Open Base: ", GUILayout.Width(125));
+						LaunchSiteManager.getNearestOpenBase(FlightGlobals.ActiveVessel.GetTransform().position, out Base, out Range);
+						GUILayout.Label(Base + " at ", GUILayout.Width(140));
+						GUI.enabled = false;
+						GUILayout.TextField(" " + Range + " ", GUILayout.Width(80));
+						GUI.enabled = true;
+						GUILayout.Label("m");
+					GUILayout.EndHorizontal();
+
+					GUILayout.Space(2);
+				}
 
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Nearest Base: ", GUILayout.Width(125));
-					//GUILayout.FlexibleSpace();
 					LaunchSiteManager.getNearestBase(FlightGlobals.ActiveVessel.GetTransform().position, out Base, out Range);
 					GUILayout.Label(Base + " at ", GUILayout.Width(140));
 					GUI.enabled = false;
@@ -92,64 +124,67 @@ namespace KerbalKonstructs.UI
 					GUILayout.Label("m");
 				GUILayout.EndHorizontal();
 
-
-				if (Range < 2000)
+				if (isCareerGame())
 				{
-					string sClosed;
-					float fOpenCost;
-					bool bLanded = (FlightGlobals.ActiveVessel.Landed);
-					LaunchSiteManager.getSiteOpenCloseState(Base, out sClosed, out fOpenCost);
-					fOpenCost = fOpenCost / 2f;
-
-					if (bLanded && sClosed == "Closed")
+					if (Range < 2000)
 					{
-						if (GUILayout.Button("Open Base for " + fOpenCost + " Funds"))
+						string sClosed;
+						float fOpenCost;
+						bool bLanded = (FlightGlobals.ActiveVessel.Landed);
+						LaunchSiteManager.getSiteOpenCloseState(Base, out sClosed, out fOpenCost);
+						fOpenCost = fOpenCost / 2f;
+
+						if (bLanded && sClosed == "Closed")
 						{
-							double currentfunds = Funding.Instance.Funds;
-
-							if (fOpenCost > currentfunds)
+							if (GUILayout.Button("Open Base for " + fOpenCost + " Funds"))
 							{
-								ScreenMessages.PostScreenMessage("Insufficient funds to open this site!", 10, 0);
-							}
-							else
-							{
-								// Charge some funds
-								Funding.Instance.AddFunds(-fOpenCost, TransactionReasons.Cheating);
+								double currentfunds = Funding.Instance.Funds;
 
-								// Open the site - save to instance
-								LaunchSiteManager.setSiteOpenCloseState(Base, "Open");
+								if (fOpenCost > currentfunds)
+								{
+									ScreenMessages.PostScreenMessage("Insufficient funds to open this site!", 10, 0);
+								}
+								else
+								{
+									// Charge some funds
+									Funding.Instance.AddFunds(-fOpenCost, TransactionReasons.Cheating);
+
+									// Open the site - save to instance
+									LaunchSiteManager.setSiteOpenCloseState(Base, "Open");
+								}
 							}
 						}
-					}
 
-					if (bLanded && sClosed == "Open")
-					{
-						GUI.enabled = false;
-						GUILayout.Button("Base is Open");
-						GUI.enabled = true;
-					}
-
-					GUILayout.Space(2);
-					GUILayout.Box("Facilities");
-
-					scrollPos = GUILayout.BeginScrollView(scrollPos);
-						foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
+						if (bLanded && sClosed == "Open")
 						{
-							bool isLocal = true;
-							if (obj.pqsCity.sphere == FlightGlobals.currentMainBody.pqsController)
-							{
-								var dist = Vector3.Distance(FlightGlobals.ActiveVessel.GetTransform().position, obj.gameObject.transform.position);
-								isLocal = dist < 2000f;
-							}
-							else
-								isLocal = false;
+							GUI.enabled = false;
+							GUILayout.Button("Base is Open");
+							GUI.enabled = true;
+						}
 
-							if (isLocal)
+						GUILayout.Space(2);
+					}
+				}
+										
+				GUILayout.Box("Facilities");
+
+				scrollPos = GUILayout.BeginScrollView(scrollPos);
+					foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
+					{
+						bool isLocal = true;
+						if (obj.pqsCity.sphere == FlightGlobals.currentMainBody.pqsController)
+						{
+							var dist = Vector3.Distance(FlightGlobals.ActiveVessel.GetTransform().position, obj.gameObject.transform.position);
+							isLocal = dist < 2000f;
+						}
+						else
+							isLocal = false;
+
+						if (isLocal)
+						{
+							if (GUILayout.Button((string)obj.model.getSetting("title")))
 							{
-								if (GUILayout.Button((string)obj.model.getSetting("title")))
-								{
-									// KerbalKonstructs.instance.selectObject(obj);
-								}
+								// KerbalKonstructs.instance.selectObject(obj);
 							}
 						}
 					}
@@ -160,6 +195,8 @@ namespace KerbalKonstructs.UI
 				GUILayout.BeginHorizontal();
 					KerbalKonstructs.instance.enableATC = GUILayout.Toggle(KerbalKonstructs.instance.enableATC, "Enable ATC");
 				GUILayout.EndHorizontal();
+
+				GUILayout.Space(5);
 			GUILayout.EndArea();
 
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
@@ -385,10 +422,6 @@ namespace KerbalKonstructs.UI
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
 
-		Vector2 scrollPos;
-		Boolean creating = false;
-		Boolean showLocal = false;
-
 		void drawEditorWindow(int id)
 		{
 			// ASH 07112014 Layout changes
@@ -508,27 +541,18 @@ namespace KerbalKonstructs.UI
 			if (sGroup == "")
 				return;
 
-			// TODO ASH Did you forget about those off-Kerbin instances again?
 			foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
 			{
-				var dist = Vector3.Distance(FlightGlobals.ActiveVessel.GetTransform().position, obj.gameObject.transform.position);
-				if (dist < 10000f)
+				if (obj.pqsCity.sphere == FlightGlobals.currentMainBody.pqsController)
 				{
-					KerbalKonstructs.instance.getStaticDB().changeGroup(obj, sGroup);
-				}					
+					var dist = Vector3.Distance(FlightGlobals.ActiveVessel.GetTransform().position, obj.gameObject.transform.position);
+					if (dist < 10000f)
+					{
+						KerbalKonstructs.instance.getStaticDB().changeGroup(obj, sGroup);
+					}
+				}
 			}
 		}
-
-		string siteName, siteTrans, siteDesc, siteAuthor, siteLogo;
-		SiteType siteType;
-		Vector2 descScroll;
-
-		private GUIContent[] siteTypeOptions = {
-										new GUIContent("VAB"),
-										new GUIContent("SPH"),
-										new GUIContent("ANY")
-									};
-		ComboBox siteTypeMenu;
 
 		void drawSiteEditorWindow(int id)
 		{
