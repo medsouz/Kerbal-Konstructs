@@ -32,7 +32,7 @@ namespace KerbalKonstructs.StaticObjects
 		{
 			if (settings.ContainsKey(setting))
 				return settings[setting];
-			Debug.Log("Setting " + setting + " not found in instance of model " + model.config);
+			Debug.Log("KK: Setting " + setting + " not found in instance of model " + model.config);
 			object defaultValue = KKAPI.getInstanceSettings()[setting].getDefaultValue();
 			settings.Add(setting, defaultValue);
 			return defaultValue;

@@ -29,7 +29,7 @@ namespace KerbalKonstructs.LaunchSites
 		{
 			if (obj.settings.ContainsKey("LaunchSiteName") && obj.gameObject.transform.Find((string) obj.getSetting("LaunchPadTransform")) != null)
 			{
-				Debug.Log("KK: Creating launch site " + obj.getSetting("LaunchSiteName"));
+				// Debug.Log("KK: Creating launch site " + obj.getSetting("LaunchSiteName"));
 				obj.gameObject.transform.name = (string) obj.getSetting("LaunchSiteName");
 				obj.gameObject.name = (string) obj.getSetting("LaunchSiteName");
 
@@ -59,17 +59,23 @@ namespace KerbalKonstructs.LaunchSites
 							newFacilities[newFacilities.Length - 1] = newFacility;
 							fi.SetValue(PSystemSetup.Instance, newFacilities);
 							facilities = newFacilities;
-							Texture logo = defaultLaunchSiteLogo;
+							
+							Texture logo = null;
 							Texture icon = null;
-							if(obj.settings.ContainsKey("LaunchSiteLogo"))
+
+							if (obj.settings.ContainsKey("LaunchSiteLogo"))
 								logo = GameDatabase.Instance.GetTexture(obj.model.path + "/" + obj.getSetting("LaunchSiteLogo"), false);
+
+							if (logo == null)
+								logo = defaultLaunchSiteLogo;
+
 							if(obj.settings.ContainsKey("LaunchSiteIcon"))
 								icon = GameDatabase.Instance.GetTexture(obj.model.path + "/" + obj.getSetting("LaunchSiteIcon"), false);
 							
 							// TODO This is still hard-code and needs to use the API properly
 							// ASH 12112014 - Added career open close costs
 							launchSites.Add(new LaunchSite((string)obj.getSetting("LaunchSiteName"), (obj.settings.ContainsKey("LaunchSiteAuthor")) ? (string)obj.getSetting("LaunchSiteAuthor") : (string)obj.model.getSetting("author"), (SiteType)obj.getSetting("LaunchSiteType"), logo, icon, (string)obj.getSetting("LaunchSiteDescription"), (string)obj.getSetting("Category"), (float)obj.getSetting("OpenCost"), (float)obj.getSetting("CloseValue"), "Closed", /*(Vector3)obj.getSetting("RadialPosition"), */obj.gameObject));
-							Debug.Log("KK: Created launch site \"" + newFacility.name + "\" with transform " + obj.getSetting("LaunchSiteName") + "/" + obj.getSetting("LaunchPadTransform"));
+							// Debug.Log("KK: Created launch site \"" + newFacility.name + "\" with transform " + obj.getSetting("LaunchSiteName") + "/" + obj.getSetting("LaunchPadTransform"));
 						}
 						else
 						{

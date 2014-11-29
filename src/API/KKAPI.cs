@@ -10,6 +10,7 @@ namespace KerbalKonstructs.API
 		//Static object config settings
 		private static Dictionary<string, IConfigItem> instanceSettings = new Dictionary<string, IConfigItem>();
 		private static Dictionary<string, IConfigItem> modelSettings = new Dictionary<string, IConfigItem>();
+		private static Dictionary<string, IConfigItem> launchsiteSettings = new Dictionary<string, IConfigItem>();
 
 		public static void addInstanceSetting(string name, IConfigItem conf)
 		{
@@ -21,6 +22,11 @@ namespace KerbalKonstructs.API
 			modelSettings.Add(name, conf);
 		}
 
+		public static void addLaunchsiteSetting(string name, IConfigItem conf)
+		{
+			launchsiteSettings.Add(name, conf);
+		}
+
 		public static Dictionary<string, IConfigItem> getInstanceSettings()
 		{
 			return instanceSettings;
@@ -29,6 +35,11 @@ namespace KerbalKonstructs.API
 		public static Dictionary<string, IConfigItem> getModelSettings()
 		{
 			return modelSettings;
+		}
+
+		public static Dictionary<string, IConfigItem> getLaunchsiteSettings()
+		{
+			return launchsiteSettings;
 		}
 
 		public static Dictionary<string, object> loadConfig(ConfigNode cfgNode, Dictionary<string, IConfigItem> kkConfig)

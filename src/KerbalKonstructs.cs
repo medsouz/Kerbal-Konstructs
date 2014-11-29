@@ -19,43 +19,41 @@ namespace KerbalKonstructs
 	{
 		public static KerbalKonstructs instance;
 		public static string installDir = AssemblyLoader.loadedAssemblies.GetPathByType(typeof(KerbalKonstructs));
-
-		private CelestialBody currentBody;
 		public StaticObject selectedObject;
-
+		
+		private CelestialBody currentBody;
 		private StaticDatabase staticDB = new StaticDatabase();
-
 		private CameraController camControl = new CameraController();
 		private EditorGUI editor = new EditorGUI();
 		private EditorGUI manager = new EditorGUI();
-		private Boolean showEditor = false;
 		private LaunchSiteSelectorGUI selector = new LaunchSiteSelectorGUI();
+		private MapIconManager mapIconManager = new MapIconManager();
+
+		// Show toggles
+		private Boolean showEditor = false;
 		private Boolean showSelector = false;
 		private Boolean showBaseManager = false;
 		private Boolean showMapManager = false;
-		private MapIconManager mapIconManager = new MapIconManager();
-		// private MapIconManager mapSettingsManager = new MapIconManager();
-		private ApplicationLauncherButton siteSelector;
 
-		// ASH Base Boss
+		// App Buttons
+		private ApplicationLauncherButton siteSelector;
 		private ApplicationLauncherButton baseManager;
 		private ApplicationLauncherButton mapManager;
 
 		// Configurable variables
 		[KSPField]
 		public Boolean launchFromAnySite = false;
-
-		// ASH Configurable toggle for career strategy layer
 		[KSPField]
 		public Boolean disableCareerStrategyLayer = false;
-
 		[KSPField]
 		public Boolean enableATC = true;
 
 		void Awake()
 		{
 			instance = this;
+			Debug.Log("KK: Awake");
 
+			// Game Event Additions
 			GameEvents.onDominantBodyChange.Add(onDominantBodyChange);
 			GameEvents.onLevelWasLoaded.Add(onLevelWasLoaded);
 			GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
@@ -63,54 +61,78 @@ namespace KerbalKonstructs
 			GameEvents.OnFundsChanged.Add(OnDoshChanged);
 			GameEvents.onVesselRecovered.Add(OnVesselRecovered);
 
+			// Model API
 			KKAPI.addModelSetting("mesh", new ConfigFile());
 			ConfigGenericString authorConfig = new ConfigGenericString();
 			authorConfig.setDefaultValue("Unknown");
 			KKAPI.addModelSetting("author", authorConfig);
 			KKAPI.addModelSetting("DefaultLaunchPadTransform", new ConfigGenericString());
-			
-			// ASH Need the title
 			KKAPI.addModelSetting("title", new ConfigGenericString());
-			// Need Category and Cost
 			KKAPI.addModelSetting("category", new ConfigGenericString());
 			KKAPI.addModelSetting("cost", new ConfigFloat());
 
-			KKAPI.addInstanceSetting("CelestialBody", new ConfigCelestialBody());
-			KKAPI.addInstanceSetting("RadialPosition", new ConfigVector3());
-			KKAPI.addInstanceSetting("Orientation", new ConfigVector3());
-			KKAPI.addInstanceSetting("RadiusOffset", new ConfigFloat());
-			KKAPI.addInstanceSetting("RotationAngle", new ConfigFloat());
-			ConfigFloat visibilityConfig = new ConfigFloat();
-			visibilityConfig.setDefaultValue(25000f);
-			KKAPI.addInstanceSetting("VisibilityRange", visibilityConfig);
-			KKAPI.addInstanceSetting("LaunchSiteName", new ConfigGenericString());
-			KKAPI.addInstanceSetting("LaunchPadTransform", new ConfigGenericString());
-			KKAPI.addInstanceSetting("LaunchSiteAuthor", new ConfigGenericString());
-			ConfigGenericString groupConfig = new ConfigGenericString();
-			groupConfig.setDefaultValue("Ungrouped");
-			KKAPI.addInstanceSetting("Group", groupConfig);
-			ConfigGenericString descriptionConfig = new ConfigGenericString();
-			descriptionConfig.setDefaultValue("No description available");
-			KKAPI.addInstanceSetting("LaunchSiteDescription", descriptionConfig);
-			KKAPI.addInstanceSetting("LaunchSiteLogo", new ConfigGenericString());
-			KKAPI.addInstanceSetting("LaunchSiteIcon", new ConfigGenericString());
-			KKAPI.addInstanceSetting("LaunchSiteType", new ConfigSiteType());
+			// START Instance API ******			
+				// Position
+				KKAPI.addInstanceSetting("CelestialBody", new ConfigCelestialBody());
+				KKAPI.addInstanceSetting("RadialPosition", new ConfigVector3());
+				KKAPI.addInstanceSetting("Orientation", new ConfigVector3());
+				KKAPI.addInstanceSetting("RadiusOffset", new ConfigFloat());
+				KKAPI.addInstanceSetting("RotationAngle", new ConfigFloat());
 
-			// ASH 28102014
-			ConfigGenericString category = new ConfigGenericString();
-			category.setDefaultValue("Other");
-			KKAPI.addInstanceSetting("Category", category);
+				// Visibility and Grouping
+				ConfigFloat visibilityConfig = new ConfigFloat();
+				visibilityConfig.setDefaultValue(25000f);
+				KKAPI.addInstanceSetting("VisibilityRange", visibilityConfig);
+				ConfigGenericString groupConfig = new ConfigGenericString();
+				groupConfig.setDefaultValue("Ungrouped");
+				KKAPI.addInstanceSetting("Group", groupConfig);
 
-			// ASH Career Strategy additions to API
-			ConfigFloat openCost = new ConfigFloat();
-			openCost.setDefaultValue(0f);
-			KKAPI.addInstanceSetting("OpenCost", openCost);
-			ConfigFloat closeValue = new ConfigFloat();
-			closeValue.setDefaultValue(0f);
-			KKAPI.addInstanceSetting("CloseValue", closeValue);
-			ConfigGenericString opencloseState = new ConfigGenericString();
-			opencloseState.setDefaultValue("Closed");
-			KKAPI.addInstanceSetting("OpenCloseState", opencloseState);
+				// Launchsite
+				KKAPI.addInstanceSetting("LaunchSiteName", new ConfigGenericString());
+				KKAPI.addInstanceSetting("LaunchPadTransform", new ConfigGenericString());
+				KKAPI.addInstanceSetting("LaunchSiteAuthor", new ConfigGenericString());
+				ConfigGenericString descriptionConfig = new ConfigGenericString();
+				descriptionConfig.setDefaultValue("No description available");
+				KKAPI.addInstanceSetting("LaunchSiteDescription", descriptionConfig);
+				KKAPI.addInstanceSetting("LaunchSiteLogo", new ConfigGenericString());
+				KKAPI.addInstanceSetting("LaunchSiteIcon", new ConfigGenericString());
+				KKAPI.addInstanceSetting("LaunchSiteType", new ConfigSiteType());
+				ConfigGenericString category = new ConfigGenericString();
+				category.setDefaultValue("Other");
+				KKAPI.addInstanceSetting("Category", category);
+
+				// Career Mode Strategy
+				ConfigFloat openCost = new ConfigFloat();
+				openCost.setDefaultValue(0f);
+				KKAPI.addInstanceSetting("OpenCost", openCost);
+				ConfigFloat closeValue = new ConfigFloat();
+				closeValue.setDefaultValue(0f);
+				KKAPI.addInstanceSetting("CloseValue", closeValue);
+				ConfigGenericString opencloseState = new ConfigGenericString();
+				opencloseState.setDefaultValue("Closed");
+				KKAPI.addInstanceSetting("OpenCloseState", opencloseState);
+
+				// Facility Ratings
+				KKAPI.addInstanceSetting("StaffMax", new ConfigFloat());
+				KKAPI.addInstanceSetting("StaffCurrent", new ConfigFloat());
+				KKAPI.addInstanceSetting("LqFMax", new ConfigFloat());
+				KKAPI.addInstanceSetting("LqFCurrent", new ConfigFloat());
+				KKAPI.addInstanceSetting("OxFMax", new ConfigFloat());
+				KKAPI.addInstanceSetting("OxFCurrent", new ConfigFloat());
+				KKAPI.addInstanceSetting("MoFMax", new ConfigFloat());
+				KKAPI.addInstanceSetting("MoFCurrent", new ConfigFloat());
+				KKAPI.addInstanceSetting("ScienceOMax", new ConfigFloat());
+				KKAPI.addInstanceSetting("ScienceOCurrent", new ConfigFloat());
+				KKAPI.addInstanceSetting("RepOMax", new ConfigFloat());
+				KKAPI.addInstanceSetting("RepOCurrent", new ConfigFloat());
+				KKAPI.addInstanceSetting("FundsOMax", new ConfigFloat());
+				KKAPI.addInstanceSetting("FundsOCurrent", new ConfigFloat());
+				KKAPI.addInstanceSetting("RecoveryBMax", new ConfigFloat());
+				KKAPI.addInstanceSetting("RecoveryBCurrent", new ConfigFloat());
+				KKAPI.addInstanceSetting("LaunchBMax", new ConfigFloat());
+				KKAPI.addInstanceSetting("LaunchBCurrent", new ConfigFloat());
+
+			// END Instance API ******
 
 			SpaceCenterManager.setKSC();
 
@@ -136,7 +158,7 @@ namespace KerbalKonstructs
 
 		void OnDoshChanged(double amount, TransactionReasons reason)
 		{
-			Debug.Log("KK: Funds changed - " + amount + " because " + reason);
+			// Debug.Log("KK: Funds changed - " + amount + " because " + reason);
 		}
 
 		void OnVesselRecoveryRequested(Vessel data)
@@ -154,11 +176,12 @@ namespace KerbalKonstructs
 		void OnVesselRecovered(ProtoVessel vessel)
 		{
 			if (vessel == null)
-				Debug.Log("KK: onVesselRecovered vessel was null but we don't care.");
+				Debug.Log("KK: onVesselRecovered vessel was null but we don't care");
 
 			if (CareerStrategyEnabled(HighLogic.CurrentGame))
 			{
 				// Put the KSC back as the Space Centre
+				Debug.Log("KK: Resetting SpaceCenter to KSC");
 				SpaceCenter.Instance = SpaceCenterManager.KSC;
 			}
 		}
@@ -167,19 +190,25 @@ namespace KerbalKonstructs
 		{
 			if (ApplicationLauncher.Ready)
 			{
+				bool vis;
 				// Just keep adding the button whenever the ApplicationLauncher is added to prevent it from disappearing, this is ineffecient but I don't care enough to come up with a better method.			
-				if (siteSelector != null)
-					ApplicationLauncher.Instance.RemoveModApplication(siteSelector);
-				siteSelector = ApplicationLauncher.Instance.AddModApplication(onSiteSelectorOn, onSiteSelectorOff, onSiteSelectorOnHover, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/SiteToolbarIcon", false));
+				// if (siteSelector != null)
+				//	ApplicationLauncher.Instance.RemoveModApplication(siteSelector);
+				
+				if (siteSelector == null || !ApplicationLauncher.Instance.Contains(siteSelector, out vis))				
+					siteSelector = ApplicationLauncher.Instance.AddModApplication(onSiteSelectorOn, onSiteSelectorOff, onSiteSelectorOnHover, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/SiteToolbarIcon", false));
 			
-				// ASH Base Manager
-				if (baseManager != null)
-					ApplicationLauncher.Instance.RemoveModApplication(baseManager);
-				baseManager = ApplicationLauncher.Instance.AddModApplication(onBaseManagerOn, onBaseManagerOff, doNothing, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.FLIGHT, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/BaseManagerIcon", false));
+				// if (baseManager != null)
+				//	ApplicationLauncher.Instance.RemoveModApplication(baseManager);
+
+				if (baseManager == null || !ApplicationLauncher.Instance.Contains(baseManager, out vis))				
+					baseManager = ApplicationLauncher.Instance.AddModApplication(onBaseManagerOn, onBaseManagerOff, doNothing, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.FLIGHT, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/BaseManagerIcon", false));
 			
-				if (mapManager != null)
-					ApplicationLauncher.Instance.RemoveModApplication(mapManager);
-				mapManager = ApplicationLauncher.Instance.AddModApplication(onMapManagerOn, onMapManagerOff, doNothing, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.MAPVIEW, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/BaseManagerIcon", false));
+				// if (mapManager != null)
+				//	ApplicationLauncher.Instance.RemoveModApplication(mapManager);
+
+				if (mapManager == null || !ApplicationLauncher.Instance.Contains(mapManager, out vis))
+					mapManager = ApplicationLauncher.Instance.AddModApplication(onMapManagerOn, onMapManagerOff, doNothing, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.MAPVIEW, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/BaseManagerIcon", false));
 			}
 		}
 
@@ -314,11 +343,17 @@ namespace KerbalKonstructs
 
 				foreach (ConfigNode ins in conf.config.GetNodes("Instances"))
 				{
-					Debug.Log("KK: Loading models");
+					// Debug.Log("KK: Loading models");
 					StaticObject obj = new StaticObject();
 					obj.model = model;
 					obj.gameObject = GameDatabase.Instance.GetModel(model.path + "/" + model.getSetting("mesh"));
-					Debug.Log("KK: mesh is " + (string)model.getSetting("mesh"));
+
+					if (obj.gameObject == null)
+					{
+						Debug.Log("KK: Could not find " + model.getSetting("mesh") + ".mu! Did the modder forget to include it or did you actually install it?");
+						continue;
+					}
+					// Debug.Log("KK: mesh is " + (string)model.getSetting("mesh"));
 
 					obj.settings = KKAPI.loadConfig(ins, KKAPI.getInstanceSettings());
 
@@ -331,7 +366,7 @@ namespace KerbalKonstructs
 						}
 						else
 						{
-							Debug.Log("Launch site is missing a transform. Defaulting to " + obj.getSetting("LaunchSiteName") + "_spawn...");
+							Debug.Log("KK: Launch site is missing a transform. Defaulting to " + obj.getSetting("LaunchSiteName") + "_spawn...");
 							
 							if (obj.gameObject.transform.Find(obj.getSetting("LaunchSiteName") + "_spawn") != null)
 							{
@@ -339,17 +374,17 @@ namespace KerbalKonstructs
 							}
 							else
 							{
-								Debug.Log("FAILED: " + obj.getSetting("LaunchSiteName") + "_spawn does not exist! Attempting to use any transform with _spawn in the name.");
+								Debug.Log("KK: FAILED: " + obj.getSetting("LaunchSiteName") + "_spawn does not exist! Attempting to use any transform with _spawn in the name.");
 								Transform lastResort = obj.gameObject.transform.Cast<Transform>().FirstOrDefault(trans => trans.name.EndsWith("_spawn"));
 								
 								if (lastResort != null)
 								{
-									Debug.Log("Using " + lastResort.name + " as launchpad transform");
+									Debug.Log("KK: Using " + lastResort.name + " as launchpad transform");
 									obj.settings.Add("LaunchPadTransform", lastResort.name);
 								}
 								else
 								{
-									Debug.Log("All attempts at finding a launchpad transform have failed (╯°□°）╯︵ ┻━┻");
+									Debug.Log("KK: All attempts at finding a launchpad transform have failed (╯°□°）╯︵ ┻━┻");
 								}
 							}
 						}
