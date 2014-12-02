@@ -184,7 +184,7 @@ namespace KerbalKonstructs.UI
 						{
 							if (GUILayout.Button((string)obj.model.getSetting("title")))
 							{
-								// KerbalKonstructs.instance.selectObject(obj);
+								KerbalKonstructs.instance.selectObject(obj, false);
 							}
 						}
 					}

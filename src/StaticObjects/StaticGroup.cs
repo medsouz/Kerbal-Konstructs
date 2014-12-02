@@ -82,6 +82,7 @@ namespace KerbalKonstructs.StaticObjects
 					// What if SetActive isn't actually properly activating children?
 					Transform[] gameObjectList = obj.gameObject.GetComponentsInChildren<Transform>(true);
 					List<GameObject> rendererList = (from t in gameObjectList where t.gameObject.renderer != null select t.gameObject).ToList();
+					
 					foreach (GameObject renderer in rendererList)
 					{
 						// Debug.Log("KK: Child activeself is " + renderer.activeSelf);

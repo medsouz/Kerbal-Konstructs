@@ -171,8 +171,8 @@ namespace KerbalKonstructs.UI
 					// ASH Career Mode Unlocking
 					// In career the launchsite is not set by the launchsite list but rather in the launchsite description
 					// panel on the right
-					if (!isCareerGame())
-						LaunchSiteManager.setLaunchSite(selectedSite);
+					// if (!isCareerGame())
+					LaunchSiteManager.setLaunchSite(selectedSite);
 
 					// ASH 05112014 Fixes the selector centering issue on the right panel... probably
 					drawRightSelectorWindow();
@@ -291,8 +291,8 @@ namespace KerbalKonstructs.UI
 				// ASH Career Mode Unlocking
 				// In career the launchsite is not set by the launchsite list but rather in the launchsite description
 				// panel on the right
-				if (!isCareerGame())
-					LaunchSiteManager.setLaunchSite(selectedSite);
+				// if (!isCareerGame())
+				LaunchSiteManager.setLaunchSite(selectedSite);
 			}
 		}
 		

@@ -20,7 +20,8 @@ namespace KerbalKonstructs
 		public static KerbalKonstructs instance;
 		public static string installDir = AssemblyLoader.loadedAssemblies.GetPathByType(typeof(KerbalKonstructs));
 		public StaticObject selectedObject;
-		
+
+		private Boolean atMainMenu = false;
 		private CelestialBody currentBody;
 		private StaticDatabase staticDB = new StaticDatabase();
 		private CameraController camControl = new CameraController();
@@ -111,6 +112,12 @@ namespace KerbalKonstructs
 				ConfigGenericString opencloseState = new ConfigGenericString();
 				opencloseState.setDefaultValue("Closed");
 				KKAPI.addInstanceSetting("OpenCloseState", opencloseState);
+				
+				// Facility Unique ID and Role
+				KKAPI.addInstanceSetting("FacilityUID", new ConfigGenericString());
+				ConfigGenericString facilityrole = new ConfigGenericString();
+				facilityrole.setDefaultValue("None");
+				KKAPI.addInstanceSetting("FacilityRole", facilityrole);
 
 				// Facility Ratings
 				KKAPI.addInstanceSetting("StaffMax", new ConfigFloat());
@@ -191,21 +198,12 @@ namespace KerbalKonstructs
 			if (ApplicationLauncher.Ready)
 			{
 				bool vis;
-				// Just keep adding the button whenever the ApplicationLauncher is added to prevent it from disappearing, this is ineffecient but I don't care enough to come up with a better method.			
-				// if (siteSelector != null)
-				//	ApplicationLauncher.Instance.RemoveModApplication(siteSelector);
 				
 				if (siteSelector == null || !ApplicationLauncher.Instance.Contains(siteSelector, out vis))				
 					siteSelector = ApplicationLauncher.Instance.AddModApplication(onSiteSelectorOn, onSiteSelectorOff, onSiteSelectorOnHover, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.SPH | ApplicationLauncher.AppScenes.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/SiteToolbarIcon", false));
-			
-				// if (baseManager != null)
-				//	ApplicationLauncher.Instance.RemoveModApplication(baseManager);
 
 				if (baseManager == null || !ApplicationLauncher.Instance.Contains(baseManager, out vis))				
 					baseManager = ApplicationLauncher.Instance.AddModApplication(onBaseManagerOn, onBaseManagerOff, doNothing, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.FLIGHT, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/BaseManagerIcon", false));
-			
-				// if (mapManager != null)
-				//	ApplicationLauncher.Instance.RemoveModApplication(mapManager);
 
 				if (mapManager == null || !ApplicationLauncher.Instance.Contains(mapManager, out vis))
 					mapManager = ApplicationLauncher.Instance.AddModApplication(onMapManagerOn, onMapManagerOff, doNothing, doNothing, doNothing, doNothing, ApplicationLauncher.AppScenes.TRACKSTATION | ApplicationLauncher.AppScenes.MAPVIEW, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/BaseManagerIcon", false));
@@ -220,8 +218,7 @@ namespace KerbalKonstructs
 
 		void onLevelWasLoaded(GameScenes data)
 		{
-			// ASH 04112014 Likely responsible for camera locks in the flight and space centre scenes
-			InputLockManager.RemoveControlLock("KKEditorLock");
+			bool something = true;
 			
 			if (selectedObject != null)
 			{
@@ -230,11 +227,11 @@ namespace KerbalKonstructs
 				camControl.active = false;
 			}
 
-			bool something = true;
-
-			// ASH 01112014 Toggle on and off for the flight scene only
+			// ASH 01112014 Toggle invoking of updateCache on and off for the flight scene only
 			if (data.Equals(GameScenes.FLIGHT))
 			{
+				// ASH 04112014 Likely responsible for camera locks in the flight and space centre scenes
+				InputLockManager.RemoveControlLock("KKEditorLock");
 				updateCache();
 				InvokeRepeating("updateCache", 0, 1);
 				something = false;
@@ -246,9 +243,27 @@ namespace KerbalKonstructs
 
 			if (data.Equals(GameScenes.SPACECENTER))
 			{
+				// ASH 04112014 Likely responsible for camera locks in the flight and space centre scenes
+				InputLockManager.RemoveControlLock("KKEditorLock");
 				currentBody = KKAPI.getCelestialBody("Kerbin");
 				staticDB.onBodyChanged(KKAPI.getCelestialBody("Kerbin"));
 				updateCache();
+
+				if (CareerStrategyEnabled(HighLogic.CurrentGame))
+				{
+					Debug.Log("KK: Load launchsite openclose states for career game");
+					PersistenceFile<LaunchSite>.LoadList(LaunchSiteManager.AllLaunchSites, "LAUNCHSITES", "KK");
+				}
+				
+				something = false;
+			}
+
+			if (data.Equals(GameScenes.MAINMENU))
+			{
+				// Close all the launchsite objects
+				Debug.Log("KK: Closing all launchsites");
+				LaunchSiteManager.setAllLaunchsitesClosed();
+				atMainMenu = true;
 				something = false;
 			}
 			
@@ -257,13 +272,26 @@ namespace KerbalKonstructs
 				// Prevent abuse if selector left open when switching to from VAB and SPH
 				selector.Close();
 
+				// Default selected launchsite when switching between save games
 				switch (data)
 				{
 					case GameScenes.SPH:
 						selector.setEditorType(SiteType.SPH);
+						if (atMainMenu)
+						{
+							Debug.Log("KK: First visit to SPH");
+							LaunchSiteManager.setLaunchSite("Runway");
+							atMainMenu = false;
+						}
 						break;
 					case GameScenes.EDITOR:
 						selector.setEditorType(SiteType.VAB);
+						if (atMainMenu)
+						{
+							Debug.Log("KK: First visit to VAB");
+							LaunchSiteManager.setLaunchSite("LaunchPad");
+							atMainMenu = false;
+						}
 						break;
 					default:
 						selector.setEditorType(SiteType.Any);
@@ -296,13 +324,20 @@ namespace KerbalKonstructs
 				{
 					playerPos = FlightGlobals.ActiveVessel.transform.position;
 				}
-				else if (Camera.main != null) // Camera.main goes null when switching scenes
+				else if (Camera.main != null)
 				{
-					// HACKY: if there is no vessel use the camera, this could cause some issues
 					playerPos = Camera.main.transform.position;
+				}
+				else
+				{
+					Debug.Log("KK: KerbalKonstructs.updateCache could not determine playerPos. All hell now happens.");
 				}
 
 				staticDB.updateCache(playerPos);
+			}
+			else
+			{
+				Debug.Log("KK: KerbalKonstructs.updateCache not HighLogic.LoadedSceneIsGame. Why is this an if?");
 			}
 		}
 
@@ -350,7 +385,7 @@ namespace KerbalKonstructs
 
 					if (obj.gameObject == null)
 					{
-						Debug.Log("KK: Could not find " + model.getSetting("mesh") + ".mu! Did the modder forget to include it or did you actually install it?");
+						Debug.Log("KK: Could not find " + model.getSetting("mesh") + ".mu! Did the mod forget to include it or did you actually install it?");
 						continue;
 					}
 					// Debug.Log("KK: mesh is " + (string)model.getSetting("mesh"));
@@ -384,7 +419,7 @@ namespace KerbalKonstructs
 								}
 								else
 								{
-									Debug.Log("KK: All attempts at finding a launchpad transform have failed (╯°□°）╯︵ ┻━┻");
+									Debug.Log("KK: All attempts at finding a launchpad transform have failed (╯°□°）╯︵ ┻━┻ This static isn't configured for KK properly. Tell the modder.");
 								}
 							}
 						}
@@ -422,7 +457,7 @@ namespace KerbalKonstructs
 				}
 
 				staticNode.AddNode(modelConfig);
-				staticNode.Save(KSPUtil.ApplicationRootPath + "GameData/" + model.configPath, "Generated by Kerbal Konstructs - https://github.com/medsouz/Kerbal-Konstructs");
+				staticNode.Save(KSPUtil.ApplicationRootPath + "GameData/" + model.configPath, "Generated by Kerbal Konstructs");
 			}
 		}
 
@@ -440,12 +475,20 @@ namespace KerbalKonstructs
 				selectObject(obj);
 			}
 
+			float objvisibleRange = (float)obj.getSetting("VisibilityRange");
+			if (objvisibleRange < 1)
+			{
+				objvisibleRange = 25000f;
+				Debug.Log("KK: Object had no VisibilityRange set. Defaulting to 25000m");
+			}
+
 			PQSCity.LODRange range = new PQSCity.LODRange
 			{
 				renderers = rendererList.ToArray(),
 				objects = new GameObject[0],
-				visibleRange = (float)obj.getSetting("VisibilityRange")
+				visibleRange = objvisibleRange
 			};
+
 			obj.pqsCity = obj.gameObject.AddComponent<PQSCity>();
 			obj.pqsCity.lod = new[] { range };
 			obj.pqsCity.frameDelta = 1; //Unknown
@@ -479,13 +522,13 @@ namespace KerbalKonstructs
 						}
 						else
 						{
-							Debug.Log("WARNING: Field " + fieldName + " does not exist in " + module.moduleClassname);
+							Debug.Log("KK: WARNING: Field " + fieldName + " does not exist in " + module.moduleClassname);
 						}
 					}
 				}
 				else
 				{
-					Debug.Log("WARNING: Module " + module.moduleClassname + " could not be loaded in " + obj.gameObject.name);
+					Debug.Log("KK: WARNING: Module " + module.moduleClassname + " could not be loaded in " + obj.gameObject.name);
 				}
 			}
 
@@ -514,7 +557,6 @@ namespace KerbalKonstructs
 			InputLockManager.RemoveControlLock("KKCamControls");
 			InputLockManager.RemoveControlLock("KKCamModes");
 			
-			// if you disable the camera when switching scenes shit will go down
 			if(disableCam)
 				camControl.disable();
 		}
@@ -531,6 +573,7 @@ namespace KerbalKonstructs
 				Vector3 pos = Vector3.zero;
 				float alt = 0;
 				bool changed = false;
+
 				if (Input.GetKey(KeyCode.W))
 				{
 					pos.y += editor.getIncrement();
@@ -561,7 +604,8 @@ namespace KerbalKonstructs
 					pos.z -= editor.getIncrement();
 					changed = true;
 				}
-				// ASH 08112014 Fix clashing with camera zooming?
+				
+				// ASH 08112014 Fix clashing with camera zooming
 				if (Input.GetKey(KeyCode.RightBracket))
 				{
 					alt += editor.getIncrement();
@@ -595,7 +639,6 @@ namespace KerbalKonstructs
 
 		void OnGUI()
 		{
-			// Use KSP's GUI skin
 			GUI.skin = HighLogic.Skin;
 
 			if (showSelector && (HighLogic.LoadedScene.Equals(GameScenes.EDITOR) || HighLogic.LoadedScene.Equals(GameScenes.SPH)))//Disable scene selector when not in the editor
@@ -605,7 +648,6 @@ namespace KerbalKonstructs
 			{
 				if (showEditor)
 				{
-					// Editor Window
 					editor.drawEditor(selectedObject);
 				}
 
@@ -634,7 +676,7 @@ namespace KerbalKonstructs
 			staticDB.deleteObject(obj);
 		}
 
-		public void selectObject(StaticObject obj)
+		public void selectObject(StaticObject obj, bool isEditing = true)
 		{
 			InputLockManager.SetControlLock(ControlTypes.ALL_SHIP_CONTROLS, "KKShipLock");
 			InputLockManager.SetControlLock(ControlTypes.EVA_INPUT, "KKEVALock");
@@ -645,13 +687,17 @@ namespace KerbalKonstructs
 				deselectObject();
 			
 			selectedObject = obj;
-			selectedObject.editing = true;
-			Transform[] gameObjectList = selectedObject.gameObject.GetComponentsInChildren<Transform>();
-			List<GameObject> colliderList = (from t in gameObjectList where t.gameObject.collider != null select t.gameObject).ToList();
-			
-			foreach (GameObject collider in colliderList)
+			if (isEditing)
 			{
-				collider.collider.enabled = false;
+				selectedObject.editing = true;
+
+				Transform[] gameObjectList = selectedObject.gameObject.GetComponentsInChildren<Transform>();
+				List<GameObject> colliderList = (from t in gameObjectList where t.gameObject.collider != null select t.gameObject).ToList();
+
+				foreach (GameObject collider in colliderList)
+				{
+					collider.collider.enabled = false;
+				}
 			}
 			
 			if(camControl.active)
@@ -665,6 +711,10 @@ namespace KerbalKonstructs
 			if ((sGameObject.collider != null && sGameObject.collider.enabled && !sGameObject.collider.isTrigger) || sGameObject.collider == null)
 			{
 				sGameObject.layer = newLayerNumber;
+			}
+			else
+			{
+				Debug.Log("KK: setLayerRecursively did not set a layer to " + newLayerNumber + " because ??? if statement is a bloody mess");
 			}
 
 			foreach (Transform child in sGameObject.transform)
@@ -680,14 +730,14 @@ namespace KerbalKonstructs
 
 		void onSiteSelectorOn()
 		{
-			showSelector = true;
 			PersistenceFile<LaunchSite>.LoadList(LaunchSiteManager.AllLaunchSites, "LAUNCHSITES", "KK");
+			showSelector = true;
 		}
 
 		void onBaseManagerOn()
 		{
-			showBaseManager = true;
 			PersistenceFile<LaunchSite>.LoadList(LaunchSiteManager.AllLaunchSites, "LAUNCHSITES", "KK");
+			showBaseManager = true;
 		}
 
 		void onMapManagerOn()
@@ -699,7 +749,6 @@ namespace KerbalKonstructs
 		void onSiteSelectorOff()
 		{
 			showSelector = false;
-			// Make sure the editor doesn't think you're still mousing over the site selector
 			InputLockManager.RemoveControlLock("KKEditorLock");
 			PersistenceFile<LaunchSite>.SaveList(LaunchSiteManager.AllLaunchSites, "LAUNCHSITES", "KK");
 		}
@@ -707,6 +756,8 @@ namespace KerbalKonstructs
 		void onBaseManagerOff()
 		{
 			showBaseManager = false;
+			if (selectedObject != null)
+				deselectObject();
 		}
 
 		void onMapManagerOff()

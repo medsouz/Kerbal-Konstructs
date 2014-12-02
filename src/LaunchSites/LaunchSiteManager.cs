@@ -177,6 +177,15 @@ namespace KerbalKonstructs.LaunchSites
 			fOpenCost = 0;
 		}
 
+		public static void setAllLaunchsitesClosed()
+		{
+			List<LaunchSite> sites = LaunchSiteManager.getLaunchSites();
+			foreach (LaunchSite site in sites)
+			{
+				site.openclosestate = "Closed";
+			}
+		}
+
 		public static float RangeNearestOpenBase = 0f;
 		public static string NearestOpenBase = "";
 
@@ -316,6 +325,16 @@ namespace KerbalKonstructs.LaunchSites
 		public static void setLaunchSite(LaunchSite site)
 		{
 			EditorLogic.fetch.launchSiteName = site.name;
+		}
+
+		public static void setLaunchSite(String sitename)
+		{
+			EditorLogic.fetch.launchSiteName = sitename;
+		}
+
+		public static string getCurrentLaunchSite()
+		{
+			return EditorLogic.fetch.launchSiteName;
 		}
 
 		public static List<LaunchSite> AllLaunchSites { get { return launchSites; } }
