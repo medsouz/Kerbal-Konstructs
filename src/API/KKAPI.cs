@@ -67,7 +67,7 @@ namespace KerbalKonstructs.API
 				if (body.bodyName == name)
 					return body;
 			}
-			Debug.Log("Couldn't find body \"" + name + "\"");
+			Debug.Log("KK: Couldn't find body \"" + name + "\"");
 			return null;
 		}
 	}

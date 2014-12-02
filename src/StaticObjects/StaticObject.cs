@@ -7,6 +7,14 @@ namespace KerbalKonstructs.StaticObjects
 {
 	public class StaticObject
 	{
+		[PersistentKey]
+		public Vector3 RadialPosition;
+
+		[PersistentField]
+		public CelestialBody CelestialBody;
+		[PersistentField]
+		public float StaffCurrent;
+
 		public GameObject gameObject;
 		public PQSCity pqsCity;
 		public StaticModel model;

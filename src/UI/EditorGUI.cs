@@ -14,18 +14,22 @@ namespace KerbalKonstructs.UI
 	class EditorGUI
 	{
 		StaticObject selectedObject;
-		private Boolean editingSite = false;
 		private String xPos, yPos, zPos, altitude, rotation, customgroup = "";
 		private String increment = "1";
 
+		public Texture tBilleted = GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/billeted", false);
+
 		Vector2 scrollPos;
+		private Boolean editingSite = false;
 		Boolean creating = false;
 		Boolean showLocal = false;
+		Boolean managingFacility = false;
 
 		Rect toolRect = new Rect(150, 25, 300, 325);
 		Rect editorRect = new Rect(10, 25, 520, 520);
 		Rect siteEditorRect = new Rect(400, 50, 330, 350);
-		Rect managerRect = new Rect(10, 25, 400, 375);
+		Rect managerRect = new Rect(10, 25, 400, 405);
+		Rect facilityRect = new Rect(150, 75, 350, 400);
 
 		private GUIStyle listStyle = new GUIStyle();
 
@@ -54,6 +58,15 @@ namespace KerbalKonstructs.UI
 
 		public void drawManager(StaticObject obj)
 		{
+			if (obj != null)
+			{
+				if (selectedObject != obj)
+					updateSelection(obj);
+
+				if (managingFacility)
+					facilityRect = GUI.Window(0xB00B1E1, facilityRect, drawFacilityManagerWindow, "Base Boss Facility Manager");
+			}
+				
 			managerRect = GUI.Window(0xB00B1E2, managerRect, drawBaseManagerWindow, "Base Boss");
 		}
 
@@ -64,15 +77,15 @@ namespace KerbalKonstructs.UI
 				if (selectedObject != obj)
 					updateSelection(obj);
 
-				toolRect = GUI.Window(0xB00B1E5, toolRect, drawToolWindow, "KK Instance Editor");
+				toolRect = GUI.Window(0xB00B1E3, toolRect, drawToolWindow, "KK Instance Editor");
 
 				if (editingSite)
 				{
-						siteEditorRect = GUI.Window(0xB00B1E8, siteEditorRect, drawSiteEditorWindow, "KK Launchsite Editor");
+						siteEditorRect = GUI.Window(0xB00B1E4, siteEditorRect, drawSiteEditorWindow, "KK Launchsite Editor");
 				}
 			}
 
-			editorRect = GUI.Window(0xB00B1E7, editorRect, drawEditorWindow, "Kerbal Konstructs Statics Editor");
+			editorRect = GUI.Window(0xB00B1E5, editorRect, drawEditorWindow, "Kerbal Konstructs Statics Editor");
 		}
 
 		public Boolean isCareerGame()
@@ -91,13 +104,106 @@ namespace KerbalKonstructs.UI
 				return false;
 		}
 
+		void drawFacilityManagerWindow(int windowID)
+		{
+			string sFacilityName = (string)selectedObject.model.getSetting("title");
+			string sFacilityRole = (string)selectedObject.getSetting("FacilityRole");
+
+			float fStaffMax = (float)selectedObject.getSetting("StaffMax");
+			float fStaffCurrent = (float)selectedObject.getSetting("StaffCurrent");
+
+			GUILayout.Box(sFacilityName);
+
+			if (fStaffMax > 0)
+			{
+				GUILayout.BeginHorizontal();
+					GUILayout.Label("Max Billeted");
+					GUI.enabled = false;
+					GUILayout.TextField(string.Format("{0}", fStaffMax), GUILayout.Width(20));
+					GUI.enabled = true;
+					GUILayout.Space(20);
+					GUILayout.Label("Current");
+					// GUI.enabled = false;
+					// GUILayout.TextField(string.Format("{0}", fStaffCurrent), GUILayout.Width(20));
+					GUI.enabled = true;
+					// if (fStaffCurrent > 0)
+					for (int i = 1; i <= fStaffCurrent; i++)
+					{
+						GUILayout.Label(tBilleted, GUILayout.Height(32), GUILayout.Width(23));
+					}
+				GUILayout.EndHorizontal();
+
+				GUILayout.Label("To hire a kerbal costs 1000 Funds and requires Rep equal to the current number of staff x 50. Firing a kerbal costs nothing.");
+
+				GUILayout.BeginHorizontal();
+					GUI.enabled = (fStaffCurrent < fStaffMax);
+					if (GUILayout.Button("Hire 1", GUILayout.Width(120)))
+					{
+						double dFunds = Funding.Instance.Funds;
+						double dRep = Reputation.Instance.reputation;
+
+						if (dFunds < 1000)
+						{
+							ScreenMessages.PostScreenMessage("Insufficient funds to hire more staff!", 10, 0);
+						}
+						else
+							if (dRep < (fStaffCurrent*50))
+							{
+								ScreenMessages.PostScreenMessage("Insufficient rep to hire more staff!", 10, 0);
+							}
+							else
+							{
+								selectedObject.setSetting("StaffCurrent", fStaffCurrent + 1);
+								Funding.Instance.AddFunds(-1000, TransactionReasons.Cheating);
+							}
+					}
+					GUI.enabled = true;
+					GUILayout.FlexibleSpace();
+					GUI.enabled = (fStaffCurrent > 0);
+					if (GUILayout.Button("Fire 1", GUILayout.Width(120)))
+					{
+						selectedObject.setSetting("StaffCurrent", fStaffCurrent - 1);
+					}
+					GUI.enabled = true;
+				GUILayout.EndHorizontal();
+			}
+
+			GUILayout.Space(10);
+			if (GUILayout.Button("Save and Close"))
+			{
+				managingFacility = false;
+				KerbalKonstructs.instance.saveObjects();
+			}
+			if (GUILayout.Button("Cancel"))
+			{
+				managingFacility = false;
+			}
+		}
+
 		void drawBaseManagerWindow(int windowID)
 		{
 			string Base;
 			float Range;
 
-			GUILayout.BeginArea(new Rect(10, 30, 380, 350));
+			GUILayout.BeginArea(new Rect(10, 30, 380, 380));
 				GUILayout.Space(3);
+				GUILayout.Box("Settings");
+
+				GUILayout.BeginHorizontal();
+					KerbalKonstructs.instance.enableATC = GUILayout.Toggle(KerbalKonstructs.instance.enableATC, "Enable ATC");
+				GUILayout.EndHorizontal();
+
+				/* if(GUILayout.Button("Test Persistence"))
+				{
+					List<StaticObject> instancelist = new List<StaticObject>();
+					foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
+					{
+						instancelist.Add(obj);
+					}
+					PersistenceFile<StaticObject>.SaveList(instancelist, "FACILITIES", "KKFacilities");						
+				} */
+
+				GUILayout.Box("Base");
 
 				if (isCareerGame())
 				{
@@ -185,16 +291,11 @@ namespace KerbalKonstructs.UI
 							if (GUILayout.Button((string)obj.model.getSetting("title")))
 							{
 								KerbalKonstructs.instance.selectObject(obj, false);
+								managingFacility = true;
 							}
 						}
 					}
 				GUILayout.EndScrollView();
-
-				GUILayout.Space(2);
-
-				GUILayout.BeginHorizontal();
-					KerbalKonstructs.instance.enableATC = GUILayout.Toggle(KerbalKonstructs.instance.enableATC, "Enable ATC");
-				GUILayout.EndHorizontal();
 
 				GUILayout.Space(5);
 			GUILayout.EndArea();
@@ -314,7 +415,8 @@ namespace KerbalKonstructs.UI
 					}
 				GUILayout.EndHorizontal();
 				
-				GUILayout.FlexibleSpace();
+				//GUILayout.FlexibleSpace();
+				GUILayout.Space(10);
 
 				var pqsc = ((CelestialBody)selectedObject.getSetting("CelestialBody")).pqsController;
 

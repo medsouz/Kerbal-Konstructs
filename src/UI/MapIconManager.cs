@@ -16,7 +16,7 @@ namespace KerbalKonstructs.UI
 
 		public void drawManager()
 		{
-			mapManagerRect = GUI.Window(0xB00B2E3, mapManagerRect, drawMapManagerWindow, "Base Boss");
+			mapManagerRect = GUI.Window(0xB00B2E7, mapManagerRect, drawMapManagerWindow, "Base Boss");
 		}
 
 		bool showOpen = true;

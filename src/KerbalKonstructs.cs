@@ -27,6 +27,7 @@ namespace KerbalKonstructs
 		private CameraController camControl = new CameraController();
 		private EditorGUI editor = new EditorGUI();
 		private EditorGUI manager = new EditorGUI();
+		private EditorGUI facilitymanager = new EditorGUI();
 		private LaunchSiteSelectorGUI selector = new LaunchSiteSelectorGUI();
 		private MapIconManager mapIconManager = new MapIconManager();
 
@@ -114,7 +115,8 @@ namespace KerbalKonstructs
 				KKAPI.addInstanceSetting("OpenCloseState", opencloseState);
 				
 				// Facility Unique ID and Role
-				KKAPI.addInstanceSetting("FacilityUID", new ConfigGenericString());
+				// Use RadialPosition
+				// KKAPI.addInstanceSetting("FacilityUID", new ConfigGenericString());
 				ConfigGenericString facilityrole = new ConfigGenericString();
 				facilityrole.setDefaultValue("None");
 				KKAPI.addInstanceSetting("FacilityRole", facilityrole);
@@ -138,6 +140,8 @@ namespace KerbalKonstructs
 				KKAPI.addInstanceSetting("RecoveryBCurrent", new ConfigFloat());
 				KKAPI.addInstanceSetting("LaunchBMax", new ConfigFloat());
 				KKAPI.addInstanceSetting("LaunchBCurrent", new ConfigFloat());
+				KKAPI.addInstanceSetting("TonsStMax", new ConfigFloat());
+				KKAPI.addInstanceSetting("TonsStCurrent", new ConfigFloat());
 
 			// END Instance API ******
 

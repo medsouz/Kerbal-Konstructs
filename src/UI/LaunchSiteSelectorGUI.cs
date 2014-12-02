@@ -44,7 +44,7 @@ namespace KerbalKonstructs.UI
 			//Camera.main is null when first loading a scene
 			//if (Camera.main != null)
 			//{
-			windowRect = GUI.Window(0xB00B1E3, windowRect, drawSelectorWindow, "Launch Site Selector");
+			windowRect = GUI.Window(0xB00B1E6, windowRect, drawSelectorWindow, "Launch Site Selector");
 			//}
 
 			if (windowRect.Contains(Event.current.mousePosition))
