@@ -49,6 +49,10 @@ namespace KerbalKonstructs
 		public Boolean disableCareerStrategyLayer = false;
 		[KSPField]
 		public Boolean enableATC = true;
+		[KSPField]
+		public Double staffHireCost = 1000;
+		[KSPField]
+		public Double staffRepRequirementMultiplier = 50;
 
 		void Awake()
 		{
@@ -72,6 +76,11 @@ namespace KerbalKonstructs
 			KKAPI.addModelSetting("title", new ConfigGenericString());
 			KKAPI.addModelSetting("category", new ConfigGenericString());
 			KKAPI.addModelSetting("cost", new ConfigFloat());
+			KKAPI.addModelSetting("mass", new ConfigFloat());
+			KKAPI.addModelSetting("crashTolerance", new ConfigFloat());
+			KKAPI.addModelSetting("manufacturer", new ConfigGenericString());
+			KKAPI.addModelSetting("description", new ConfigGenericString());
+			KKAPI.addModelSetting("thumbnail", new ConfigGenericString());
 
 			// START Instance API ******			
 				// Position
@@ -119,28 +128,28 @@ namespace KerbalKonstructs
 				// KKAPI.addInstanceSetting("FacilityUID", new ConfigGenericString());
 				ConfigGenericString facilityrole = new ConfigGenericString();
 				facilityrole.setDefaultValue("None");
-				KKAPI.addInstanceSetting("FacilityRole", facilityrole);
+				KKAPI.addModelSetting("FacilityRole", facilityrole);
 
 				// Facility Ratings
-				KKAPI.addInstanceSetting("StaffMax", new ConfigFloat());
+				KKAPI.addModelSetting("StaffMax", new ConfigFloat());
 				KKAPI.addInstanceSetting("StaffCurrent", new ConfigFloat());
-				KKAPI.addInstanceSetting("LqFMax", new ConfigFloat());
+				KKAPI.addModelSetting("LqFMax", new ConfigFloat());
 				KKAPI.addInstanceSetting("LqFCurrent", new ConfigFloat());
-				KKAPI.addInstanceSetting("OxFMax", new ConfigFloat());
+				KKAPI.addModelSetting("OxFMax", new ConfigFloat());
 				KKAPI.addInstanceSetting("OxFCurrent", new ConfigFloat());
-				KKAPI.addInstanceSetting("MoFMax", new ConfigFloat());
+				KKAPI.addModelSetting("MoFMax", new ConfigFloat());
 				KKAPI.addInstanceSetting("MoFCurrent", new ConfigFloat());
-				KKAPI.addInstanceSetting("ScienceOMax", new ConfigFloat());
+				KKAPI.addModelSetting("ScienceOMax", new ConfigFloat());
 				KKAPI.addInstanceSetting("ScienceOCurrent", new ConfigFloat());
-				KKAPI.addInstanceSetting("RepOMax", new ConfigFloat());
+				KKAPI.addModelSetting("RepOMax", new ConfigFloat());
 				KKAPI.addInstanceSetting("RepOCurrent", new ConfigFloat());
-				KKAPI.addInstanceSetting("FundsOMax", new ConfigFloat());
+				KKAPI.addModelSetting("FundsOMax", new ConfigFloat());
 				KKAPI.addInstanceSetting("FundsOCurrent", new ConfigFloat());
-				KKAPI.addInstanceSetting("RecoveryBMax", new ConfigFloat());
+				KKAPI.addModelSetting("RecoveryBMax", new ConfigFloat());
 				KKAPI.addInstanceSetting("RecoveryBCurrent", new ConfigFloat());
-				KKAPI.addInstanceSetting("LaunchBMax", new ConfigFloat());
+				KKAPI.addModelSetting("LaunchBMax", new ConfigFloat());
 				KKAPI.addInstanceSetting("LaunchBCurrent", new ConfigFloat());
-				KKAPI.addInstanceSetting("TonsStMax", new ConfigFloat());
+				KKAPI.addModelSetting("TonsStMax", new ConfigFloat());
 				KKAPI.addInstanceSetting("TonsStCurrent", new ConfigFloat());
 
 			// END Instance API ******

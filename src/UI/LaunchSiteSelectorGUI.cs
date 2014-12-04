@@ -188,10 +188,11 @@ namespace KerbalKonstructs.UI
 		private void drawRightSelectorWindow()
 		{
 			GUILayout.BeginArea(new Rect(385, 25, 310, 550));
-				GUILayout.Label(selectedSite.logo, GUILayout.Height(280));
+				GUILayout.Label(selectedSite.logo, GUILayout.Height(280), GUILayout.Width(300));
 				GUILayout.Label(selectedSite.name + " By " + selectedSite.author);
+				
 				descriptionScrollPosition = GUILayout.BeginScrollView(descriptionScrollPosition);
-				GUILayout.Label(selectedSite.description);
+				GUILayout.Label(selectedSite.description, GUILayout.ExpandHeight(true));
 				GUILayout.EndScrollView();
 
 				float iFundsClose = 0;

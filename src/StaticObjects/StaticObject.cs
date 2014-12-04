@@ -42,8 +42,17 @@ namespace KerbalKonstructs.StaticObjects
 				return settings[setting];
 			Debug.Log("KK: Setting " + setting + " not found in instance of model " + model.config);
 			object defaultValue = KKAPI.getInstanceSettings()[setting].getDefaultValue();
-			settings.Add(setting, defaultValue);
-			return defaultValue;
+
+			if (defaultValue != null)
+			{
+				settings.Add(setting, defaultValue);
+				return defaultValue;
+			}
+			else
+			{
+				Debug.Log("KK: Setting " + setting + " not found in instance API. BUG BUG BUG.");
+				return null;
+			}
 		}
 
 		public void setSetting(string setting, object value)

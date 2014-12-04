@@ -27,14 +27,16 @@ namespace KerbalKonstructs.UI
 
 		Rect toolRect = new Rect(150, 25, 300, 325);
 		Rect editorRect = new Rect(10, 25, 520, 520);
-		Rect siteEditorRect = new Rect(400, 50, 330, 350);
+		Rect siteEditorRect = new Rect(400, 50, 340, 500);
 		Rect managerRect = new Rect(10, 25, 400, 405);
 		Rect facilityRect = new Rect(150, 75, 350, 400);
 
 		private GUIStyle listStyle = new GUIStyle();
 
-		string siteName, siteTrans, siteDesc, siteAuthor, siteLogo;
+		string siteName, siteTrans, siteDesc, siteAuthor;
+		float flOpenCost, flCloseValue;
 		SiteType siteType;
+		string siteCategory;
 		Vector2 descScroll;
 
 		private GUIContent[] siteTypeOptions = {
@@ -107,9 +109,9 @@ namespace KerbalKonstructs.UI
 		void drawFacilityManagerWindow(int windowID)
 		{
 			string sFacilityName = (string)selectedObject.model.getSetting("title");
-			string sFacilityRole = (string)selectedObject.getSetting("FacilityRole");
+			string sFacilityRole = (string)selectedObject.model.getSetting("FacilityRole");
 
-			float fStaffMax = (float)selectedObject.getSetting("StaffMax");
+			float fStaffMax = (float)selectedObject.model.getSetting("StaffMax");
 			float fStaffCurrent = (float)selectedObject.getSetting("StaffCurrent");
 
 			GUILayout.Box(sFacilityName);
@@ -123,17 +125,18 @@ namespace KerbalKonstructs.UI
 					GUI.enabled = true;
 					GUILayout.Space(20);
 					GUILayout.Label("Current");
-					// GUI.enabled = false;
-					// GUILayout.TextField(string.Format("{0}", fStaffCurrent), GUILayout.Width(20));
 					GUI.enabled = true;
-					// if (fStaffCurrent > 0)
+
 					for (int i = 1; i <= fStaffCurrent; i++)
 					{
 						GUILayout.Label(tBilleted, GUILayout.Height(32), GUILayout.Width(23));
 					}
 				GUILayout.EndHorizontal();
 
-				GUILayout.Label("To hire a kerbal costs 1000 Funds and requires Rep equal to the current number of staff x 50. Firing a kerbal costs nothing.");
+				double dHiring = KerbalKonstructs.instance.staffHireCost;
+				double dRepMultiplier = KerbalKonstructs.instance.staffRepRequirementMultiplier;
+
+				GUILayout.Label("To hire a kerbal costs " + dHiring + " Funds and requires Rep equal to the current number of staff x " + dRepMultiplier + ". Firing a kerbal costs nothing.");
 
 				GUILayout.BeginHorizontal();
 					GUI.enabled = (fStaffCurrent < fStaffMax);
@@ -142,19 +145,19 @@ namespace KerbalKonstructs.UI
 						double dFunds = Funding.Instance.Funds;
 						double dRep = Reputation.Instance.reputation;
 
-						if (dFunds < 1000)
+						if (dFunds < dHiring)
 						{
 							ScreenMessages.PostScreenMessage("Insufficient funds to hire more staff!", 10, 0);
 						}
 						else
-							if (dRep < (fStaffCurrent*50))
+							if (dRep < (fStaffCurrent*dRepMultiplier))
 							{
 								ScreenMessages.PostScreenMessage("Insufficient rep to hire more staff!", 10, 0);
 							}
 							else
 							{
 								selectedObject.setSetting("StaffCurrent", fStaffCurrent + 1);
-								Funding.Instance.AddFunds(-1000, TransactionReasons.Cheating);
+								Funding.Instance.AddFunds(-dHiring, TransactionReasons.Cheating);
 							}
 					}
 					GUI.enabled = true;
@@ -178,6 +181,7 @@ namespace KerbalKonstructs.UI
 			{
 				managingFacility = false;
 			}
+			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
 
 		void drawBaseManagerWindow(int windowID)
@@ -192,16 +196,6 @@ namespace KerbalKonstructs.UI
 				GUILayout.BeginHorizontal();
 					KerbalKonstructs.instance.enableATC = GUILayout.Toggle(KerbalKonstructs.instance.enableATC, "Enable ATC");
 				GUILayout.EndHorizontal();
-
-				/* if(GUILayout.Button("Test Persistence"))
-				{
-					List<StaticObject> instancelist = new List<StaticObject>();
-					foreach (StaticObject obj in KerbalKonstructs.instance.getStaticDB().getAllStatics())
-					{
-						instancelist.Add(obj);
-					}
-					PersistenceFile<StaticObject>.SaveList(instancelist, "FACILITIES", "KKFacilities");						
-				} */
 
 				GUILayout.Box("Base");
 
@@ -312,6 +306,8 @@ namespace KerbalKonstructs.UI
 			bool manuallySet = false;
 
 			GUILayout.BeginArea(new Rect(10, 25, 275, 310));
+			GUILayout.Box((string)selectedObject.model.getSetting("title"));
+
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Position");
 					GUILayout.FlexibleSpace();
@@ -415,7 +411,6 @@ namespace KerbalKonstructs.UI
 					}
 				GUILayout.EndHorizontal();
 				
-				//GUILayout.FlexibleSpace();
 				GUILayout.Space(10);
 
 				var pqsc = ((CelestialBody)selectedObject.getSetting("CelestialBody")).pqsController;
@@ -430,15 +425,33 @@ namespace KerbalKonstructs.UI
 
 					GUI.enabled = !editingSite;
 
+					string sLaunchPadTransform = (string)selectedObject.getSetting("LaunchPadTransform");
+					string sDefaultPadTransform = (string)selectedObject.model.getSetting("DefaultLaunchPadTransform");
+					string sLaunchsiteDesc = (string)selectedObject.getSetting("LaunchSiteDescription");
+					string sModelDesc = (string)selectedObject.model.getSetting("description");
+
+					if (sLaunchPadTransform == "" && sDefaultPadTransform == "")
+						GUI.enabled = false;
+
 					if (GUILayout.Button(((selectedObject.settings.ContainsKey("LaunchSiteName")) ? "Edit" : "Make") + " Launchsite", GUILayout.Width(130)))
 					{
+						// Edit or make a launchsite
 						siteName = (string)selectedObject.getSetting("LaunchSiteName");
-						siteTrans = (selectedObject.settings.ContainsKey("LaunchPadTransform")) ? (string)selectedObject.getSetting("LaunchPadTransform") : (string)selectedObject.model.getSetting("DefaultLaunchPadTransform");
-						siteDesc = (string)selectedObject.getSetting("LaunchSiteDescription");
+						siteTrans = (selectedObject.settings.ContainsKey("LaunchPadTransform")) ? sLaunchPadTransform : sDefaultPadTransform;
+						
+						if (sLaunchsiteDesc != "")
+							siteDesc = sLaunchsiteDesc;
+						else
+							siteDesc = sModelDesc;
+
+						siteCategory = (string)selectedObject.getSetting("Category");
 						siteType = (SiteType)selectedObject.getSetting("LaunchSiteType");
-						siteTypeMenu.SelectedItemIndex = (int)siteType;
-						siteLogo = ((string)selectedObject.getSetting("LaunchSiteLogo"));
+						flOpenCost = (float)selectedObject.getSetting("OpenCost");
+						flCloseValue = (float)selectedObject.getSetting("CloseValue");
+						stOpenCost = string.Format("{0}", flOpenCost);
+						stCloseValue = string.Format("{0}", flCloseValue);
 						siteAuthor = (selectedObject.settings.ContainsKey("author")) ? (string)selectedObject.getSetting("author") : (string)selectedObject.model.getSetting("author");
+						Debug.Log("KK: Making or editing a launchsite");
 						editingSite = true;
 					}
 					
@@ -561,7 +574,6 @@ namespace KerbalKonstructs.UI
 				{
 					foreach (StaticModel model in KerbalKonstructs.instance.getStaticDB().getModels())
 					{
-						// ASH 07112014 Removed redundant info
 						if (GUILayout.Button(model.getSetting("title") + " : " + model.getSetting("mesh")))
 						{
 							StaticObject obj = new StaticObject();
@@ -596,17 +608,12 @@ namespace KerbalKonstructs.UI
 							}
 							else
 								isLocal = false;
-								// ASH Ooopsie. Bug fix where off-Kerbin instances were always considered local.
 						}
 							
 						if (isLocal)
 						{
-							// ASH 07112014 Removed redundant info
-							// ASH 08112014 No point in disabling the button								
-							// GUI.enabled = obj != selectedObject;
 							if (GUILayout.Button("[" + obj.getSetting("Group") + "] " + (obj.settings.ContainsKey("LaunchSiteName") ? obj.getSetting("LaunchSiteName") + " : " + obj.model.getSetting("title") : obj.model.getSetting("title"))))
 							{
-								// TODO Move PQS target to object position
 								KerbalKonstructs.instance.selectObject(obj);
 							}
 						}
@@ -656,36 +663,74 @@ namespace KerbalKonstructs.UI
 			}
 		}
 
+		string stOpenCost;
+		string stCloseValue;
+
 		void drawSiteEditorWindow(int id)
 		{
+			GUILayout.Box((string)selectedObject.model.getSetting("title"));
+			
 			GUILayout.BeginHorizontal();
-				GUILayout.Label("Site Name: ");
+				GUILayout.Label("Site Name: ", GUILayout.Width(120));
 				siteName = GUILayout.TextField(siteName);
 			GUILayout.EndHorizontal();
 
 			GUILayout.BeginHorizontal();
-				GUILayout.Label("Pad Transform: ");
-				siteTrans = GUILayout.TextField(siteTrans);
+				GUILayout.Label("Site Category: ", GUILayout.Width(120));
+				GUILayout.Label(siteCategory, GUILayout.Width(80));
+				GUI.enabled = !(siteCategory == "RocketPad");
+				if (GUILayout.Button("RP"))
+					siteCategory = "RocketPad";
+				GUI.enabled = !(siteCategory == "Runway");
+				if (GUILayout.Button("RW"))
+					siteCategory = "Runway";
+				GUI.enabled = !(siteCategory == "Helipad");
+				if (GUILayout.Button("HP"))
+					siteCategory = "Helipad";
+				GUI.enabled = !(siteCategory == "Other");
+				if (GUILayout.Button("OT"))
+					siteCategory = "Other";
 			GUILayout.EndHorizontal();
 
+			GUI.enabled = true;
+
 			GUILayout.BeginHorizontal();
-				GUILayout.Label("Site Type:");
-				GUILayout.FlexibleSpace();
-				Rect rect = GUILayoutUtility.GetRect(siteTypeOptions[0], "button", GUILayout.Width(50));
+				GUILayout.Label("Site Type: ", GUILayout.Width(120));
+				if (siteType == (SiteType)0)
+					GUILayout.Label("VAB", GUILayout.Width(40));
+				if (siteType == (SiteType)1)
+					GUILayout.Label("SPH", GUILayout.Width(40));
+				if (siteType == (SiteType)2)
+					GUILayout.Label("Any", GUILayout.Width(40));
+				GUI.enabled = !(siteType == (SiteType)0);
+				if (GUILayout.Button("VAB"))
+					siteType = ((SiteType)0);
+				GUI.enabled = !(siteType == (SiteType)1);
+				if (GUILayout.Button("SPH"))
+					siteType = ((SiteType)1);
+				GUI.enabled = !(siteType == (SiteType)2);
+				if (GUILayout.Button("Any"))
+					siteType = ((SiteType)2);
 			GUILayout.EndHorizontal();
 
-			GUI.enabled = !siteTypeMenu.isClickedComboButton;
+			GUI.enabled = true;
+			
 			GUILayout.BeginHorizontal();
-				GUILayout.Label("Author: ");
+				GUILayout.Label("Author: ", GUILayout.Width(120));
 				siteAuthor = GUILayout.TextField(siteAuthor);
 			GUILayout.EndHorizontal();
 
 			GUILayout.BeginHorizontal();
-				GUILayout.Label("Logo: ");
-				siteLogo = GUILayout.TextField(siteLogo);
+				GUILayout.Label("Open Cost: ", GUILayout.Width(120));
+				stOpenCost = GUILayout.TextField(stOpenCost);
 			GUILayout.EndHorizontal();
 
-			GUILayout.Label("Site Description: ");
+			GUILayout.BeginHorizontal();
+				GUILayout.Label("Close Value: ", GUILayout.Width(120));
+				stCloseValue = GUILayout.TextField(stCloseValue);
+			GUILayout.EndHorizontal();
+
+			GUILayout.Label("Description: ");
 			descScroll = GUILayout.BeginScrollView(descScroll);
 				siteDesc = GUILayout.TextArea(siteDesc, GUILayout.ExpandHeight(true));
 			GUILayout.EndScrollView();
@@ -696,12 +741,13 @@ namespace KerbalKonstructs.UI
 				{
 					Boolean addToDB = (selectedObject.settings.ContainsKey("LaunchSiteName") && siteName != "");
 					selectedObject.setSetting("LaunchSiteName", siteName);
+					selectedObject.setSetting("LaunchSiteType", siteType);
 					selectedObject.setSetting("LaunchPadTransform", siteTrans);
 					selectedObject.setSetting("LaunchSiteDescription", siteDesc);
+					selectedObject.setSetting("OpenCost", float.Parse(stOpenCost));
+					selectedObject.setSetting("CloseValue", float.Parse(stCloseValue));
 					selectedObject.setSetting("OpenCloseState", "Open");
-					selectedObject.setSetting("LaunchSiteType", getSiteType(siteTypeMenu.SelectedItemIndex));
-					if(siteLogo != "")
-						selectedObject.setSetting("LaunchSiteLogo", siteLogo);
+					selectedObject.setSetting("Category", siteCategory);
 					if (siteAuthor != (string)selectedObject.model.getSetting("author"))
 						selectedObject.setSetting("LaunchSiteAuthor", siteAuthor);
 					
@@ -721,8 +767,6 @@ namespace KerbalKonstructs.UI
 					editingSite = false;
 				}
 			GUILayout.EndHorizontal();
-
-			siteTypeMenu.Show(rect);
 
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
@@ -755,6 +799,5 @@ namespace KerbalKonstructs.UI
 					return SiteType.Any;
 			}
 		}
-
 	}
 }
