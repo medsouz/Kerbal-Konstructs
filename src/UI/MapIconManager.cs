@@ -12,7 +12,8 @@ namespace KerbalKonstructs.UI
 		public Texture SPHIcon = GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/SPHMapIcon", false);
 		public Texture ANYIcon = GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/ANYMapIcon", false);
 		private Boolean displayingTooltip = false;
-		Rect mapManagerRect = new Rect(200, 150, 210, 225);
+		Rect mapManagerRect = new Rect(200, 150, 210, 600);
+		public LaunchSite selectedSite = null;
 
 		public void drawManager()
 		{
@@ -43,32 +44,116 @@ namespace KerbalKonstructs.UI
 				return false;
 		}
 
+		public float iFundsOpen = 0;
+		public float iFundsClose = 0;
+		public Boolean isOpen = false;
+		public Vector2 sitesScrollPosition;
+		public Vector2 descriptionScrollPosition;
+
 		void drawMapManagerWindow(int windowID)
 		{
-			GUILayout.BeginArea(new Rect(5, 25, 190, 200));
-				if (!loadedPersistence && isCareerGame())
+			if (!loadedPersistence && isCareerGame())
+			{
+				PersistenceFile<LaunchSite>.LoadList(LaunchSiteManager.AllLaunchSites, "LAUNCHSITES", "KK");
+				loadedPersistence = true;
+			}
+			GUI.enabled = (isCareerGame());
+			if (!isCareerGame())
+			{
+				showOpen = GUILayout.Toggle(true, "Show open bases");
+				showClosed = GUILayout.Toggle(true, "Show closed bases");
+			}
+			else
+			{
+				showOpen = GUILayout.Toggle(showOpen, "Show open bases");
+				showClosed = GUILayout.Toggle(showClosed, "Show closed bases");
+			}
+			GUI.enabled = true;
+			GUILayout.Space(5);
+			showRocketPads = GUILayout.Toggle(showRocketPads, "Show rocketpads");
+			showHelipads = GUILayout.Toggle(showHelipads, "Show helipads");
+			showRunways = GUILayout.Toggle(showRunways, "Show runways");
+			showOther = GUILayout.Toggle(showOther, "Show other launchsites");
+			GUILayout.Space(3);
+
+			if (selectedSite != null)
+			{
+				GUILayout.Box("Selected Base");
+				GUILayout.Label(selectedSite.name);
+
+				GUILayout.Box(selectedSite.logo, GUILayout.Width(196), GUILayout.Height(187));
+
+				descriptionScrollPosition = GUILayout.BeginScrollView(descriptionScrollPosition);
+					GUI.enabled = false;
+					GUILayout.TextArea(selectedSite.description);
+					GUI.enabled = true;
+				GUILayout.EndScrollView();
+
+				// Career mode - get cost to open and value of opening from launchsite (defined in the cfg)
+				iFundsOpen = selectedSite.opencost;
+				iFundsClose = selectedSite.closevalue;
+				
+				bool isAlwaysOpen = false;
+				bool cannotBeClosed = false;
+
+				// Career mode
+				// If a launchsite is 0 to open it is always open
+				if (iFundsOpen == 0)
+					isAlwaysOpen = true;
+
+				// If it is 0 to close you cannot close it
+				if (iFundsClose == 0)
+					cannotBeClosed = true;
+
+				if (isCareerGame())
 				{
-					PersistenceFile<LaunchSite>.LoadList(LaunchSiteManager.AllLaunchSites, "LAUNCHSITES", "KK");
-					loadedPersistence = true;
+					isOpen = (selectedSite.openclosestate == "Open");
+
+					GUI.enabled = !isOpen;
+					List<LaunchSite> sites = LaunchSiteManager.getLaunchSites();
+
+					if (!isAlwaysOpen)
+					{
+						if (GUILayout.Button("Open Base for " + iFundsOpen + " Funds"))
+						{
+							double currentfunds = Funding.Instance.Funds;
+
+							if (iFundsOpen > currentfunds)
+							{
+								ScreenMessages.PostScreenMessage("Insufficient funds to open this base!", 10, ScreenMessageStyle.LOWER_CENTER);
+							}
+							else
+							{
+								// Open the site - save to instance
+								selectedSite.openclosestate = "Open";
+
+								// Charge some funds
+								Funding.Instance.AddFunds(-iFundsOpen, TransactionReasons.Cheating);
+
+								// Save new state to persistence
+								PersistenceFile<LaunchSite>.SaveList(sites, "LAUNCHSITES", "KK");
+							}
+						}
+					}
+					GUI.enabled = true;
+
+					GUI.enabled = isOpen;
+					if (!cannotBeClosed)
+					{
+						if (GUILayout.Button("Close Base for " + iFundsClose + " Funds"))
+						{
+							// Close the site - save to instance
+							// Pay back some funds
+							Funding.Instance.AddFunds(iFundsClose, TransactionReasons.Cheating);
+							selectedSite.openclosestate = "Closed";
+
+							// Save new state to persistence
+							PersistenceFile<LaunchSite>.SaveList(sites, "LAUNCHSITES", "KK");
+						}
+					}
+					GUI.enabled = true;
 				}
-				GUI.enabled = (isCareerGame());
-				if (!isCareerGame())
-				{
-					showOpen = GUILayout.Toggle(true, "Show open bases");
-					showClosed = GUILayout.Toggle(true, "Show closed bases");
-				}
-				else
-				{
-					showOpen = GUILayout.Toggle(showOpen, "Show open bases");
-					showClosed = GUILayout.Toggle(showClosed, "Show closed bases");
-				}
-				GUI.enabled = true;
-				GUILayout.Space(5);
-				showRocketPads = GUILayout.Toggle(showRocketPads, "Show rocketpads");
-				showHelipads = GUILayout.Toggle(showHelipads, "Show helipads");
-				showRunways = GUILayout.Toggle(showRunways, "Show runways");
-				showOther = GUILayout.Toggle(showOther, "Show other launchsites");
-			GUILayout.EndArea();
+			}
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
 
@@ -136,11 +221,24 @@ namespace KerbalKonstructs.UI
 													break;
 											}
 										}
+										//"Borrowed" from FinePrint
+										//https://github.com/Arsonide/FinePrint/blob/master/Source/WaypointManager.cs#L53
 										if (screenRect.Contains(Event.current.mousePosition) && !displayingTooltip)
 										{
 											//Only display one tooltip at a time
 											displayingTooltip = true;
 											GUI.Label(new Rect((float)(pos.x) + 16, (float)(Screen.height - pos.y) - 8, 200, 20), site.name);
+
+											if (Event.current.type == EventType.mouseDown && Event.current.button == 0)
+											{
+												ScreenMessages.PostScreenMessage("Selected base is " + site.name + ".", 5f, ScreenMessageStyle.LOWER_CENTER);
+												selectedSite = site;
+
+												if (HighLogic.LoadedSceneIsFlight)
+												{
+
+												}
+											}
 										}
 									}
 								}

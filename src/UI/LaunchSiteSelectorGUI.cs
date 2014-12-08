@@ -192,7 +192,9 @@ namespace KerbalKonstructs.UI
 				GUILayout.Label(selectedSite.name + " By " + selectedSite.author);
 				
 				descriptionScrollPosition = GUILayout.BeginScrollView(descriptionScrollPosition);
-				GUILayout.Label(selectedSite.description, GUILayout.ExpandHeight(true));
+				GUI.enabled = false;
+				GUILayout.TextArea(selectedSite.description);//, GUILayout.ExpandHeight(true));
+				GUI.enabled = true;
 				GUILayout.EndScrollView();
 
 				float iFundsClose = 0;

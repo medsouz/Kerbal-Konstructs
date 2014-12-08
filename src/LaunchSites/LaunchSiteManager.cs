@@ -205,13 +205,32 @@ namespace KerbalKonstructs.LaunchSites
 				return false;
 		}
 
+		public static float getDistanceToBase(Vector3 position, LaunchSite lTarget)
+		{
+			float flRange = 0f;
+
+			List<LaunchSite> sites = LaunchSiteManager.getLaunchSites();
+			foreach (LaunchSite site in sites)
+			{
+				if (site == lTarget)
+				{
+					var radialposition = site.GameObject.transform.position;
+					var dist = Vector3.Distance(position, radialposition);
+					flRange = dist;
+				}
+			}
+
+			return flRange;
+		}
+
 		// Get the nearest open base and range to it
-		public static void getNearestOpenBase(Vector3 position, out string sBase, out float flRange)
+		public static void getNearestOpenBase(Vector3 position, out string sBase, out float flRange, out LaunchSite lNearest)
 		{
 			SpaceCenter KSC = SpaceCenter.Instance;
 			var smallestDist = Vector3.Distance(KSC.gameObject.transform.position, position);
 			string sNearestBase = "";
 			string sOpenCloseState = "";
+			LaunchSite lNearestBase = null;
 
 			List<LaunchSite> basesites = LaunchSiteManager.getLaunchSites();
 
@@ -236,6 +255,7 @@ namespace KerbalKonstructs.LaunchSites
 						{
 							{
 								sNearestBase = site.name;
+								lNearestBase = site;
 								smallestDist = dist;
 							}
 						}
@@ -276,17 +296,19 @@ namespace KerbalKonstructs.LaunchSites
 
 			sBase = sNearestBase;
 			flRange = RangeNearestOpenBase;
+			lNearest = lNearestBase;
 		}
 
 		public static float RangeNearestBase = 0f;
 		public static string NearestBase = "";
 
 		// Get nearest base, either open or closed, and the range to it
-		public static void getNearestBase(Vector3 position, out string sBase, out float flRange)
+		public static void getNearestBase(Vector3 position, out string sBase, out float flRange, out LaunchSite lSite)
 		{
 			SpaceCenter KSC = SpaceCenter.Instance;
 			var smallestDist = Vector3.Distance(KSC.gameObject.transform.position, position);
 			string sNearestBase = "";
+			LaunchSite lTargetSite = null;
 
 			List<LaunchSite> basesites = LaunchSiteManager.getLaunchSites();
 
@@ -306,6 +328,7 @@ namespace KerbalKonstructs.LaunchSites
 						{
 							sNearestBase = site.name;
 							smallestDist = dist;
+							lTargetSite = site;
 						}
 					}
 				}
@@ -320,6 +343,7 @@ namespace KerbalKonstructs.LaunchSites
 
 			sBase = sNearestBase;
 			flRange = RangeNearestBase;
+			lSite = lTargetSite;
 		}
 
 		public static void setLaunchSite(LaunchSite site)

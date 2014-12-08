@@ -50,6 +50,8 @@ namespace KerbalKonstructs
 		[KSPField]
 		public Boolean enableATC = true;
 		[KSPField]
+		public Boolean enableNGS = true;
+		[KSPField]
 		public Double staffHireCost = 1000;
 		[KSPField]
 		public Double staffRepRequirementMultiplier = 50;
