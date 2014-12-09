@@ -43,11 +43,11 @@ namespace KerbalKonstructs.UI
 		Rect siteEditorRect = new Rect(400, 50, 340, 480);
 		Rect managerRect = new Rect(10, 25, 400, 405);
 		Rect facilityRect = new Rect(150, 75, 350, 400);
-		Rect NGSRect = new Rect(250, 50, 350, 160);
+		Rect NGSRect = new Rect(250, 50, 350, 220);
 
 		private GUIStyle listStyle = new GUIStyle();
 		private GUIStyle navStyle = new GUIStyle();
-		public LaunchSite lTargetSite = null;
+		static LaunchSite lTargetSite = null;
 
 		string siteName, siteTrans, siteDesc, siteAuthor;
 		float flOpenCost, flCloseValue;
@@ -149,6 +149,11 @@ namespace KerbalKonstructs.UI
 		private Vector3 vSPos;
 		private Vector3 vHead;
 
+		public static void setTargetSite(LaunchSite lsTarget)
+		{
+			lTargetSite = lsTarget;
+		}
+
 		void prepNGS()
 		{
 			if (lTargetSite != null)
@@ -191,6 +196,7 @@ namespace KerbalKonstructs.UI
 			}
 			else
 			{
+				tTextureMiddle = tIconClosed;
 				tTextureLeft = tLeftOff;
 				tTextureRight = tRightOff;
 			}
@@ -202,26 +208,49 @@ namespace KerbalKonstructs.UI
 			GUILayout.Box(fRangeToTarget + " m", GUILayout.Height(20));
 
 			GUILayout.BeginHorizontal();
-				GUILayout.Box(tTextureLeft, GUILayout.Height(20));
-				GUILayout.Box(tTextureMiddle, GUILayout.Height(20));
-				GUILayout.Box(tTextureRight, GUILayout.Height(20));			
+				GUILayout.Box(tTextureLeft, GUILayout.Height(25), GUILayout.Width(155));
+				GUILayout.Box(tTextureMiddle, GUILayout.Height(25), GUILayout.Width(25));
+				GUILayout.Box(tTextureRight, GUILayout.Height(25), GUILayout.Width(155));			
 			GUILayout.EndHorizontal();
 
 			GUILayout.BeginHorizontal();
-				GUILayout.Box("A1 vCraft/vSite: " + angle1);
-				GUILayout.Box("A2 vHeading/000: " + angle2);
+				GUILayout.Box("vCrft/vSite", GUILayout.Width(100));
+				GUILayout.Box("" + angle1, GUILayout.Width(61));
+				GUILayout.Box("vHd/010", GUILayout.Width(113));
+				GUILayout.Box("" + angle2, GUILayout.Width(61));
 			GUILayout.EndHorizontal();
 
 			GUILayout.BeginHorizontal();
-				GUILayout.Box("A3 vCraft/vSite (0z): " + angle3);
-				GUILayout.Box("A4 vHeading/000 (0z): " + angle4);
+				GUILayout.Box("vCrft/vSite 0z", GUILayout.Width(100));
+				GUILayout.Box("" + angle3, GUILayout.Width(61));
+				GUILayout.Box("vHd/010 0z", GUILayout.Width(113));
+				GUILayout.Box("" + angle4, GUILayout.Width(61));
+			GUILayout.EndHorizontal();
+			
+			GUILayout.BeginHorizontal();
+				GUILayout.Box("_", GUILayout.Width(20));
+				GUILayout.Box("Craft V", GUILayout.Width(105));
+				GUILayout.Box("Base V", GUILayout.Width(105));
+				GUILayout.Box("Head V", GUILayout.Width(105));
 			GUILayout.EndHorizontal();
 
 			GUILayout.BeginHorizontal();
-				GUILayout.Label("VECTORS ");
-				GUILayout.Box("Craft: " + vCrft.x + ", " + vCrft.y + ", " + vCrft.z);
-				GUILayout.Box("Base: " + vSPos.x + ", " + vSPos.y + ", " + vSPos.z);
-				GUILayout.Box("Head: " + vHead.x + ", " + vHead.y + ", " + vHead.z);
+				GUILayout.Box("X", GUILayout.Width(20));
+				GUILayout.Box("" + vCrft.x, GUILayout.Width(105));
+				GUILayout.Box("" + vSPos.x, GUILayout.Width(105));
+				GUILayout.Box("" + vHead.x, GUILayout.Width(105));
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+				GUILayout.Box("Y", GUILayout.Width(20));
+				GUILayout.Box("" + vCrft.y, GUILayout.Width(105));
+				GUILayout.Box("" + vSPos.y, GUILayout.Width(105));
+				GUILayout.Box("" + vHead.y, GUILayout.Width(105));
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+				GUILayout.Box("Z", GUILayout.Width(20));
+				GUILayout.Box("" + vCrft.z, GUILayout.Width(105));
+				GUILayout.Box("" + vSPos.z, GUILayout.Width(105));
+				GUILayout.Box("" + vHead.z, GUILayout.Width(105));
 			GUILayout.EndHorizontal();
 
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
@@ -232,21 +261,24 @@ namespace KerbalKonstructs.UI
 		public int GetCourseCorrection(Vector3 vCraft, Vector3 vSite, Vector3 vHeading)
 		{
 			angle1 = Vector3.Angle(vCraft, vSite);
-			angle2 = Vector3.Angle(vHeading, new Vector3(0, 1, 0));
+			angle2 = Vector3.Angle(vHeading, Vector3.right);
 
 			vCraft.z = 0;
 			vSite.z = 0;
 
-			angle3 = Vector3.Angle(vCraft, vSite);
-			angle4 = Vector3.Angle(vHeading, new Vector3(0, 1, 0));
+			// Ash added
+			vHeading.z = 0;
+
+			angle3 = Vector3.(vCraft, vSite);
+			angle4 = Vector3.Angle(vHeading, Vector3.right);
+
 			float angle = angle3 - angle4;
-			if (angle < -90) angle += 180;
-			else if (angle > 90) angle -= 180;
+			if (angle < 0) angle = -angle;
 			
-			if (angle > 5)
-				return 2;
-			if (angle < -5)
+			if (angle > 95)
 				return 1;
+			if (angle < 85)
+				return 2;
 
 			return 3;
 		}
@@ -362,7 +394,7 @@ namespace KerbalKonstructs.UI
 						{
 							if (GUILayout.Button("NGS",GUILayout.Height(21)))
 							{
-								lTargetSite = lNearest;
+								setTargetSite(lNearest);
 							}
 						}
 					GUILayout.EndHorizontal();
@@ -382,7 +414,7 @@ namespace KerbalKonstructs.UI
 					{
 						if (GUILayout.Button("NGS", GUILayout.Height(21)))
 						{
-							lTargetSite = lBase;
+							setTargetSite(lBase);
 						}
 					}
 				GUILayout.EndHorizontal();

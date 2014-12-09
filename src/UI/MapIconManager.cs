@@ -13,7 +13,13 @@ namespace KerbalKonstructs.UI
 		public Texture ANYIcon = GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/ANYMapIcon", false);
 		private Boolean displayingTooltip = false;
 		Rect mapManagerRect = new Rect(200, 150, 210, 600);
-		public LaunchSite selectedSite = null;
+		static LaunchSite selectedSite = null;
+
+		public static LaunchSite getSelectedTarget()
+		{
+			LaunchSite thisSite = selectedSite;
+			return thisSite;
+		}
 
 		public void drawManager()
 		{
@@ -233,6 +239,7 @@ namespace KerbalKonstructs.UI
 											{
 												ScreenMessages.PostScreenMessage("Selected base is " + site.name + ".", 5f, ScreenMessageStyle.LOWER_CENTER);
 												selectedSite = site;
+												EditorGUI.setTargetSite(site);
 
 												if (HighLogic.LoadedSceneIsFlight)
 												{
