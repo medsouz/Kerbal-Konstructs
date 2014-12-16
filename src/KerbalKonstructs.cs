@@ -282,29 +282,29 @@ namespace KerbalKonstructs
 				something = false;
 			}
 			
-			if (data.Equals(GameScenes.EDITOR) || data.Equals(GameScenes.SPH))
+			if (data.Equals(GameScenes.EDITOR))
 			{
 				// Prevent abuse if selector left open when switching to from VAB and SPH
 				selector.Close();
 
 				// Default selected launchsite when switching between save games
-				switch (data)
+				switch (EditorDriver.editorFacility)
 				{
-					case GameScenes.SPH:
+					case EditorFacility.SPH:
 						selector.setEditorType(SiteType.SPH);
 						if (atMainMenu)
 						{
 							Debug.Log("KK: First visit to SPH");
-							LaunchSiteManager.setLaunchSite("Runway");
+							LaunchSiteManager.setLaunchSite(LaunchSiteManager.runway);
 							atMainMenu = false;
 						}
 						break;
-					case GameScenes.EDITOR:
+					case EditorFacility.VAB:
 						selector.setEditorType(SiteType.VAB);
 						if (atMainMenu)
 						{
 							Debug.Log("KK: First visit to VAB");
-							LaunchSiteManager.setLaunchSite("LaunchPad");
+							LaunchSiteManager.setLaunchSite(LaunchSiteManager.launchpad);
 							atMainMenu = false;
 						}
 						break;
@@ -656,7 +656,7 @@ namespace KerbalKonstructs
 		{
 			GUI.skin = HighLogic.Skin;
 
-			if (showSelector && (HighLogic.LoadedScene.Equals(GameScenes.EDITOR) || HighLogic.LoadedScene.Equals(GameScenes.SPH)))//Disable scene selector when not in the editor
+			if (showSelector && (HighLogic.LoadedScene.Equals(GameScenes.EDITOR)))//Disable scene selector when not in the editor
 				selector.drawSelector();
 
 			if (HighLogic.LoadedScene == GameScenes.FLIGHT)

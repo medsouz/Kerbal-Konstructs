@@ -15,13 +15,16 @@ namespace KerbalKonstructs.LaunchSites
 		private static List<LaunchSite> launchSites = new List<LaunchSite>();
 		public static Texture defaultLaunchSiteLogo = GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/DefaultSiteLogo", false);
 
+		public static LaunchSite runway = new LaunchSite("Runway", "Squad", SiteType.SPH, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCRunway", false), null, "The KSC runway is a concrete runway measuring about 2.5km long and 70m wide, on a magnetic heading of 90/270. It is not uncommon to see burning chunks of metal sliding across the surface.", "Runway", 0, 0, "Open", null, new PSystemSetup.SpaceCenterFacility());
+		public static LaunchSite launchpad = new LaunchSite("LaunchPad", "Squad", SiteType.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCLaunchpad", false), null, "The KSC launchpad is a platform used to fire screaming Kerbals into the kosmos. There was a tower here at one point but for some reason nobody seems to know where it went...", "RocketPad", 0, 0, "Open", null, new PSystemSetup.SpaceCenterFacility());
+
 		static LaunchSiteManager()
 		{
 			// TODO Expose KSC runway and launchpad descriptions to KerbalKonstructs.cfg so players can change them
 			// ASH 28102014 - Added category
 			// ASH 12112014 - Added career open close costs and state
-			launchSites.Add(new LaunchSite("Runway", "Squad", SiteType.SPH, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCRunway", false), null, "The KSC runway is a concrete runway measuring about 2.5km long and 70m wide, on a magnetic heading of 90/270. It is not uncommon to see burning chunks of metal sliding across the surface.", "Runway", 0, 0, "Open", null));
-			launchSites.Add(new LaunchSite("LaunchPad", "Squad", SiteType.VAB, GameDatabase.Instance.GetTexture("medsouz/KerbalKonstructs/Assets/KSCLaunchpad", false), null, "The KSC launchpad is a platform used to fire screaming Kerbals into the kosmos. There was a tower here at one point but for some reason nobody seems to know where it went...", "RocketPad", 0, 0, "Open", null));
+			launchSites.Add(runway);
+			launchSites.Add(launchpad);
 		}
 
 		// KerbTown legacy code - TODO Review and update?
@@ -41,8 +44,8 @@ namespace KerbalKonstructs.LaunchSites
 						if (PSystemSetup.Instance.GetSpaceCenterFacility((string) obj.getSetting("LaunchSiteName")) == null)
 						{
 							PSystemSetup.SpaceCenterFacility newFacility = new PSystemSetup.SpaceCenterFacility();
-							newFacility.name = (string) obj.getSetting("LaunchSiteName");
-							newFacility.facilityName = obj.gameObject.name;
+							newFacility.name = "FacilityName";
+							newFacility.facilityName = (string) obj.getSetting("LaunchSiteName");
 							newFacility.facilityPQS = ((CelestialBody) obj.getSetting("CelestialBody")).pqsController;
 							newFacility.facilityTransformName = obj.gameObject.name;
 							newFacility.pqsName = ((CelestialBody) obj.getSetting("CelestialBody")).pqsController.name;
@@ -74,7 +77,7 @@ namespace KerbalKonstructs.LaunchSites
 							
 							// TODO This is still hard-code and needs to use the API properly
 							// ASH 12112014 - Added career open close costs
-							launchSites.Add(new LaunchSite((string)obj.getSetting("LaunchSiteName"), (obj.settings.ContainsKey("LaunchSiteAuthor")) ? (string)obj.getSetting("LaunchSiteAuthor") : (string)obj.model.getSetting("author"), (SiteType)obj.getSetting("LaunchSiteType"), logo, icon, (string)obj.getSetting("LaunchSiteDescription"), (string)obj.getSetting("Category"), (float)obj.getSetting("OpenCost"), (float)obj.getSetting("CloseValue"), "Closed", /*(Vector3)obj.getSetting("RadialPosition"), */obj.gameObject));
+							launchSites.Add(new LaunchSite((string)obj.getSetting("LaunchSiteName"), (obj.settings.ContainsKey("LaunchSiteAuthor")) ? (string)obj.getSetting("LaunchSiteAuthor") : (string)obj.model.getSetting("author"), (SiteType)obj.getSetting("LaunchSiteType"), logo, icon, (string)obj.getSetting("LaunchSiteDescription"), (string)obj.getSetting("Category"), (float)obj.getSetting("OpenCost"), (float)obj.getSetting("CloseValue"), "Closed", /*(Vector3)obj.getSetting("RadialPosition"), */obj.gameObject, newFacility));
 							// Debug.Log("KK: Created launch site \"" + newFacility.name + "\" with transform " + obj.getSetting("LaunchSiteName") + "/" + obj.getSetting("LaunchPadTransform"));
 						}
 						else
@@ -349,13 +352,19 @@ namespace KerbalKonstructs.LaunchSites
 		public static void setLaunchSite(LaunchSite site)
 		{
 			Debug.Log("KK: EditorLogic.fetch.launchSiteName set to " + site.name);
+			//Trick KSP to think that you launched from Runway or LaunchPad
+			//I'm sure Squad will break this in the future
+			//This only works because they use multiple variables to store the same value, basically its black magic.
+			//--medsouz
+			if (EditorDriver.editorFacility.Equals(EditorFacility.SPH))
+			{
+				site.facility.name = "Runway";
+			}
+			else
+			{
+				site.facility.name = "LaunchPad";
+			}
 			EditorLogic.fetch.launchSiteName = site.name;
-		}
-
-		public static void setLaunchSite(String sitename)
-		{
-			Debug.Log("KK: EditorLogic.fetch.launchSiteName set to " + sitename);
-			EditorLogic.fetch.launchSiteName = sitename;
 		}
 
 		public static string getCurrentLaunchSite()

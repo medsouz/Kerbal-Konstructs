@@ -180,9 +180,9 @@ namespace KerbalKonstructs.UI
 						{
 							if (facility.facilityPQS == target.celestialBody.pqsController)
 							{
-								if (!isOccluded(sp.spawnPointTransform.position, target.celestialBody))
+								if (!isOccluded(sp.GetSpawnPointTransform().position, target.celestialBody))
 								{
-									Vector3 pos = MapView.MapCamera.camera.WorldToScreenPoint(ScaledSpace.LocalToScaledSpace(sp.spawnPointTransform.position));
+									Vector3 pos = MapView.MapCamera.camera.WorldToScreenPoint(ScaledSpace.LocalToScaledSpace(sp.GetSpawnPointTransform().position));
 									Rect screenRect = new Rect((pos.x - 8), (Screen.height - pos.y) - 8, 16, 16);
 
 									bool display = false;
