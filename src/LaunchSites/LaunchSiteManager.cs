@@ -348,11 +348,13 @@ namespace KerbalKonstructs.LaunchSites
 
 		public static void setLaunchSite(LaunchSite site)
 		{
+			Debug.Log("KK: EditorLogic.fetch.launchSiteName set to " + site.name);
 			EditorLogic.fetch.launchSiteName = site.name;
 		}
 
 		public static void setLaunchSite(String sitename)
 		{
+			Debug.Log("KK: EditorLogic.fetch.launchSiteName set to " + sitename);
 			EditorLogic.fetch.launchSiteName = sitename;
 		}
 

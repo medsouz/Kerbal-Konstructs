@@ -7,9 +7,6 @@ using LibNoise.Unity.Operator;
 using UnityEngine;
 using System.Linq;
 
-// R and T LOG
-// 14112014 ASH
-
 namespace KerbalKonstructs.UI
 {
 	class EditorGUI
@@ -38,12 +35,12 @@ namespace KerbalKonstructs.UI
 		Boolean managingFacility = false;
 		Boolean onNGS = false;
 
-		Rect toolRect = new Rect(150, 25, 290, 410);
+		Rect toolRect = new Rect(150, 25, 310, 420);
 		Rect editorRect = new Rect(10, 25, 520, 520);
 		Rect siteEditorRect = new Rect(400, 50, 340, 480);
 		Rect managerRect = new Rect(10, 25, 400, 405);
 		Rect facilityRect = new Rect(150, 75, 350, 400);
-		Rect NGSRect = new Rect(250, 50, 350, 220);
+		Rect NGSRect = new Rect(250, 50, 350, 150);
 
 		private GUIStyle listStyle = new GUIStyle();
 		private GUIStyle navStyle = new GUIStyle();
@@ -122,7 +119,6 @@ namespace KerbalKonstructs.UI
 		{
 			if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
 			{
-				// disableCareerStrategyLayer is configurable in KerbalKonstructs.cfg
 				if (!KerbalKonstructs.instance.disableCareerStrategyLayer)
 				{
 					return true;
@@ -148,6 +144,26 @@ namespace KerbalKonstructs.UI
 		private Vector3 vCrft;
 		private Vector3 vSPos;
 		private Vector3 vHead;
+		private Double disLat;
+		private Double disLon;
+		private Double disBaseLat;
+		private Double disBaseLon;
+
+		private double dshipheading;
+		private double dreqheading;
+
+		private static double GetLongitude(Vector3d radialPosition)
+		{
+			Vector3d norm = radialPosition.normalized;
+			double longitude = Math.Atan2(norm.z, norm.x);
+			return (!double.IsNaN(longitude) ? longitude : 0.0);
+		}
+
+		private static double GetLatitude(Vector3d radialPosition)
+		{
+			double latitude = Math.Asin(radialPosition.normalized.y);
+			return (!double.IsNaN(latitude) ? latitude : 0.0);
+		}
 
 		public static void setTargetSite(LaunchSite lsTarget)
 		{
@@ -163,21 +179,61 @@ namespace KerbalKonstructs.UI
 				if (fRangeToTarget > fOldRange) bClosing = false;
 				if (fRangeToTarget < fOldRange) bClosing = true;
 
+				var basepos = KerbalKonstructs.instance.getCurrentBody().transform.InverseTransformPoint(lTargetSite.GameObject.transform.position);
+				var dBaseLat = GetLatitude(basepos);
+				var dBaseLon = GetLongitude(basepos);
+				disBaseLat = dBaseLat * 180 / Math.PI;
+				disBaseLon = dBaseLon * 180 / Math.PI;
+
 				fOldRange = fRangeToTarget;
 
 				if (bClosing)
+				{
 					tTextureMiddle = tIconOpen;
+				}
 				else
+				{
 					tTextureMiddle = tIconClosed;
+				}
 
 				Vector3 vcraftpos = FlightGlobals.ActiveVessel.GetTransform().position;
 				vCrft = vcraftpos;
 				Vector3 vsitepos = lTargetSite.GameObject.transform.position;
 				vSPos = vsitepos;
-				Vector3 vHeading = (Vector3)FlightGlobals.ActiveVessel.transform.up;
+				Vector3 vHeading = FlightGlobals.ActiveVessel.transform.up;
 				vHead = vHeading;
 
-				iCorrection = GetCourseCorrection(vcraftpos, vsitepos, vHeading);
+				disLat = FlightGlobals.ActiveVessel.latitude;
+				var dLat = disLat / 180 * Math.PI;
+				disLon = FlightGlobals.ActiveVessel.longitude;
+				var dLon = disLon / 180 * Math.PI;
+
+				var y = Math.Sin(dBaseLon - dLon) * Math.Cos(dBaseLat);
+				var x = (Math.Cos(dLat) * Math.Sin(dBaseLat)) - (Math.Sin(dLat) * Math.Cos(dBaseLat) * Math.Cos(dBaseLon - dLon));
+				var requiredHeading = Math.Atan2(y, x) * 180 / Math.PI;
+				dreqheading = (requiredHeading + 360) % 360;
+
+				var diff = (360 + 180 + requiredHeading - FlightGlobals.ship_heading) % 360 - 180;
+				dshipheading = (FlightGlobals.ship_heading + 360) % 360;
+
+				if (diff > 5)
+					iCorrection = 2;
+				else if (diff < -5)
+					iCorrection = 1;
+				else
+					iCorrection = 0;
+
+				if (bClosing)
+				{
+					tTextureLeft = tLeftOff;
+					tTextureRight = tRightOff;
+				}
+				else
+				{
+					tTextureLeft = tLeftOn;
+					tTextureRight = tRightOn;
+				}
+
 				if (iCorrection == 1)
 				{
 					tTextureLeft = tLeftOn;
@@ -187,11 +243,6 @@ namespace KerbalKonstructs.UI
 				{
 					tTextureLeft = tLeftOff;
 					tTextureRight = tRightOn;
-				}
-				if (iCorrection == 3)
-				{
-					tTextureLeft = tLeftOff;
-					tTextureRight = tRightOff;
 				}
 			}
 			else
@@ -214,73 +265,28 @@ namespace KerbalKonstructs.UI
 			GUILayout.EndHorizontal();
 
 			GUILayout.BeginHorizontal();
-				GUILayout.Box("vCrft/vSite", GUILayout.Width(100));
-				GUILayout.Box("" + angle1, GUILayout.Width(61));
-				GUILayout.Box("vHd/010", GUILayout.Width(113));
-				GUILayout.Box("" + angle2, GUILayout.Width(61));
+				GUILayout.Box("CRFT", GUILayout.Width(60), GUILayout.Height(20));
+				GUILayout.Box("Lat.", GUILayout.Height(20));
+				GUILayout.Box(disLat.ToString("#0"), GUILayout.Width(35), GUILayout.Height(20));
+				GUILayout.Box("Lon.", GUILayout.Height(20));
+				GUILayout.Box(disLon.ToString("#0"), GUILayout.Width(35), GUILayout.Height(20));
+				GUILayout.Box("Head", GUILayout.Height(20));
+				GUILayout.Box(dshipheading.ToString("#0"), GUILayout.Width(35), GUILayout.Height(20));
 			GUILayout.EndHorizontal();
 
 			GUILayout.BeginHorizontal();
-				GUILayout.Box("vCrft/vSite 0z", GUILayout.Width(100));
-				GUILayout.Box("" + angle3, GUILayout.Width(61));
-				GUILayout.Box("vHd/010 0z", GUILayout.Width(113));
-				GUILayout.Box("" + angle4, GUILayout.Width(61));
-			GUILayout.EndHorizontal();
-			
-			GUILayout.BeginHorizontal();
-				GUILayout.Box("_", GUILayout.Width(20));
-				GUILayout.Box("Craft V", GUILayout.Width(105));
-				GUILayout.Box("Base V", GUILayout.Width(105));
-				GUILayout.Box("Head V", GUILayout.Width(105));
-			GUILayout.EndHorizontal();
-
-			GUILayout.BeginHorizontal();
-				GUILayout.Box("X", GUILayout.Width(20));
-				GUILayout.Box("" + vCrft.x, GUILayout.Width(105));
-				GUILayout.Box("" + vSPos.x, GUILayout.Width(105));
-				GUILayout.Box("" + vHead.x, GUILayout.Width(105));
-			GUILayout.EndHorizontal();
-			GUILayout.BeginHorizontal();
-				GUILayout.Box("Y", GUILayout.Width(20));
-				GUILayout.Box("" + vCrft.y, GUILayout.Width(105));
-				GUILayout.Box("" + vSPos.y, GUILayout.Width(105));
-				GUILayout.Box("" + vHead.y, GUILayout.Width(105));
-			GUILayout.EndHorizontal();
-			GUILayout.BeginHorizontal();
-				GUILayout.Box("Z", GUILayout.Width(20));
-				GUILayout.Box("" + vCrft.z, GUILayout.Width(105));
-				GUILayout.Box("" + vSPos.z, GUILayout.Width(105));
-				GUILayout.Box("" + vHead.z, GUILayout.Width(105));
+				GUILayout.Box("BASE", GUILayout.Width(60), GUILayout.Height(20));
+				GUILayout.Box("Lat.", GUILayout.Height(20));
+				GUILayout.Box(disBaseLat.ToString("#0"), GUILayout.Width(35), GUILayout.Height(20));
+				GUILayout.Box("Lon.", GUILayout.Height(20));
+				GUILayout.Box(disBaseLon.ToString("#0"), GUILayout.Width(35), GUILayout.Height(20));
+				GUILayout.Box("Head", GUILayout.Height(20));
+				GUILayout.Box(dreqheading.ToString("#0"), GUILayout.Width(35), GUILayout.Height(20));
 			GUILayout.EndHorizontal();
 
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 
 			prepNGS();
-		}
-
-		public int GetCourseCorrection(Vector3 vCraft, Vector3 vSite, Vector3 vHeading)
-		{
-			angle1 = Vector3.Angle(vCraft, vSite);
-			angle2 = Vector3.Angle(vHeading, Vector3.right);
-
-			vCraft.z = 0;
-			vSite.z = 0;
-
-			// Ash added
-			vHeading.z = 0;
-
-			angle3 = Vector3.(vCraft, vSite);
-			angle4 = Vector3.Angle(vHeading, Vector3.right);
-
-			float angle = angle3 - angle4;
-			if (angle < 0) angle = -angle;
-			
-			if (angle > 95)
-				return 1;
-			if (angle < 85)
-				return 2;
-
-			return 3;
 		}
 
 		void drawFacilityManagerWindow(int windowID)
@@ -509,7 +515,8 @@ namespace KerbalKonstructs.UI
 			bool shouldUpdateSelection = false;
 			bool manuallySet = false;
 
-			//GUILayout.BeginArea(new Rect(10, 25, 275, 310));
+			GUILayout.BeginArea(new Rect(5, 25, 295, 410));
+
 			GUILayout.Box((string)selectedObject.model.getSetting("title"));
 			GUILayout.Label("Hit enter after typing a value to apply.");
 
@@ -627,7 +634,6 @@ namespace KerbalKonstructs.UI
 					GUILayout.FlexibleSpace();
 					rotation = GUILayout.TextField(rotation, 4, GUILayout.Width(80));
 
-					// ASH Added very handy rotation buttons
 					if (GUILayout.RepeatButton("<<", GUILayout.Width(30), GUILayout.Height(23)))
 					{
 						newRot -= 1.0f;
@@ -650,13 +656,10 @@ namespace KerbalKonstructs.UI
 					}
 				GUILayout.EndHorizontal();
 
-				//GUILayout.Space(5);
-
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Vis.");
 					GUILayout.FlexibleSpace();
 					visrange = GUILayout.TextField(visrange, 6, GUILayout.Width(80));
-					// GUILayout.Label("m");
 					if (GUILayout.Button("Min", GUILayout.Width(30), GUILayout.Height(23)))
 					{
 						vis -= 100000f;
@@ -678,8 +681,6 @@ namespace KerbalKonstructs.UI
 						shouldUpdateSelection = true;
 					}
 				GUILayout.EndHorizontal();
-
-				//GUILayout.Space(2);
 				
 				GUILayout.BeginHorizontal();
 					enableColliders = GUILayout.Toggle(enableColliders, "Enable Colliders", GUILayout.Width(140));
@@ -714,8 +715,6 @@ namespace KerbalKonstructs.UI
 						spawnInstance(oModel, fOffset, vPosition, fAngle);
 					}
 				GUILayout.EndHorizontal();
-			
-				//GUILayout.Space(5);
 
 				GUI.enabled = !editingSite;
 
@@ -757,13 +756,12 @@ namespace KerbalKonstructs.UI
 					GUILayout.FlexibleSpace();
 					if (GUILayout.Button("Deselect", GUILayout.Width(130)))
 					{
-						// ASH Auto-save on deselect
 						KerbalKonstructs.instance.saveObjects();
 						KerbalKonstructs.instance.deselectObject();
 					}
 				GUILayout.EndHorizontal();
 
-				GUILayout.FlexibleSpace();
+				GUILayout.Space(3);
 
 				if (GUILayout.Button("Delete Instance", GUILayout.Height(23)))
 				{
@@ -837,8 +835,7 @@ namespace KerbalKonstructs.UI
 					updateSelection(selectedObject);
 				}
 
-			// GUILayout.EndArea();
-
+				GUILayout.EndArea();
 			GUI.DragWindow(new Rect(0, 0, 10000, 10000));
 		}
 
@@ -882,7 +879,6 @@ namespace KerbalKonstructs.UI
 
 		void drawEditorWindow(int id)
 		{
-			// ASH 07112014 Layout changes
 			GUILayout.BeginArea(new Rect(10, 25, 500, 485));
 			GUILayout.BeginHorizontal();
 				GUI.enabled = !creating;
