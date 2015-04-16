@@ -154,6 +154,8 @@ namespace KerbalKonstructs
 				KKAPI.addModelSetting("TonsStMax", new ConfigFloat());
 				KKAPI.addInstanceSetting("TonsStCurrent", new ConfigFloat());
 
+				// Snap to surface
+				KKAPI.addInstanceSetting("SnapToSurface", new ConfigGenericString());
 			// END Instance API ******
 
 			SpaceCenterManager.setKSC();
@@ -437,6 +439,16 @@ namespace KerbalKonstructs
 									Debug.Log("KK: All attempts at finding a launchpad transform have failed (╯°□°）╯︵ ┻━┻ This static isn't configured for KK properly. Tell the modder.");
 								}
 							}
+						}
+					}
+
+					if (obj.settings.ContainsKey("SnapToSurface"))
+					{
+						if (obj.getSetting("SnapToSurface").ToString().ToUpper() == "TRUE")
+						{
+						    var pqsc = ((CelestialBody)obj.getSetting("CelestialBody")).pqsController;
+						    obj.setSetting("RadiusOffset", 1.0f + (float)(pqsc.GetSurfaceHeight((Vector3)obj.getSetting("RadialPosition")) - pqsc.radius));
+						    obj.setSetting("SnapToSurface", "False");
 						}
 					}
 
